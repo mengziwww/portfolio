@@ -1,0 +1,35 @@
+---
+// Light friction on the artworks only: no context menu, no dragging, no selecting the picture.
+// Scroll, zoom, lightbox, keyboard and touch navigation stay as they are.
+---
+
+<style>
+  [data-artwork] img {
+    -webkit-user-drag: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+</style>
+
+<script>
+  function initArtworkGuard() {
+    if (document.documentElement.dataset.artworkGuard === '1') return;
+    document.documentElement.dataset.artworkGuard = '1';
+
+    document.querySelectorAll<HTMLImageElement>('[data-artwork] img').forEach((img) => {
+      img.draggable = false;
+    });
+
+    document.addEventListener('contextmenu', (event) => {
+      const target = event.target;
+      if (target instanceof Element && target.closest('[data-artwork]')) event.preventDefault();
+    });
+
+    document.addEventListener('dragstart', (event) => {
+      const target = event.target;
+      if (target instanceof Element && target.closest('[data-artwork]')) event.preventDefault();
+    });
+  }
+
+  document.addEventListener('astro:page-load', initArtworkGuard);
+</script>

@@ -1,0 +1,59 @@
+---
+import I18nText from './I18nText.astro';
+---
+
+<article class="rights">
+  <p>
+    <I18nText
+      en="Hi! I am menghan, these drawings, films and designs on this site are mine. You can view them here! If you like my drawings, you can save if you want."
+      fr="Salut ! Je suis Menghan, ces dessins, ces films et ces designs sont à moi. Tu peux les regarder ici ! Si tu aimes mes dessins, tu peux les enregistrer si tu veux."
+      zh="嗨！我是 Menghan，这些画、片子和设计都是我的。你可以在这里看！喜欢的话，可以保存。"
+    />
+  </p>
+  <p>
+    <I18nText
+      en="But don’t copy them, repost them, or put them in your own work, unless I have agreed in writing."
+      fr="Mais ne les copie pas, ne les republie pas, et ne les mets pas dans ton propre travail, sauf si je l'ai accepté par écrit."
+      zh="但是不要复制，不要转载，也不要放进你自己的作品里，除非我书面同意。"
+    />
+  </p>
+  <p>
+    <I18nText
+      en="And you cannot use them to train a model, and don’t use them to generate new images. Because it’s my hard work of 20 years 🥹"
+      fr="Et tu ne peux pas t'en servir pour entraîner un modèle, ni pour générer de nouvelles images. C'est vingt ans de travail 🥹"
+      zh="也不能用来训练模型，不要拿它们去生成新的图。这是我二十年的心血 🥹"
+    />
+  </p>
+  <p>
+    <I18nText
+      en="If you want to ask, write to me here"
+      fr="Si tu veux demander, écris-moi ici"
+      zh="想问的话，写信到这里"
+    />
+  </p>
+  <p><a href="mailto:mengziwww@gmail.com">mengziwww@gmail.com</a></p>
+</article>
+
+<style>
+  .rights {
+    max-width: 40rem;
+    margin: 0 auto;
+    padding: var(--space-6) var(--edge) var(--space-6);
+  }
+
+  .rights h1 {
+    font-size: var(--text-2xl);
+    line-height: 1;
+    margin-bottom: var(--space-4);
+  }
+
+  .rights p {
+    margin-top: var(--space-3);
+    color: var(--bone-soft);
+    max-width: 42ch;
+  }
+
+  .rights a {
+    color: var(--gold);
+  }
+</style>

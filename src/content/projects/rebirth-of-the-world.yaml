@@ -1,0 +1,198 @@
+title: Rebirth of the World
+year: 2025
+category: personal
+template: atmosphere
+order: 1
+size: large
+accentFrom: "#1B2A4A"
+accentTo: "#FFD866"
+posterCredit:
+  en: I'm still working on it
+  fr: j'y travaille encore
+  zh: 我还在做
+roles:
+  en: [Solo, Personal project]
+  fr: [Solo, Projet personnel]
+  zh: [独立创作, 个人项目]
+subtitle:
+  en: a world in progress since 2023
+  fr: un monde en cours depuis 2023
+  zh: 从2023年做到现在的世界
+description:
+  en: >-
+    This project has always lived in my mind. It is about a civilization
+    fading, and another one rising. It could be a seven minute film, or
+    a long comic, or a series. A little girl becomes the last person in
+    the world, and she is about to die. She thinks she is not afraid of
+    death. Then a being who calls himself a messenger appears in front
+    of her. He tells her a new world is about to be born.
+  fr: >-
+    Ce projet a toujours vécu dans ma tête. Il parle d'une civilisation
+    qui s'éteint, et d'une autre qui se lève. Ça peut être un film de
+    sept minutes, une longue bande dessinée, ou une série. Une petite
+    fille devient la dernière personne au monde, et elle va mourir.
+    Elle croit qu'elle n'a pas peur de la mort. Puis un être qui se dit
+    messager apparaît devant elle. Il lui dit qu'un nouveau monde va naître.
+  zh: >-
+    这个项目一直在我心里。这个故事关于文明的消散与崛起，可以是一个七分钟的短片，也可以是长长连载的漫画或剧集。一个小女孩成为了世界上的最后一个人，她即将死去。她以为她不害怕死亡，可在她面前出现了一名自称为使者的人形生物。使者告诉她，新的世界就要诞生了。
+cover: garden-child.png
+coverAlt:
+  en: A small orange-haired figure stands in tall grass at night, fireflies and star-flowers glowing around her
+  fr: Une petite silhouette aux cheveux orange se tient dans les hautes herbes la nuit, entourée de lucioles et de fleurs étoilées lumineuses
+  zh: 一个橙发的小小身影站在夜色中的高草丛里，萤火虫与星形花朵在周围发光
+gallery:
+  - file: garden-child.png
+    alt:
+      en: A small orange-haired figure stands in tall grass at night, fireflies and star-flowers glowing around her
+      fr: Une petite silhouette aux cheveux orange se tient dans les hautes herbes la nuit, entourée de lucioles et de fleurs étoilées lumineuses
+      zh: 一个橙发的小小身影站在夜色中的高草丛里，萤火虫与星形花朵在周围发光
+  - file: turnaround.gif
+    alt:
+      en: A line-art turnaround of the film's protagonist, hair drifting as she turns
+      fr: Un turnaround en ligne de la protagoniste du film, les cheveux flottant tandis qu'elle se tourne
+      zh: 影片主角的线稿转面动图，转身时发丝轻轻飘动
+  - file: fragment-01.png
+    alt:
+      en: A fragment of the world as it resets
+      fr: Un fragment du monde en train de se remettre à zéro
+      zh: 世界重启时的一个片段
+  - file: fragment-02.png
+    alt:
+      en: Spirits on their way to the end of the old world
+      fr: Des esprits en route vers la fin de l'ancien monde
+      zh: 走向旧世界尽头的灵
+  - file: fragment-03.png
+    alt:
+      en: A submerged ruin, half-remembered
+      fr: Une ruine engloutie, à demi souvenue
+      zh: 一处被淹没的废墟，记忆若隐若现
+  - file: fragment-04.png
+    alt:
+      en: A form the new world is taking
+      fr: Une forme que prend le monde d'après
+      zh: 新世界正在长成的样子
+  - file: extra-20.jpg
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: extra-21.png
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: extra-22.jpg
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: extra-23.png
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: extra-50.jpg
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: extra-51.jpg
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: extra-52.jpg
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: extra-53.png
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: extra-54.png
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: extra-56.png
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: extra-57.png
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: board-01.jpg
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: board-02.jpg
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: board-03.jpg
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: board-04.jpg
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: board-05.jpg
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: board-06.jpg
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: board-07.jpg
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: board-08.jpg
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: board-09.jpg
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: board-10.jpg
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: board-11.jpg
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: board-12.jpg
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: board-13.jpg
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: board-14.jpg
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。

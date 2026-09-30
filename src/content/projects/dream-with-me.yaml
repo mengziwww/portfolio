@@ -1,0 +1,153 @@
+title: Dream with Me
+year: 2024
+category: school
+template: dream
+order: 4
+size: normal
+accentFrom: "#B5384F"
+accentTo: "#3A2440"
+client: Communication University of China
+posterGenre:
+  en: CUC 2024
+  fr: CUC 2024
+  zh: 中传 2024
+roles:
+  en: [Director, Concept, Character Design, Storyboard, Animation, Compositing]
+  fr: [Réalisation, Concept, Character Design, Storyboard, Animation, Compositing]
+  zh: [导演, 概念设计, 角色设计, 分镜, 动画, 合成]
+subtitle:
+  en: a little girl falls into her dream, 2024
+  fr: une petite fille tombe dans son rêve, 2024
+  zh: 一个小女孩坠入她的梦，2024
+description:
+  en: >-
+    I directed it. Concept, characters, storyboard, animation and
+    compositing. A little girl falls into her dream.
+  fr: >-
+    Je l'ai réalisé. Concept, personnages, storyboard, animation et
+    compositing. Une petite fille tombe dans son rêve.
+  zh: >-
+    我导演的。概念、角色、分镜、动画和合成都是我做的。一个小女孩，坠入了她的梦。
+cover: storyboard-01.png
+coverAlt:
+  en: The poster.
+  fr: L'affiche.
+  zh: 海报。
+gallery:
+  - file: character-01.png
+    alt:
+      en: Character design.
+      fr: Character design.
+      zh: 角色设计。
+    caption:
+      en: Character design.
+      fr: Character design.
+      zh: 角色设计。
+  - file: character-02.png
+    alt:
+      en: Design of the rabbit.
+      fr: Design du lapin.
+      zh: 兔子的设计。
+    caption:
+      en: Design of the rabbit.
+      fr: Design du lapin.
+      zh: 兔子的设计。
+  - file: bg-02.jpg
+    alt:
+      en: An early concept.
+      fr: Un premier concept.
+      zh: 早期概念。
+    caption:
+      en: An early concept.
+      fr: Un premier concept.
+      zh: 早期概念。
+  - file: concept-dream-figure.jpg
+    alt:
+      en: An early concept.
+      fr: Un premier concept.
+      zh: 早期概念。
+    caption:
+      en: An early concept.
+      fr: Un premier concept.
+      zh: 早期概念。
+  - file: still-41.png
+    alt:
+      en: Color script.
+      fr: Color script.
+      zh: 色彩脚本。
+    caption:
+      en: Color script.
+      fr: Color script.
+      zh: 色彩脚本。
+  - file: still-39.png
+    alt:
+      en: Concept. The girl fell into the world of dreams.
+      fr: Concept. La fille tombe dans le monde des rêves.
+      zh: 概念。女孩坠入梦的世界。
+    caption:
+      en: Concept. The girl fell into the world of dreams.
+      fr: Concept. La fille tombe dans le monde des rêves.
+      zh: 概念。女孩坠入梦的世界。
+  - file: still-40.png
+    alt:
+      en: Concept. She saw many memory fairies.
+      fr: Concept. Elle a vu beaucoup de fées de mémoire.
+      zh: 概念。她看见许多记忆妖精。
+    caption:
+      en: Concept. She saw many memory fairies.
+      fr: Concept. Elle a vu beaucoup de fées de mémoire.
+      zh: 概念。她看见许多记忆妖精。
+  - file: still-42.png
+    alt:
+      en: Concept. The girl had fun in the dreams.
+      fr: Concept. La fille s'amuse dans les rêves.
+      zh: 概念。女孩在梦里玩得很开心。
+    caption:
+      en: Concept. The girl had fun in the dreams.
+      fr: Concept. La fille s'amuse dans les rêves.
+      zh: 概念。女孩在梦里玩得很开心。
+  - file: still-38.png
+    alt:
+      en: Concept. The girl wanted to escape, and got lost in the dreams.
+      fr: Concept. La fille voulait s'échapper, et elle s'est perdue dans les rêves.
+      zh: 概念。女孩想逃，却在梦里迷路了。
+    caption:
+      en: Concept. The girl wanted to escape, and got lost in the dreams.
+      fr: Concept. La fille voulait s'échapper, et elle s'est perdue dans les rêves.
+      zh: 概念。女孩想逃，却在梦里迷路了。
+  - file: bg-01.png
+    alt:
+      en: A background test.
+      fr: Un essai de décor.
+      zh: 背景测试。
+    caption:
+      en: A background test.
+      fr: Un essai de décor.
+      zh: 背景测试。
+  - file: still-37.png
+    alt:
+      en: A style frame.
+      fr: Un style frame.
+      zh: 风格帧。
+    caption:
+      en: A style frame.
+      fr: Un style frame.
+      zh: 风格帧。
+  - file: still-35.png
+    alt:
+      en: Final render. The girl in the screen.
+      fr: Rendu final. La fille dans l'écran.
+      zh: 最终渲染。屏幕里的女孩。
+    caption:
+      en: Final render. The girl in the screen.
+      fr: Rendu final. La fille dans l'écran.
+      zh: 最终渲染。屏幕里的女孩。
+  - file: still-36.png
+    alt:
+      en: Final render. The girl in the cinema, talking to herself.
+      fr: Rendu final. La fille dans le cinéma, qui se parle.
+      zh: 最终渲染。电影院里的女孩，在跟自己说话。
+    caption:
+      en: Final render. The girl in the cinema, talking to herself.
+      fr: Rendu final. La fille dans le cinéma, qui se parle.
+      zh: 最终渲染。电影院里的女孩，在跟自己说话。

@@ -1,0 +1,784 @@
+---
+// The sticky-stack version still read wrong: each beat covering the last
+// is a slide/cover transition, not a fade, and giving every beat its own
+// full-height sticky panel meant every image still felt close to
+// full-bleed. This rebuilds the mechanism for real: the images live in
+// one fixed, deliberately small "viewer" window centered on screen —
+// void space visible around it at all times — and scrolling through a
+// track of invisible spacer sections just tells that single window which
+// image to dissolve to. Word and picture still share a frame (kept,
+// since that part worked), but the transition between frames is now an
+// actual crossfade, not a cover.
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { getProjectImage, responsiveWidths } from '@/lib/images';
+import ProjectFooter from './ProjectFooter.astro';
+import ScrollCue from '@/components/ScrollCue.astro';
+import I18nText from '@/components/I18nText.astro';
+import { trAll } from '@/i18n/ui';
+import { vividOf } from '@/lib/color';
+import { charReveal } from '@/lib/reveal-text';
+import ProjectIntro from '@/components/ProjectIntro.astro';
+import MangaBook from '@/components/MangaBook.astro';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+  next: CollectionEntry<'projects'>;
+}
+const { project, next } = Astro.props;
+const { title, subtitle, year, roles, category, cover, coverAlt, gallery, description, accentFrom, accentTo, links } = project.data;
+const glow = vividOf(accentFrom, accentTo);
+const coverImg = getProjectImage(project.id, cover);
+const categoryLabel = trAll(`category.${category}` as const);
+
+function splitFragments(text: string, zh = false): string[] {
+  const raw = zh ? text.split(/(?<=[。！？])/) : text.split(/(?<=[.!?])\s+/);
+  return raw.map((s) => s.trim()).filter(Boolean);
+}
+const fragEn = splitFragments(description.en);
+const fragFr = splitFragments(description.fr);
+const fragZh = splitFragments(description.zh, true);
+const fragCount = Math.max(fragEn.length, fragFr.length, fragZh.length);
+const fragments = Array.from({ length: fragCount }, (_, i) => ({
+  en: fragEn[i] ?? '',
+  fr: fragFr[i] ?? '',
+  zh: fragZh[i] ?? '',
+}));
+
+const stills = gallery.filter((g) => !g.file.endsWith('.gif'));
+const keepsake = gallery.find((g) => g.file.endsWith('.gif'));
+const studyFiles = new Set(['extra-21.png', 'extra-22.jpg', 'extra-23.png']);
+const studyItems = stills.filter((item) => studyFiles.has(item.file));
+const mangaItems = stills
+  .filter((item) => item.file.startsWith('board-'))
+  .sort((a, b) => a.file.localeCompare(b.file, undefined, { numeric: true }));
+const trackItems = stills.filter((item) => !studyFiles.has(item.file) && !item.file.startsWith('board-'));
+
+const slides = trackItems.map((item, i) => ({
+  item,
+  frag: (i < fragments.length ? fragments[i] : null) as (typeof fragments)[number] | null,
+}));
+---
+
+<article class="atmosphere" style={`--mood-a:${accentFrom}; --mood-b:${accentTo}; --mood-glow:${glow};`} data-atmosphere data-reveal-root>
+  <header class="am-hero">
+    <div class="am-cover">
+      <Image
+        src={coverImg}
+        alt={coverAlt.en}
+        widths={responsiveWidths(coverImg, [420, 640, 900])}
+        sizes="(max-width: 700px) 78vw, 24rem"
+        loading="eager"
+        fetchpriority="high"
+        transition:name={`project-cover-${project.id}`}
+      />
+    </div>
+    <div class="am-copy">
+      <p class="hero-eyebrow eyebrow">
+        <I18nText {...categoryLabel} /> · {year}
+      </p>
+      <h1 class="am-title" transition:name={`project-title-${project.id}`} set:html={charReveal(title, 120, 22)} />
+      <p class="am-subtitle">
+        <I18nText en={subtitle.en} fr={subtitle.fr} zh={subtitle.zh} />
+      </p>
+      <ProjectIntro links={links} />
+      <ul class="hero-roles">
+        {roles.en.map((_, i) => (
+          <li style={`--i:${i}`}>
+            <I18nText en={roles.en[i]} fr={roles.fr[i]} zh={roles.zh[i]} />
+          </li>
+        ))}
+      </ul>
+    </div>
+    <div class="am-cue">
+      <ScrollCue />
+    </div>
+  </header>
+
+  <div class="nebula" aria-hidden="true">
+    <span class="nebula-blob nebula-a"></span>
+    <span class="nebula-blob nebula-b"></span>
+    <span class="nebula-blob nebula-c"></span>
+  </div>
+  <canvas class="drift" data-atmo-canvas aria-hidden="true"></canvas>
+
+  <div class="eotw-rail" data-eotw-rail aria-hidden="true">
+    {slides.map((_, i) => (
+      <span class="eotw-tick" data-tick data-index={i}></span>
+    ))}
+  </div>
+
+  <div class="eotw-viewer" data-eotw-viewer>
+    <div class="eotw-frame" data-order-group="world">
+      {slides.map((s, i) => (
+        <figure class="eotw-slide" data-slide data-index={i} data-artwork data-note-id={`${project.id}:${s.item.file}`}>
+          <Image
+            src={getProjectImage(project.id, s.item.file)}
+            alt={s.item.alt.en}
+            widths={responsiveWidths(getProjectImage(project.id, s.item.file), [640, 960, 1280])}
+            sizes="(max-width: 900px) 84vw, 56rem"
+            loading={i < 1 ? 'eager' : 'lazy'}
+          />
+          {s.frag && (
+            <>
+              <span class="eotw-scrim" aria-hidden="true"></span>
+              <figcaption class="eotw-line">
+                <I18nText en={s.frag.en} fr={s.frag.fr} zh={s.frag.zh} />
+              </figcaption>
+            </>
+          )}
+        </figure>
+      ))}
+      <span class="eotw-frame-border" aria-hidden="true"></span>
+    </div>
+  </div>
+
+  <div class="eotw-track" data-eotw-track>
+    {slides.map((s, i) => (
+      <section class="eotw-slot" data-eotw-slot data-index={i} data-slot-for={`${project.id}:${s.item.file}`}></section>
+    ))}
+  </div>
+
+  {studyItems.length > 0 && (
+    <section class="eotw-studies">
+      <h2>
+        <I18nText en="studies" fr="études" zh="角色设定" />
+      </h2>
+      <div class="eotw-studies-row" data-order-group="studies">
+        {studyItems.map((item) => (
+          <figure data-artwork data-note-id={`${project.id}:${item.file}`}>
+            <Image
+              src={getProjectImage(project.id, item.file)}
+              alt={item.alt.en}
+              widths={responsiveWidths(getProjectImage(project.id, item.file), [320, 480, 720])}
+              sizes="(max-width: 700px) 32vw, 16rem"
+              loading="lazy"
+            />
+          </figure>
+        ))}
+      </div>
+    </section>
+  )}
+
+  {mangaItems.length > 0 && (
+    <section class="manga" data-manga>
+      <h2>
+        <I18nText en="manga" fr="manga" zh="漫画" />
+      </h2>
+      <MangaBook projectId={project.id} items={mangaItems} />
+    </section>
+  )}
+
+  {keepsake && (
+    <figure class="keepsake" data-artwork data-note-id={`${project.id}:${keepsake.file}`}>
+      <img
+        src={getProjectImage(project.id, keepsake.file).src}
+        alt={keepsake.alt.en}
+        width="360"
+        height="360"
+        loading="lazy"
+        draggable="false"
+      />
+    </figure>
+  )}
+
+  <ProjectFooter project={project} next={next} />
+</article>
+
+<style>
+  .atmosphere {
+    position: relative;
+    background:
+      radial-gradient(ellipse 60% 40% at 15% 10%, color-mix(in srgb, var(--mood-a) 30%, transparent), transparent 70%),
+      radial-gradient(ellipse 55% 45% at 88% 70%, color-mix(in srgb, var(--mood-b) 22%, transparent), transparent 72%),
+      radial-gradient(ellipse 80% 60% at 50% 100%, color-mix(in srgb, var(--mood-a) 18%, transparent), transparent 75%),
+      color-mix(in srgb, var(--mood-a) 55%, black 45%);
+    color: var(--bone);
+    overflow: hidden;
+  }
+
+  /* soft drifting nebula clouds — the starfield alone read as an empty
+     void; these give the sky real depth without adding more content */
+  .nebula {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .nebula-blob {
+    position: absolute;
+    width: 70vmax;
+    height: 70vmax;
+    border-radius: 50%;
+    opacity: 0.22;
+    animation: nebula-drift 60s ease-in-out infinite;
+  }
+
+  .nebula-a {
+    top: -20%;
+    left: -15%;
+    background: radial-gradient(circle, var(--mood-a), transparent 70%);
+    animation-duration: 70s;
+  }
+
+  .nebula-b {
+    bottom: -25%;
+    right: -10%;
+    background: radial-gradient(circle, var(--mood-b), transparent 70%);
+    animation-duration: 85s;
+    animation-delay: -20s;
+  }
+
+  .nebula-c {
+    top: 30%;
+    left: 40%;
+    width: 45vmax;
+    height: 45vmax;
+    background: radial-gradient(circle, var(--mood-glow), transparent 70%);
+    animation-duration: 55s;
+    animation-delay: -40s;
+    opacity: 0.18;
+  }
+
+  @keyframes nebula-drift {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(6vw, -4vh) scale(1.15); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nebula-blob {
+      animation: none;
+    }
+  }
+
+  .am-hero {
+    position: relative;
+    min-height: 100svh;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(2rem, 6vw, 5rem);
+    padding: var(--space-6) var(--edge) var(--space-5);
+    z-index: 2;
+  }
+
+  .am-cover {
+    flex: none;
+    width: clamp(11rem, 22vw, 24rem);
+    overflow: hidden;
+    border-radius: 2px;
+    box-shadow: 0 2rem 5rem -1.5rem rgb(0 0 0 / 70%), 0 0 4rem 0.4rem color-mix(in srgb, var(--mood-glow) 25%, transparent);
+  }
+
+  .am-cover :global(img) {
+    width: 100%;
+    display: block;
+  }
+
+  .am-copy {
+    flex: 1 1 24rem;
+    max-width: 32rem;
+  }
+
+  .hero-eyebrow {
+    color: var(--gold);
+    margin-bottom: var(--space-2);
+  }
+
+  .am-title {
+    font-size: var(--text-2xl);
+    line-height: 0.96;
+  }
+
+  .am-subtitle {
+    font-size: var(--text-lg);
+    color: var(--bone-soft);
+    margin-top: var(--space-2);
+  }
+
+  .hero-roles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    list-style: none;
+    margin-top: var(--space-3);
+    padding: 0;
+  }
+
+  .hero-roles li {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    border: 1px solid var(--void-line);
+    padding: 0.4em 0.85em;
+    border-radius: 999px;
+  }
+
+  .am-cue {
+    position: absolute;
+    left: var(--edge);
+    bottom: var(--space-3);
+  }
+
+  .drift {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  /* ---- the fixed viewer: one small, clearly bounded window that every
+     gallery image dissolves through in turn, instead of each image
+     taking a full sticky panel of its own ---- */
+  .eotw-viewer {
+    position: fixed;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(1rem, 5vw, 3rem);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.6s;
+  }
+
+  .eotw-viewer.is-visible {
+    opacity: 1;
+  }
+
+  :global(html[data-notes-annotate]) .eotw-viewer.is-visible {
+    pointer-events: auto;
+  }
+
+  .eotw-frame {
+    position: relative;
+    width: min(74vw, 54rem);
+    aspect-ratio: 16 / 10;
+    max-height: 70svh;
+    overflow: hidden;
+    border-radius: 2px;
+    background: #000;
+    box-shadow: 0 3rem 6rem -2rem rgb(0 0 0 / 75%), 0 0 6rem 0.6rem color-mix(in srgb, var(--mood-glow) 22%, transparent);
+  }
+
+  .eotw-frame-border {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    border: 1px solid color-mix(in srgb, var(--bone) 16%, transparent);
+    box-shadow: inset 0 0 4rem 0.5rem rgb(0 0 0 / 45%);
+  }
+
+  .eotw-slide {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    transition: opacity 1.1s ease;
+  }
+
+  .eotw-slide.is-active {
+    opacity: 1;
+    z-index: 1;
+  }
+
+  .eotw-slide :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scale(1);
+  }
+
+  .eotw-slide.is-active :global(img) {
+    filter: saturate(0.88) brightness(0.8);
+    animation: eotw-kenburns 9s ease-out both;
+  }
+
+  @keyframes eotw-kenburns {
+    from { transform: scale(1); }
+    to { transform: scale(1.1); }
+  }
+
+  .eotw-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(0deg, rgb(0 0 0 / 72%) 0%, transparent 55%);
+  }
+
+  .eotw-line {
+    position: absolute;
+    z-index: 2;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: 0;
+    padding: var(--space-4);
+    max-width: 34ch;
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    line-height: 1.5;
+    text-shadow: 0 2px 16px rgb(0 0 0 / 55%);
+  }
+
+  /* wayfinding rail — which fragment of the sequence is currently active */
+  .eotw-rail {
+    position: fixed;
+    right: 1.1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s;
+  }
+
+  .eotw-rail.is-visible {
+    opacity: 1;
+  }
+
+  .eotw-tick {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--bone) 35%, transparent);
+    transition: background 0.3s, transform 0.3s;
+  }
+
+  .eotw-tick.is-active {
+    background: var(--mood-glow);
+    transform: scale(1.7);
+  }
+
+  @media (max-width: 700px) {
+    .eotw-rail {
+      display: none;
+    }
+  }
+
+  /* ---- the track: invisible scroll distance, nothing drawn here ---- */
+  .eotw-track {
+    position: relative;
+    z-index: 1;
+  }
+
+  .eotw-slot {
+    height: 100svh;
+  }
+
+  @media (max-width: 700px) {
+    .eotw-slot {
+      height: 88svh;
+    }
+    .eotw-frame {
+      width: 88vw;
+      max-height: 60svh;
+    }
+    /* full var(--text-lg) plus the padding ate most of a short mobile
+       frame — caption now sits in its own compact strip instead of
+       floating over as much of the image */
+    .eotw-line {
+      font-size: var(--text-sm);
+      line-height: 1.4;
+      max-width: none;
+      padding: var(--space-3);
+    }
+    .eotw-scrim {
+      background: linear-gradient(0deg, rgb(0 0 0 / 78%) 0%, rgb(0 0 0 / 78%) 32%, transparent 68%);
+    }
+  }
+
+  .eotw-archive {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: var(--space-4);
+    max-width: 52rem;
+    margin: 0 auto;
+    padding: var(--space-5) var(--edge) var(--space-6);
+  }
+
+  .eotw-archive figure {
+    margin: 0;
+    content-visibility: auto;
+    contain-intrinsic-size: 52rem 32rem;
+  }
+
+  .eotw-archive :global(img) {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .eotw-studies {
+    position: relative;
+    z-index: 1;
+    max-width: 52rem;
+    margin: 0 auto;
+    padding: var(--space-4) var(--edge) var(--space-3);
+  }
+
+  .eotw-studies h2,
+  .manga h2 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: var(--text-xl);
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    text-transform: none;
+    text-align: center;
+    color: var(--bone);
+    margin-bottom: var(--space-3);
+    padding-inline: var(--edge);
+  }
+
+  .eotw-studies-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.55rem;
+  }
+
+  .eotw-studies-row figure {
+    margin: 0;
+    background: #f4efe6;
+    height: 9.5rem;
+    overflow: hidden;
+  }
+
+  .eotw-studies-row :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+
+  .manga {
+    position: relative;
+    z-index: 1;
+    max-width: none;
+    margin: 0 auto;
+    padding: var(--space-6) 0 var(--space-5);
+  }
+
+  .keepsake {
+    position: relative;
+    z-index: 1;
+    width: 12rem;
+    margin: var(--space-6) auto;
+  }
+
+  .keepsake :global(img) {
+    width: 100%;
+    border-radius: 50%;
+    border: 2px solid color-mix(in srgb, var(--mood-b) 60%, transparent);
+    box-shadow: 0 0 3rem 0.5rem color-mix(in srgb, var(--mood-b) 25%, transparent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .eotw-viewer,
+    .eotw-rail,
+    .eotw-slide,
+    .eotw-tick {
+      transition: none;
+    }
+    .eotw-slide.is-active :global(img) {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  const ORDER_KEY = 'menghan-review-order';
+
+  function savedGroup(group: string): string[] | null {
+    if (!location.pathname.includes('/notes')) return null;
+    try {
+      const all = JSON.parse(localStorage.getItem(ORDER_KEY) || '[]');
+      const hit = Array.isArray(all)
+        ? all.find((entry) => entry.page === location.pathname && entry.group === group)
+        : null;
+      return hit?.ids ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  function applyGroup(parent: Element, attr: string, ids: string[]) {
+    const nodes = [...parent.querySelectorAll<HTMLElement>(`:scope > [${attr}]`)];
+    const map = new Map(nodes.map((node) => [node.getAttribute(attr), node]));
+    const anchor = parent.querySelector(':scope > .eotw-frame-border');
+    ids.forEach((id) => {
+      const node = map.get(id);
+      if (node) parent.insertBefore(node, anchor);
+    });
+  }
+
+  function initAtmosphere() {
+    const roots = document.querySelectorAll<HTMLElement>('[data-atmosphere]');
+    roots.forEach((root) => {
+      if (root.dataset.atmoInit === '1') return;
+      root.dataset.atmoInit = '1';
+
+      const world = root.querySelector('[data-order-group="world"]');
+      const worldOrder = savedGroup('world');
+      if (world && worldOrder) {
+        applyGroup(world, 'data-note-id', worldOrder);
+        const track = root.querySelector('[data-eotw-track]');
+        if (track) applyGroup(track, 'data-slot-for', worldOrder);
+      }
+      const studies = root.querySelector('[data-order-group="studies"]');
+      const studyOrder = savedGroup('studies');
+      if (studies && studyOrder) applyGroup(studies, 'data-note-id', studyOrder);
+      const manga = root.querySelector('[data-order-group="manga"]');
+      const mangaOrder = savedGroup('manga');
+      if (manga && mangaOrder) applyGroup(manga, 'data-note-id', mangaOrder);
+
+      // the reveal itself is pure CSS (animation-timeline: view()) — no JS
+      // gate between the work and whether it's actually visible
+      const canvas = root.querySelector<HTMLCanvasElement>('[data-atmo-canvas]');
+      const motion = document.documentElement.dataset.motion;
+      if (canvas && motion !== 'quiet' && motion !== 'still' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          function resize() {
+            const w = Math.min(canvas!.offsetWidth, window.innerWidth);
+            const h = Math.min(canvas!.offsetHeight, window.innerHeight);
+            canvas!.width = Math.max(1, w);
+            canvas!.height = Math.max(1, h);
+          }
+          resize();
+          window.addEventListener('resize', resize);
+
+          const stars = Array.from({ length: 48 }, () => ({
+            x: Math.random(),
+            y: Math.random(),
+            r: 0.35 + Math.random() * 1.1,
+            phase: Math.random() * Math.PI * 2,
+          }));
+
+          // occasional shooting stars — rare enough to be a small surprise,
+          // not a repeating pattern you clock immediately
+          type Shooter = { x: number; y: number; vx: number; vy: number; life: number; maxLife: number };
+          let shooters: Shooter[] = [];
+          function maybeSpawnShooter() {
+            if (Math.random() < 0.994 || shooters.length > 1 || !canvas) return;
+            const startX = Math.random() * canvas.width;
+            shooters.push({
+              x: startX,
+              y: -20,
+              vx: -(2.5 + Math.random() * 2),
+              vy: 5 + Math.random() * 2.5,
+              life: 0,
+              maxLife: 40 + Math.random() * 20,
+            });
+          }
+
+          let raf = 0;
+          function tick(t: number) {
+            if (!ctx || !canvas) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#f0ebe0';
+            stars.forEach((s) => {
+              const tw = 0.25 + 0.55 * Math.sin(t * 0.001 + s.phase);
+              ctx.globalAlpha = Math.max(0, tw);
+              ctx.beginPath();
+              ctx.arc(s.x * canvas.width, s.y * canvas.height, s.r, 0, Math.PI * 2);
+              ctx.fill();
+            });
+
+            maybeSpawnShooter();
+            shooters = shooters.filter((s) => s.life < s.maxLife);
+            shooters.forEach((s) => {
+              s.x += s.vx;
+              s.y += s.vy;
+              s.life += 1;
+              const fade = 1 - s.life / s.maxLife;
+              const grad = ctx.createLinearGradient(s.x, s.y, s.x - s.vx * 4, s.y - s.vy * 4);
+              grad.addColorStop(0, `rgba(240, 235, 224, ${fade})`);
+              grad.addColorStop(1, 'rgba(240, 235, 224, 0)');
+              ctx.globalAlpha = 1;
+              ctx.strokeStyle = grad;
+              ctx.lineWidth = 1.4;
+              ctx.beginPath();
+              ctx.moveTo(s.x, s.y);
+              ctx.lineTo(s.x - s.vx * 4, s.y - s.vy * 4);
+              ctx.stroke();
+            });
+
+            raf = requestAnimationFrame(tick);
+          }
+          raf = requestAnimationFrame(tick);
+          document.addEventListener('astro:before-swap', () => cancelAnimationFrame(raf), { once: true });
+        }
+      }
+
+      // fixed-viewer crossfade: which slide is active is purely a function
+      // of which invisible slot in the track is nearest viewport-center
+      const track = root.querySelector<HTMLElement>('[data-eotw-track]');
+      const viewer = root.querySelector<HTMLElement>('[data-eotw-viewer]');
+      const rail = root.querySelector<HTMLElement>('[data-eotw-rail]');
+      const slots = Array.from(root.querySelectorAll<HTMLElement>('[data-eotw-slot]'));
+      const slides = Array.from(root.querySelectorAll<HTMLElement>('[data-slide]'));
+      const ticks = Array.from(root.querySelectorAll<HTMLElement>('[data-tick]'));
+      if (!track || !viewer || !slots.length) return;
+
+      gsap.registerPlugin(ScrollTrigger);
+
+      function setActive(i: number) {
+        slides.forEach((s, si) => s.classList.toggle('is-active', si === i));
+        ticks.forEach((t, ti) => t.classList.toggle('is-active', ti === i));
+      }
+      setActive(0);
+
+      ScrollTrigger.create({
+        trigger: track,
+        // 'top bottom' fired the instant the track's top pixel touched the
+        // viewport's bottom edge — while the hero above was still fully on
+        // screen, so the viewer popped in right on top of it. 'top top'
+        // waits until the hero has actually scrolled away and the track
+        // has taken over the viewport before the window appears.
+        start: 'top top',
+        // 'bottom top' (wait for the track's bottom to clear the viewport
+        // entirely) assumes there's at least one more viewport of scroll
+        // room after the track — the keepsake+footer that follows is
+        // shorter than that, so it could never be reached. 'bottom bottom'
+        // fires as soon as the track has fully passed by instead.
+        end: 'bottom bottom',
+        onToggle: (self) => {
+          viewer.classList.toggle('is-visible', self.isActive);
+          rail?.classList.toggle('is-visible', self.isActive);
+        },
+      });
+
+      slots.forEach((slot, i) => {
+        ScrollTrigger.create({
+          trigger: slot,
+          start: 'top 55%',
+          end: 'bottom 45%',
+          onToggle: (self) => {
+            if (self.isActive) setActive(i);
+          },
+        });
+      });
+    });
+  }
+
+  document.addEventListener('astro:page-load', () => {
+    initAtmosphere();
+    requestAnimationFrame(() => ScrollTrigger.refresh());
+  });
+
+  document.addEventListener('astro:before-swap', () => {
+    ScrollTrigger.getAll().forEach((t) => t.kill());
+  });
+</script>

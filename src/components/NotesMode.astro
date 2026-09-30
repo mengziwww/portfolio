@@ -1,0 +1,601 @@
+---
+// Review copy of the site. Same pages, under /notes.
+// Comments stay in this browser until she exports them.
+---
+
+<div class="notes" data-notes-ui>
+  <div class="notes-bar">
+    <p class="notes-mark">notes</p>
+    <button type="button" class="notes-mode" data-notes-annotate>
+      <span data-lang="en">comment</span>
+      <span data-lang="fr">commenter</span>
+      <span data-lang="zh">批注</span>
+    </button>
+    <button type="button" class="notes-mode is-on" data-notes-browse>
+      <span data-lang="en">browse</span>
+      <span data-lang="fr">parcourir</span>
+      <span data-lang="zh">浏览</span>
+    </button>
+    <button type="button" class="notes-count" data-notes-list-toggle>
+      <span data-notes-count>0</span>
+    </button>
+    <button type="button" data-notes-export>
+      <span data-lang="en">export</span>
+      <span data-lang="fr">exporter</span>
+      <span data-lang="zh">导出</span>
+    </button>
+  </div>
+
+  <aside class="notes-list" data-notes-list hidden>
+    <p class="notes-list-title">
+      <span data-lang="en">all notes</span>
+      <span data-lang="fr">toutes les notes</span>
+      <span data-lang="zh">全部批注</span>
+    </p>
+    <div data-notes-list-body></div>
+  </aside>
+
+  <form class="notes-pop" data-notes-pop hidden>
+    <p class="notes-pop-where" data-notes-where></p>
+    <textarea data-notes-input rows="4" required></textarea>
+    <div class="notes-pop-actions">
+      <button type="submit">
+        <span data-lang="en">save</span>
+        <span data-lang="fr">enregistrer</span>
+        <span data-lang="zh">保存</span>
+      </button>
+      <button type="button" data-notes-delete hidden>
+        <span data-lang="en">delete</span>
+        <span data-lang="fr">supprimer</span>
+        <span data-lang="zh">删除</span>
+      </button>
+      <button type="button" data-notes-cancel>
+        <span data-lang="en">close</span>
+        <span data-lang="fr">fermer</span>
+        <span data-lang="zh">关闭</span>
+      </button>
+    </div>
+  </form>
+</div>
+
+<style>
+  .notes-bar {
+    position: fixed;
+    z-index: 900;
+    left: 50%;
+    bottom: 1rem;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.45rem 0.35rem 0.7rem;
+    background: rgb(9 8 10 / 92%);
+    border: 1px solid var(--void-line);
+    border-radius: 999px;
+    color: var(--bone);
+  }
+
+  .notes-mark,
+  .notes-bar button,
+  .notes-list,
+  .notes-pop {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+  }
+
+  .notes-mark {
+    letter-spacing: 0.08em;
+    color: var(--gold);
+    margin-right: 0.25rem;
+  }
+
+  .notes-bar button {
+    border: 0;
+    background: transparent;
+    color: var(--bone-soft);
+    border-radius: 999px;
+    padding: 0.4rem 0.7rem;
+    cursor: pointer;
+  }
+
+  .notes-bar button.is-on,
+  .notes-bar button:hover {
+    color: var(--void);
+    background: var(--bone);
+  }
+
+  .notes-list,
+  .notes-pop {
+    position: fixed;
+    z-index: 901;
+    background: rgb(9 8 10 / 96%);
+    border: 1px solid var(--void-line);
+    color: var(--bone);
+  }
+
+  .notes-list {
+    right: 1rem;
+    bottom: 4.2rem;
+    width: min(22rem, calc(100vw - 2rem));
+    max-height: min(24rem, 60vh);
+    overflow: auto;
+    padding: 0.8rem;
+  }
+
+  .notes-list[hidden],
+  .notes-pop[hidden] {
+    display: none;
+  }
+
+  .notes-list-title {
+    color: var(--gold);
+    margin-bottom: 0.6rem;
+  }
+
+  .notes-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: 0;
+    border-top: 1px solid var(--void-line);
+    color: inherit;
+    padding: 0.55rem 0;
+    cursor: pointer;
+  }
+
+  .notes-item small {
+    display: block;
+    color: var(--bone-faint);
+    margin-bottom: 0.2rem;
+  }
+
+  .notes-pop {
+    width: min(18rem, calc(100vw - 1.5rem));
+    padding: 0.7rem;
+  }
+
+  .notes-pop-where {
+    color: var(--bone-faint);
+    margin-bottom: 0.4rem;
+    max-height: 2.6em;
+    overflow: hidden;
+  }
+
+  .notes-pop textarea {
+    width: 100%;
+    resize: vertical;
+    background: var(--void-raised);
+    color: var(--bone);
+    border: 1px solid var(--void-line);
+    padding: 0.45rem;
+    font: inherit;
+  }
+
+  .notes-pop-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.45rem;
+  }
+
+  .notes-pop-actions button {
+    border: 1px solid var(--void-line);
+    background: transparent;
+    color: var(--bone);
+    font: inherit;
+    padding: 0.3rem 0.5rem;
+    cursor: pointer;
+  }
+
+  .notes-pop-actions button[type='submit'] {
+    color: var(--void);
+    background: var(--gold);
+    border-color: var(--gold);
+  }
+
+  .notes-order {
+    display: flex;
+    gap: 0.3rem;
+    margin-top: 0.35rem;
+  }
+
+  .notes-order button {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--void);
+    background: var(--gold);
+    border-radius: 999px;
+    padding: 0.2em 0.55em;
+  }
+
+  .notes-pin {
+    position: fixed;
+    z-index: 890;
+    width: 1.15rem;
+    height: 1.15rem;
+    margin: -0.2rem 0 0 -0.2rem;
+    border: 0;
+    border-radius: 999px;
+    background: var(--gold);
+    color: var(--void);
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    cursor: pointer;
+  }
+</style>
+
+<script>
+  const STORAGE = 'menghan-review-notes';
+  const ORDER_KEY = 'menghan-review-order';
+  const MODE = 'menghan-notes-mode';
+  const PICK = 'a, button, img, video, figure, h1, h2, h3, p, li, figcaption';
+
+  type Note = {
+    id: string;
+    page: string;
+    selector: string;
+    tag: string;
+    text: string;
+    comment: string;
+    updatedAt: string;
+  };
+
+  const bridge = window as Window & {
+    __notesBound?: boolean;
+    __notesOpen?: (el: HTMLElement) => void;
+    __notesPins?: () => void;
+    __notesHover?: (target: EventTarget | null) => void;
+  };
+
+  function readNotes(): Note[] {
+    try {
+      const raw = localStorage.getItem(STORAGE);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+
+  type OrderEntry = { page: string; group: string; ids: string[] };
+
+  function readOrders(): OrderEntry[] {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(ORDER_KEY) || '[]');
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function writeOrders(entries: OrderEntry[]) {
+    localStorage.setItem(ORDER_KEY, JSON.stringify(entries));
+  }
+
+  function writeNotes(notes: Note[]) {
+    localStorage.setItem(STORAGE, JSON.stringify(notes));
+  }
+
+  function notesRoot(): string {
+    const base = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
+    return `${base}/notes`;
+  }
+
+  function toNotesHref(href: string): string {
+    if (!href || href.startsWith('#') || href.startsWith('mailto:') || /^https?:/i.test(href)) return href;
+    let url: URL;
+    try {
+      url = new URL(href, location.origin);
+    } catch {
+      return href;
+    }
+    if (url.origin !== location.origin) return href;
+    const root = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
+    const notes = notesRoot();
+    let path = url.pathname;
+    if (path === notes || path.startsWith(`${notes}/`)) return href;
+    if (root && path !== root && !path.startsWith(`${root}/`)) return href;
+    const rest = path.slice(root.length);
+    path = rest === '' || rest === '/' ? `${notes}/` : `${notes}${rest.startsWith('/') ? rest : `/${rest}`}`;
+    return path + url.search + url.hash;
+  }
+
+  function rewriteLinks() {
+    document.querySelectorAll<HTMLAnchorElement>('a[href]').forEach((anchor) => {
+      if (anchor.closest('[data-notes-ui]')) return;
+      const next = toNotesHref(anchor.getAttribute('href') || '');
+      if (next && next !== anchor.getAttribute('href')) anchor.setAttribute('href', next);
+    });
+  }
+
+  function cssPath(el: Element): string {
+    const marked = el.closest('[data-note-id]');
+    if (marked) {
+      const id = marked.getAttribute('data-note-id');
+      if (id) return `[data-note-id="${CSS.escape(id)}"]`;
+    }
+    const parts: string[] = [];
+    let node: Element | null = el;
+    while (node && node !== document.body && parts.length < 7) {
+      let part = node.tagName.toLowerCase();
+      if (node.id) {
+        parts.unshift(`#${CSS.escape(node.id)}`);
+        break;
+      }
+      const parentEl: HTMLElement | null = node.parentElement;
+      if (parentEl) {
+        const same = [...parentEl.children].filter((child) => child.tagName === node!.tagName);
+        if (same.length > 1) part += `:nth-of-type(${same.indexOf(node) + 1})`;
+      }
+      parts.unshift(part);
+      node = parentEl;
+    }
+    return parts.join(' > ');
+  }
+
+  function candidate(target: EventTarget | null): HTMLElement | null {
+    if (!(target instanceof Element)) return null;
+    if (target.closest('[data-notes-ui]')) return null;
+    const picked = target.closest(PICK);
+    return (picked as HTMLElement | null) ?? (target as HTMLElement);
+  }
+
+  function excerpt(el: HTMLElement): string {
+    const raw = el.innerText || el.getAttribute('alt') || el.getAttribute('aria-label') || el.tagName;
+    return raw.replace(/\s+/g, ' ').trim().slice(0, 180);
+  }
+
+  function initNotes() {
+    const root = document.querySelector<HTMLElement>('[data-notes-ui]');
+    if (!root) return;
+
+    const annotateBtn = root.querySelector<HTMLButtonElement>('[data-notes-annotate]');
+    const browseBtn = root.querySelector<HTMLButtonElement>('[data-notes-browse]');
+    const countBtn = root.querySelector<HTMLButtonElement>('[data-notes-list-toggle]');
+    const countEl = root.querySelector<HTMLElement>('[data-notes-count]');
+    const exportBtn = root.querySelector<HTMLButtonElement>('[data-notes-export]');
+    const list = root.querySelector<HTMLElement>('[data-notes-list]');
+    const listBody = root.querySelector<HTMLElement>('[data-notes-list-body]');
+    const pop = root.querySelector<HTMLFormElement>('[data-notes-pop]');
+    const where = root.querySelector<HTMLElement>('[data-notes-where]');
+    const input = root.querySelector<HTMLTextAreaElement>('[data-notes-input]');
+    const deleteBtn = root.querySelector<HTMLButtonElement>('[data-notes-delete]');
+    const cancelBtn = root.querySelector<HTMLButtonElement>('[data-notes-cancel]');
+    if (!annotateBtn || !browseBtn || !countBtn || !countEl || !exportBtn || !list || !listBody || !pop || !where || !input || !deleteBtn || !cancelBtn) return;
+
+    rewriteLinks();
+
+    let annotating = sessionStorage.getItem(MODE) === 'annotate';
+    let current: { el: HTMLElement; selector: string } | null = null;
+    let hoverEl: HTMLElement | null = null;
+
+    const paintModes = () => {
+      annotateBtn.classList.toggle('is-on', annotating);
+      browseBtn.classList.toggle('is-on', !annotating);
+      document.documentElement.toggleAttribute('data-notes-annotate', annotating);
+      if (!annotating && hoverEl) {
+        hoverEl.style.outline = '';
+        hoverEl = null;
+      }
+    };
+
+    const clearPins = () => {
+      root.querySelectorAll('.notes-pin').forEach((pin) => pin.remove());
+    };
+
+    const placePins = () => {
+      clearPins();
+      const here = location.pathname;
+      readNotes()
+        .filter((note) => note.page === here)
+        .forEach((note, index) => {
+          const el = document.querySelector(note.selector);
+          if (!el) return;
+          const box = el.getBoundingClientRect();
+          const pin = document.createElement('button');
+          pin.type = 'button';
+          pin.className = 'notes-pin';
+          pin.textContent = String(index + 1);
+          pin.style.left = `${Math.min(window.innerWidth - 24, box.right - 8)}px`;
+          pin.style.top = `${Math.max(8, box.top)}px`;
+          pin.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            openFor(el as HTMLElement);
+          });
+          root.appendChild(pin);
+        });
+    };
+
+    const renderList = () => {
+      const notes = readNotes();
+      countEl.textContent = String(notes.length);
+      listBody.replaceChildren();
+      if (notes.length === 0) {
+        const empty = document.createElement('p');
+        empty.textContent = '…';
+        listBody.appendChild(empty);
+        return;
+      }
+      notes.forEach((note) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'notes-item';
+        const whereLine = document.createElement('small');
+        whereLine.textContent = `${note.page} · ${note.tag}`;
+        const body = document.createElement('span');
+        body.textContent = note.comment;
+        button.append(whereLine, body);
+        button.addEventListener('click', () => {
+          if (note.page !== location.pathname) location.assign(note.page);
+          else {
+            const el = document.querySelector(note.selector);
+            if (el) openFor(el as HTMLElement);
+          }
+        });
+        listBody.appendChild(button);
+      });
+    };
+
+    const closePop = () => {
+      pop.hidden = true;
+      current = null;
+    };
+
+    const openFor = (el: HTMLElement) => {
+      const selector = cssPath(el);
+      current = { el, selector };
+      const existing = readNotes().find((note) => note.page === location.pathname && note.selector === selector);
+      where.textContent = excerpt(el) || el.tagName.toLowerCase();
+      input.value = existing?.comment ?? '';
+      deleteBtn.hidden = !existing;
+      const box = el.getBoundingClientRect();
+      const left = Math.min(window.innerWidth - 300, Math.max(12, box.left));
+      const top = Math.min(window.innerHeight - 220, box.bottom + 8);
+      pop.style.left = `${left}px`;
+      pop.style.top = `${Math.max(12, top)}px`;
+      pop.hidden = false;
+      input.focus();
+    };
+
+    annotateBtn.onclick = () => {
+      annotating = true;
+      sessionStorage.setItem(MODE, 'annotate');
+      paintModes();
+    };
+    browseBtn.onclick = () => {
+      annotating = false;
+      sessionStorage.setItem(MODE, 'browse');
+      closePop();
+      paintModes();
+    };
+    countBtn.onclick = () => {
+      list.hidden = !list.hidden;
+      if (!list.hidden) renderList();
+    };
+    cancelBtn.onclick = closePop;
+    deleteBtn.onclick = () => {
+      if (!current) return;
+      writeNotes(readNotes().filter((note) => !(note.page === location.pathname && note.selector === current!.selector)));
+      closePop();
+      renderList();
+      placePins();
+    };
+    pop.onsubmit = (event) => {
+      event.preventDefault();
+      if (!current) return;
+      const comment = input.value.trim();
+      if (!comment) return;
+      const notes = readNotes().filter((note) => !(note.page === location.pathname && note.selector === current!.selector));
+      notes.push({
+        id: crypto.randomUUID(),
+        page: location.pathname,
+        selector: current.selector,
+        tag: current.el.tagName.toLowerCase(),
+        text: excerpt(current.el),
+        comment,
+        updatedAt: new Date().toISOString(),
+      });
+      writeNotes(notes);
+      closePop();
+      renderList();
+      placePins();
+    };
+    exportBtn.onclick = () => {
+      const notes = readNotes();
+      const orders = readOrders().filter((entry) => entry.ids?.length);
+      const payload = {
+        for: 'Apply each comment to the real portfolio, the pages without /notes. Match the element with page + selector, and use text if the selector misses. orders is the image sequence she chose, per page and group.',
+        exportedAt: new Date().toISOString(),
+        count: notes.length,
+        comments: notes,
+        orders,
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'menghan-notes.json';
+      link.click();
+      URL.revokeObjectURL(link.href);
+    };
+
+    bridge.__notesOpen = openFor;
+    bridge.__notesPins = placePins;
+    bridge.__notesHover = (target) => {
+      if (sessionStorage.getItem(MODE) !== 'annotate') return;
+      const el = candidate(target);
+      if (hoverEl && hoverEl !== el) hoverEl.style.outline = '';
+      hoverEl = el;
+      if (el) el.style.outline = '1px solid #e8c07d';
+    };
+
+    if (!bridge.__notesBound) {
+      bridge.__notesBound = true;
+      document.addEventListener(
+        'click',
+        (event) => {
+          if (sessionStorage.getItem(MODE) !== 'annotate') return;
+          if (event.target instanceof Element && event.target.closest('[data-notes-order]')) return;
+          const el = candidate(event.target);
+          if (!el) return;
+          event.preventDefault();
+          event.stopPropagation();
+          bridge.__notesOpen?.(el);
+        },
+        true
+      );
+      document.addEventListener('mouseover', (event) => bridge.__notesHover?.(event.target));
+      window.addEventListener('scroll', () => bridge.__notesPins?.(), { passive: true });
+      window.addEventListener('resize', () => bridge.__notesPins?.());
+    }
+
+    document.querySelectorAll<HTMLElement>('[data-order-group]').forEach((group) => {
+      const name = group.dataset.orderGroup || '';
+      group.querySelectorAll<HTMLElement>(':scope > [data-note-id]').forEach((item) => {
+        if (item.querySelector('[data-notes-order]')) return;
+        const bar = document.createElement('div');
+        bar.className = 'notes-order';
+        bar.dataset.notesOrder = '1';
+        const earlier = document.createElement('button');
+        earlier.type = 'button';
+        earlier.textContent = '↑';
+        const later = document.createElement('button');
+        later.type = 'button';
+        later.textContent = '↓';
+        const shift = (dir: number) => {
+          const items = [...group.querySelectorAll<HTMLElement>(':scope > [data-note-id]')];
+          const index = items.indexOf(item);
+          const next = index + dir;
+          if (next < 0 || next >= items.length) return;
+          const ids = items.map((node) => node.getAttribute('data-note-id') || '');
+          const swap = ids[index];
+          ids[index] = ids[next];
+          ids[next] = swap;
+          const entries = readOrders().filter((entry) => !(entry.page === location.pathname && entry.group === name));
+          entries.push({ page: location.pathname, group: name, ids });
+          writeOrders(entries);
+          location.reload();
+        };
+        earlier.addEventListener('click', (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          shift(-1);
+        });
+        later.addEventListener('click', (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          shift(1);
+        });
+        bar.append(earlier, later);
+        item.append(bar);
+      });
+    });
+
+    paintModes();
+    renderList();
+    placePins();
+  }
+
+  document.addEventListener('astro:page-load', initNotes);
+</script>

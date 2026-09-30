@@ -1,0 +1,512 @@
+---
+// A genuinely different rhythm from the other three stages: no scroll-driven
+// narrative, no chapters, no color-morphing world. A sketchbook isn't a
+// story — it's loose, disconnected pages, so this is a corkboard you scan
+// at your own pace, not a journey you're carried through.
+//
+// It also gets its own hero rather than the shared cinematic ProjectHero:
+// that template stretches the cover full-bleed across the viewport, which
+// assumes source art shot/exported at a resolution built to support that.
+// A sketchbook cover wasn't — it's a phone-camera-era personal scan, and
+// blowing it up edge to edge just pixelates it. Here it stays modest and
+// framed, like the pinned pages below it, and the low resolution never has
+// to fight the layout.
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { getProjectImage, responsiveWidths } from '@/lib/images';
+import ProjectFooter from './ProjectFooter.astro';
+import I18nText from '@/components/I18nText.astro';
+import { trAll } from '@/i18n/ui';
+import { vividOf } from '@/lib/color';
+import { charReveal } from '@/lib/reveal-text';
+import ProjectIntro from '@/components/ProjectIntro.astro';
+import VideoPlayer from '@/components/VideoPlayer.astro';
+import ScrollCue from '@/components/ScrollCue.astro';
+import '@fontsource-variable/caveat';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+  next: CollectionEntry<'projects'>;
+}
+const { project, next } = Astro.props;
+const { title, subtitle, description, year, roles, category, cover, coverAlt, gallery, accentFrom, accentTo, links, video } = project.data;
+const glow = vividOf(accentFrom, accentTo);
+const coverImg = getProjectImage(project.id, cover);
+const categoryLabel = trAll(`category.${category}` as const);
+
+// deterministic "pinned by hand" jitter — a different seed pattern from the
+// homepage posters so the two never rotate in visible lockstep
+const pins = gallery.map((_, i) => {
+  const seed = (i * 53 + 7) % 100;
+  return {
+    tilt: (((seed % 9) - 4) * 0.9).toFixed(2),
+    pinNudge: Math.round(((seed % 60) - 30) * 2.2),
+  };
+});
+
+// Three real columns, built here rather than with CSS column-count: a
+// CSS multicol item that gets pushed to a fresh column mid-flow
+// (break-inside:avoid still allows that relocation, it just prevents a
+// mid-card split) corrupts getBoundingClientRect() for its own
+// position:absolute descendants in Chromium — the pin-nail measured as
+// literally hundreds of pixels wide and outside its own card, a real
+// rendering bug, not just a cosmetic misalignment. Splitting the gallery
+// into genuine flex columns at build time sidesteps CSS multicol (and
+// the fragmentation it does) entirely; see .board-column below.
+const BOARD_COLS = 3;
+type PinEntry = { item: (typeof gallery)[number]; pin: (typeof pins)[number] };
+function packColumns(entries: PinEntry[]) {
+  const columns = Array.from({ length: BOARD_COLS }, () => [] as PinEntry[]);
+  entries.forEach((entry, i) => columns[i % BOARD_COLS].push(entry));
+  return columns;
+}
+const groups: { label: (typeof gallery)[number]['chapter']; columns: PinEntry[][] }[] = [];
+gallery.forEach((item, i) => {
+  const entry = { item, pin: pins[i] };
+  const last = groups[groups.length - 1];
+  if (last && last.label?.en === item.chapter?.en) last.columns[0].push(entry);
+  else groups.push({ label: item.chapter, columns: [[entry]] });
+});
+groups.forEach((group) => {
+  const flat = group.columns[0];
+  group.columns = packColumns(flat);
+});
+---
+
+<article class:list={['sketchbook', { 'is-single': gallery.length === 0 }]} style={`--mood-a:${accentFrom}; --mood-b:${accentTo}; --mood-glow:${glow};`} data-sketchbook data-reveal-root>
+  <header class="sb-hero">
+    <div class="sb-hero-cover">
+      <span class="pin-nail" aria-hidden="true"></span>
+      <div class="sb-cover-frame">
+        <Image
+          src={coverImg}
+          alt={coverAlt.en}
+          widths={responsiveWidths(coverImg, [320, 480, 640])}
+          sizes="(max-width: 700px) 62vw, 21rem"
+          loading="eager"
+          fetchpriority="high"
+          transition:name={`project-cover-${project.id}`}
+        />
+      </div>
+    </div>
+    <div class="sb-hero-copy">
+      <p class="hero-eyebrow eyebrow">
+        <I18nText {...categoryLabel} /> · {year}
+      </p>
+      <h1 class="sb-hero-title" transition:name={`project-title-${project.id}`} set:html={charReveal(title, 120, 22)} />
+      <p class="sb-hero-subtitle">
+        <I18nText en={subtitle.en} fr={subtitle.fr} zh={subtitle.zh} />
+      </p>
+      <ProjectIntro description={description} links={links} />
+      <ul class="hero-roles">
+        {roles.en.map((_, i) => (
+          <li style={`--i:${i}`}>
+            <I18nText en={roles.en[i]} fr={roles.fr[i]} zh={roles.zh[i]} />
+          </li>
+        ))}
+      </ul>
+    </div>
+    <div class="sb-hero-cue">
+      <ScrollCue />
+    </div>
+  </header>
+
+  {video && (
+    <figure class="sb-clip">
+      <VideoPlayer src={video} />
+    </figure>
+  )}
+
+  {gallery.length > 0 && groups.map((group) => (
+    <section class="sb-group">
+      {group.label && (
+        <h2 class="sb-group-title">
+          <I18nText en={group.label.en} fr={group.label.fr} zh={group.label.zh} />
+        </h2>
+      )}
+      <div class="board" data-board>
+      {group.columns.map((col) => (
+        <div class="board-column">
+          {col.map(({ item, pin }, i) => (
+            <figure class="pin" style={`--tilt:${pin.tilt}deg; --pin-nudge:${pin.pinNudge}px;`} data-pin data-artwork data-note-id={`${project.id}:${item.file}`}>
+              <span class="pin-nail" aria-hidden="true"></span>
+              <button
+                class="pin-flip"
+                type="button"
+                data-pin-flip
+                aria-expanded="false"
+              >
+                <span class="pin-flip-inner">
+                  <span class="pin-face pin-face-front">
+                    <span class="pin-card">
+                      {item.file.endsWith('.gif') ? (
+                        <img
+                          src={getProjectImage(project.id, item.file).src}
+                          alt={item.alt.en}
+                          loading={i < 2 ? 'eager' : 'lazy'}
+                        />
+                      ) : (
+                        <Image
+                          src={getProjectImage(project.id, item.file)}
+                          alt={item.alt.en}
+                          widths={responsiveWidths(getProjectImage(project.id, item.file), [400, 640, 900])}
+                          sizes="(max-width: 700px) 88vw, 34vw"
+                          loading={i < 2 ? 'eager' : 'lazy'}
+                        />
+                      )}
+                    </span>
+                    <span class="pin-mark" aria-hidden="true">+</span>
+                  </span>
+                  <span class="pin-face pin-face-back">
+                    <span class="pin-note">
+                      <I18nText {...(item.caption ?? item.alt)} />
+                    </span>
+                  </span>
+                </span>
+                <span class="visually-hidden">
+                  <I18nText en="Show note" fr="Voir la note" zh="查看笔记" />
+                </span>
+              </button>
+            </figure>
+          ))}
+        </div>
+      ))}
+      </div>
+    </section>
+  ))}
+
+  <ProjectFooter project={project} next={next} />
+</article>
+
+<style>
+  .sb-clip {
+    max-width: 52rem;
+    margin: 0 auto var(--space-5);
+    padding-inline: var(--edge);
+  }
+
+  .sb-group-title {
+    display: table;
+    margin: var(--space-5) auto 0;
+    padding: 0.45em 0.95em;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--void);
+    background: color-mix(in srgb, var(--bone) 86%, var(--mood-a));
+    transform: rotate(-1.2deg);
+  }
+
+  .sb-group .board {
+    padding-top: var(--space-4);
+  }
+
+  .sketchbook {
+    background:
+      repeating-linear-gradient(0deg, transparent 0 39px, color-mix(in srgb, var(--mood-a) 14%, transparent) 39px 40px),
+      color-mix(in srgb, var(--void) 88%, var(--mood-a) 12%);
+  }
+
+  .sb-hero {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(2rem, 6vw, 5rem);
+    min-height: 100svh;
+    padding: var(--space-6) var(--edge) var(--space-5);
+  }
+
+  .sb-hero-cue {
+    position: absolute;
+    left: var(--edge);
+    bottom: var(--space-3);
+  }
+
+  .sb-hero-cover {
+    position: relative;
+    flex: none;
+    width: clamp(11rem, 22vw, 21rem);
+  }
+
+  .sketchbook.is-single .sb-hero-cover {
+    width: min(40rem, 88vw);
+  }
+
+  .sb-cover-frame {
+    overflow: hidden;
+    border-radius: 2px;
+    border: 8px solid var(--bone);
+    box-shadow: 0 1.5rem 3.5rem -1rem rgb(0 0 0 / 65%), 0 0 3rem 0.2rem color-mix(in srgb, var(--mood-glow) 25%, transparent);
+    transform: rotate(-2deg);
+  }
+
+  .sb-cover-frame :global(img) {
+    width: 100%;
+    display: block;
+  }
+
+  .sb-hero-copy {
+    flex: 1 1 24rem;
+    max-width: 34rem;
+  }
+
+  .hero-eyebrow {
+    color: var(--gold);
+    margin-bottom: var(--space-2);
+  }
+
+  .sb-hero-title {
+    font-size: var(--text-2xl);
+    line-height: 0.96;
+  }
+
+  .sb-hero-subtitle {
+    font-size: var(--text-lg);
+    color: var(--bone-soft);
+    margin-top: var(--space-2);
+  }
+
+  .hero-roles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    list-style: none;
+    margin-top: var(--space-3);
+    padding: 0;
+  }
+
+  .hero-roles li {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    border: 1px solid var(--void-line);
+    padding: 0.4em 0.85em;
+    border-radius: 999px;
+  }
+
+  .board {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: center;
+    gap: clamp(1.5rem, 4vw, 3.5rem);
+    padding: var(--space-5) var(--edge) var(--space-6);
+  }
+
+  /* transparent by default (mobile/tablet): every pin still participates
+     directly in .board's own flex-wrap row layout, unchanged from
+     before there were columns at all. Only becomes a real column at the
+     desktop breakpoint below. */
+  .board-column {
+    display: contents;
+  }
+
+  .pin {
+    position: relative;
+    width: min(30rem, 40vw);
+    transform: rotate(var(--tilt));
+    transition: transform 0.5s var(--ease-out-expo);
+  }
+
+  .pin:hover,
+  .pin:focus-within {
+    transform: rotate(0deg) translateY(-0.4rem);
+    z-index: 2;
+  }
+
+  .pin-nail {
+    position: absolute;
+    left: 50%;
+    top: -0.5rem;
+    width: 0.9rem;
+    height: 0.9rem;
+    margin-left: -0.45rem;
+    transform: translateX(var(--pin-nudge, 0px));
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, var(--bone), var(--mood-b) 70%);
+    box-shadow: 0 0.3rem 0.4rem rgb(0 0 0 / 45%);
+    z-index: 1;
+  }
+
+  .sb-hero-cover .pin-nail {
+    left: 50%;
+    margin-left: -0.45rem;
+    transform: none;
+  }
+
+  .pin-flip {
+    all: unset;
+    display: block;
+    width: 100%;
+    perspective: 80rem;
+  }
+
+  .pin-flip-inner {
+    position: relative;
+    display: block;
+    width: 100%;
+    transition: transform 0.7s var(--ease-out-expo);
+    transform-style: preserve-3d;
+  }
+
+  .pin-flip[aria-expanded='true'] .pin-flip-inner {
+    transform: rotateY(180deg);
+  }
+
+  .pin-face {
+    backface-visibility: hidden;
+  }
+
+  .pin-face-front {
+    position: relative;
+    display: block;
+  }
+
+  .pin-face-back {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: rotateY(180deg);
+  }
+
+  .pin-card {
+    display: block;
+    overflow: hidden;
+    border-radius: 2px;
+    box-shadow: 0 1.2rem 2.5rem -1rem rgb(0 0 0 / 60%);
+    border: 6px solid var(--bone);
+  }
+
+  .pin:hover .pin-card,
+  .pin:focus-within .pin-card {
+    box-shadow: 0 1.8rem 3.5rem -1rem rgb(0 0 0 / 70%);
+  }
+
+  .pin-card :global(img) {
+    width: 100%;
+    display: block;
+    filter: saturate(0.95);
+  }
+
+  .pin-mark {
+    position: absolute;
+    right: 0.6rem;
+    bottom: 0.6rem;
+    display: grid;
+    place-items: center;
+    width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 50%;
+    background: var(--bone);
+    color: var(--void);
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    line-height: 1;
+    box-shadow: 0 0.3rem 0.6rem rgb(0 0 0 / 45%), 0 0 0 3px color-mix(in srgb, var(--mood-glow) 55%, transparent);
+    transition: transform 0.4s var(--ease-out-expo), background 0.3s, color 0.3s;
+  }
+
+  .pin-flip[aria-expanded='true'] .pin-mark {
+    transform: rotate(45deg);
+    background: var(--mood-glow);
+    color: var(--void);
+  }
+
+  .pin-note {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 1.6rem;
+    border-radius: 2px;
+    border: 6px solid var(--bone);
+    background:
+      repeating-linear-gradient(0deg, transparent 0 26px, rgb(0 0 0 / 6%) 26px 27px),
+      color-mix(in srgb, var(--bone) 93%, var(--mood-a) 7%);
+    box-shadow: 0 1.2rem 2.5rem -1rem rgb(0 0 0 / 60%);
+    color: #2a2420;
+    font-family: 'Caveat Variable', cursive;
+    font-size: clamp(1.3rem, 1.1rem + 0.8vw, 1.7rem);
+    line-height: 1.25;
+  }
+
+  :lang(zh) .pin-note {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: clamp(1.05rem, 0.95rem + 0.4vw, 1.25rem);
+  }
+
+  @media (max-width: 700px) {
+    .sb-hero {
+      flex-direction: column;
+      text-align: center;
+      padding-top: var(--space-5);
+    }
+
+    .hero-roles {
+      justify-content: center;
+    }
+
+    .pin {
+      width: 80vw;
+    }
+  }
+
+  /* the flex-wrap board was fine at phone/tablet width, but on a wide
+     desktop it just centers loose, unevenly-filled rows — one straggler
+     pin alone on its own row, big dead margins either side. A real
+     column-packed corkboard instead, wide screens only.
+     Real flex columns (see boardColumns in the frontmatter), not
+     CSS column-count — a multicol item that Chrome relocates to a fresh
+     column mid-flow (break-inside:avoid only prevents a mid-card split,
+     not the relocation itself) corrupts getBoundingClientRect() for its
+     own position:absolute descendants, which is what was actually
+     misplacing the pin-nails: not a cosmetic offset but a genuine
+     Chromium rendering bug, confirmed by measuring nails reported as
+     hundreds of pixels wide and sitting outside their own card. */
+  @media (min-width: 1100px) {
+    .board {
+      align-items: flex-start;
+    }
+
+    .board-column {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 0;
+      gap: clamp(2rem, 3vw, 3.5rem);
+    }
+
+    .pin {
+      width: 100%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pin,
+    .pin-flip-inner,
+    .pin-mark {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  function initPinFlip() {
+    document.querySelectorAll<HTMLButtonElement>('[data-pin-flip]').forEach((btn) => {
+      if (btn.dataset.pinFlipInit === '1') return;
+      btn.dataset.pinFlipInit = '1';
+      btn.addEventListener('click', () => {
+        const open = btn.getAttribute('aria-expanded') === 'true';
+        btn.setAttribute('aria-expanded', String(!open));
+      });
+    });
+  }
+
+  document.addEventListener('astro:page-load', initPinFlip);
+</script>

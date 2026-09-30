@@ -1,0 +1,744 @@
+---
+// The lantern-string layout was worth keeping — but hanging all 4 images
+// as one flat, undifferentiated row on an empty gradient is why it read
+// as sad and empty. Two fixes, both about actually using what's already
+// true of this project: the gallery data already separates "Characters"
+// from "World" (with World's own three beats moving from a crowded,
+// lit street to a quieter corner to the crowd thinning as night
+// deepens) but the old template never read that field at all. This
+// rebuild groups by chapter for real — a featured single portrait for
+// Characters, a row for World — and gives the World row an actual
+// environment: a jagged temple-roof skyline silhouette, a crowd strip
+// that visibly disperses on scroll, drifting sky lanterns, occasional
+// firework bursts, and a sky that darkens from dusk to night as you
+// move through it. The street empties out because you're watching it
+// empty out, not because the page is undecorated.
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { getProjectImage, responsiveWidths } from '@/lib/images';
+import ProjectFooter from './ProjectFooter.astro';
+import ScrollCue from '@/components/ScrollCue.astro';
+import I18nText from '@/components/I18nText.astro';
+import { trAll } from '@/i18n/ui';
+import { vividOf } from '@/lib/color';
+import { charReveal } from '@/lib/reveal-text';
+import ProjectIntro from '@/components/ProjectIntro.astro';
+interface Props {
+  project: CollectionEntry<'projects'>;
+  next: CollectionEntry<'projects'>;
+}
+const { project, next } = Astro.props;
+const { title, subtitle, description, year, roles, category, client, cover, coverAlt, gallery, accentFrom, accentTo, links } = project.data;
+const glow = vividOf(accentFrom, accentTo);
+const coverImg = getProjectImage(project.id, cover);
+const categoryLabel = trAll(`category.${category}` as const);
+const clientLabel = trAll(category === 'commission' ? 'project.client' : 'project.at');
+
+// group the gallery by its `chapter` field, preserving order; projects
+// with no chapter data collapse into one unnamed group automatically
+type GalleryItem = (typeof gallery)[number];
+const chapterGroups: { label: GalleryItem['chapter']; items: GalleryItem[] }[] = [];
+for (const item of gallery) {
+  const prev = chapterGroups[chapterGroups.length - 1];
+  const same = prev && prev.label?.en === item.chapter?.en;
+  if (prev && same) {
+    prev.items.push(item);
+  } else {
+    chapterGroups.push({ label: item.chapter, items: [item] });
+  }
+}
+
+const fireflies = Array.from({ length: 22 }, (_, i) => ({
+  left: `${(i * 41) % 100}%`,
+  top: `${(i * 67) % 100}%`,
+  delay: `${(i % 9) * 0.9}s`,
+  dur: `${7 + (i % 6)}s`,
+  size: 2 + (i % 3),
+}));
+
+const skyLanterns = Array.from({ length: 9 }, (_, i) => ({
+  left: `${(i * 53 + 6) % 100}%`,
+  delay: `${(i % 6) * 2.3}s`,
+  dur: `${18 + (i % 5) * 3}s`,
+  size: 1 + (i % 3) * 0.3,
+}));
+
+const fireworks = Array.from({ length: 5 }, (_, i) => ({
+  left: `${16 + ((i * 137) % 64)}%`,
+  top: `${6 + ((i * 71) % 26)}%`,
+  delay: `${i * 3.6 + 1.4}s`,
+  gold: i % 2 === 0,
+}));
+
+const crowd = Array.from({ length: 28 }, (_, i) => {
+  const seed = (i * 31 + 11) % 100;
+  return {
+    left: `${(i / 28) * 100 + ((seed % 5) - 2)}%`,
+    h: 0.55 + (seed % 5) * 0.12,
+    w: 0.28 + (seed % 3) * 0.07,
+    dropout: 20 + (seed % 72),
+  };
+});
+
+// jagged temple-roofline silhouette — occasional tall peaked-roof corners
+function rooflinePath(): string {
+  const pts = ['0% 100%'];
+  const steps = 18;
+  for (let i = 0; i <= steps; i++) {
+    const x = (i / steps) * 100;
+    const seed = (i * 53 + 17) % 100;
+    const peak = i % 5 === 2;
+    const y = peak ? 26 + (seed % 12) : 60 + (seed % 26);
+    pts.push(`${x}% ${y}%`);
+  }
+  pts.push('100% 100%');
+  return `polygon(${pts.join(', ')})`;
+}
+const roofline = rooflinePath();
+---
+
+<article class="reel" style={`--mood-a:${accentFrom}; --mood-b:${accentTo}; --mood-glow:${glow};`} data-reel data-reveal-root>
+  <div class="sky" data-sky aria-hidden="true"></div>
+  <div class="fireflies" aria-hidden="true">
+    {fireflies.map((f) => (
+      <span
+        class="firefly"
+        style={`left:${f.left}; top:${f.top}; animation-delay:${f.delay}; animation-duration:${f.dur}; width:${f.size}px; height:${f.size}px;`}
+      ></span>
+    ))}
+  </div>
+  <div class="sky-lanterns" aria-hidden="true">
+    {skyLanterns.map((s) => (
+      <span
+        class="sky-lantern"
+        style={`left:${s.left}; animation-delay:${s.delay}; animation-duration:${s.dur}; --scale:${s.size};`}
+      ><i></i></span>
+    ))}
+  </div>
+  <div class="fireworks" aria-hidden="true">
+    {fireworks.map((f) => (
+      <span class={`firework ${f.gold ? 'is-gold' : ''}`} style={`left:${f.left}; top:${f.top}; animation-delay:${f.delay};`}>
+        {Array.from({ length: 10 }, (_, k) => (
+          <i style={`--a:${(k / 10) * 360}deg`}></i>
+        ))}
+      </span>
+    ))}
+  </div>
+  <div class="roofline" style={`clip-path:${roofline};`} aria-hidden="true"></div>
+
+  <header class="ln-hero">
+    <div class="ln-hero-glow" aria-hidden="true"></div>
+    <div class="ln-cover">
+      <span class="lantern-cord" aria-hidden="true"></span>
+      <div class="lantern-frame ln-cover-frame">
+        <Image
+          src={coverImg}
+          alt={coverAlt.en}
+          widths={responsiveWidths(coverImg, [420, 640, 900])}
+          sizes="(max-width: 700px) 70vw, 22rem"
+          loading="eager"
+          fetchpriority="high"
+          transition:name={`project-cover-${project.id}`}
+        />
+      </div>
+    </div>
+    <div class="ln-copy">
+      <p class="hero-eyebrow eyebrow">
+        <I18nText {...categoryLabel} /> · {year}{client ? (
+          <>
+            {' · '}<I18nText {...clientLabel} /> {client}
+          </>
+        ) : null}
+      </p>
+      <h1 class="ln-title" transition:name={`project-title-${project.id}`} set:html={charReveal(title, 120, 22)} />
+      <p class="ln-subtitle">
+        <I18nText en={subtitle.en} fr={subtitle.fr} zh={subtitle.zh} />
+      </p>
+      <ProjectIntro description={description} links={links} />
+      <ul class="hero-roles">
+        {roles.en.map((_, i) => (
+          <li style={`--i:${i}`}>
+            <I18nText en={roles.en[i]} fr={roles.fr[i]} zh={roles.zh[i]} />
+          </li>
+        ))}
+      </ul>
+    </div>
+    <div class="ln-cue">
+      <ScrollCue />
+    </div>
+
+    <div class="crowd-strip" data-crowd aria-hidden="true">
+      {crowd.map((c) => (
+        <span class="crowd-figure" style={`left:${c.left}; height:${c.h}rem; width:${c.w}rem;`} data-dropout={c.dropout}></span>
+      ))}
+    </div>
+  </header>
+
+  <!-- third attempt at this gallery, on purpose a completely different
+       object from a hanging string of lanterns or a plaque wall: 月洞门
+       (moon gates), the round doorways cut into garden walls you walk
+       through one after another — here, one grand gate for the single
+       "Characters" portrait, then a path of smaller gates for "World",
+       each a little dimmer than the last as the night goes on. -->
+  <div class="chapters">
+    {chapterGroups.map((group) => (
+      group.items.length === 1 ? (
+        <section class="chapter chapter-grand">
+          {group.label && (
+            <p class="chapter-banner"><I18nText en={group.label.en} fr={group.label.fr} zh={group.label.zh} /></p>
+          )}
+          {group.items.map((item) => (
+            <figure class="moon-gate is-grand" data-artwork data-note-id={`${project.id}:${item.file}`}>
+              <span class="gate-lintel" aria-hidden="true"><i></i></span>
+              <div class="gate-frame">
+                <span class="gate-ring" aria-hidden="true"></span>
+                <div class="gate-opening">
+                  <Image
+                    src={getProjectImage(project.id, item.file)}
+                    alt={item.alt.en}
+                    widths={responsiveWidths(getProjectImage(project.id, item.file), [480, 720, 1000])}
+                    sizes="(max-width: 700px) 78vw, 30vw"
+                    loading="lazy"
+                  />
+                </div>
+              </div>
+              {item.caption && (
+                <figcaption><I18nText en={item.caption.en} fr={item.caption.fr} zh={item.caption.zh} /></figcaption>
+              )}
+            </figure>
+          ))}
+        </section>
+      ) : (
+        <section class="chapter chapter-path" data-night-row={group.label ? 'true' : undefined}>
+          {group.label && (
+            <p class="chapter-banner"><I18nText en={group.label.en} fr={group.label.fr} zh={group.label.zh} /></p>
+          )}
+          <div class="gate-path">
+            {group.items.map((item, idx) => (
+              <figure class="moon-gate" style={`--row-i:${idx}; --side:${idx % 2 === 0 ? -1 : 1};`} data-plaque data-artwork data-note-id={`${project.id}:${item.file}`}>
+                <span class="gate-lintel" aria-hidden="true"><i></i></span>
+                <div class="gate-frame">
+                  <span class="gate-ring" aria-hidden="true"></span>
+                  <div class="gate-opening">
+                    <Image
+                      src={getProjectImage(project.id, item.file)}
+                      alt={item.alt.en}
+                      widths={responsiveWidths(getProjectImage(project.id, item.file), [400, 640, 900])}
+                      sizes="(max-width: 700px) 62vw, 22vw"
+                      loading={idx < 2 ? 'eager' : 'lazy'}
+                    />
+                  </div>
+                </div>
+                {item.caption && (
+                  <figcaption><I18nText en={item.caption.en} fr={item.caption.fr} zh={item.caption.zh} /></figcaption>
+                )}
+              </figure>
+            ))}
+          </div>
+        </section>
+      )
+    ))}
+  </div>
+
+  <ProjectFooter project={project} next={next} />
+</article>
+
+<style>
+  .reel {
+    position: relative;
+    background: var(--void);
+  }
+
+  .sky {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 70% 40% at 20% 15%, color-mix(in srgb, var(--mood-a) 22%, transparent), transparent 70%),
+      radial-gradient(ellipse 70% 40% at 85% 55%, color-mix(in srgb, var(--mood-b) 14%, transparent), transparent 70%),
+      linear-gradient(180deg, color-mix(in srgb, var(--mood-a) 16%, var(--void)), var(--void) 55%);
+    transition: background 1.5s;
+  }
+
+  .fireflies,
+  .sky-lanterns,
+  .fireworks {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .firefly {
+    position: absolute;
+    border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 6px 1.5px color-mix(in srgb, var(--gold) 75%, transparent);
+    opacity: 0;
+    animation: firefly-drift ease-in-out infinite;
+  }
+
+  @keyframes firefly-drift {
+    0% { opacity: 0; transform: translate(0, 0); }
+    15% { opacity: 0.9; }
+    50% { transform: translate(1.2rem, -1.6rem); }
+    85% { opacity: 0.7; }
+    100% { opacity: 0; transform: translate(-0.6rem, -3rem); }
+  }
+
+  /* small paper sky-lanterns drifting up the whole page, a night-market
+     detail beyond the wire-strung gallery lanterns */
+  .sky-lantern {
+    position: absolute;
+    bottom: -3rem;
+    display: block;
+    width: 0.55rem;
+    height: 0.7rem;
+    transform: scale(var(--scale, 1));
+    animation: sky-lantern-rise linear infinite;
+  }
+
+  .sky-lantern i {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 30% 30% 40% 40%;
+    background: linear-gradient(180deg, #ffd79a, var(--gold));
+    box-shadow: 0 0 0.6rem 0.15rem color-mix(in srgb, var(--gold) 65%, transparent);
+    opacity: 0.85;
+  }
+
+  @keyframes sky-lantern-rise {
+    0% { transform: translate(0, 0) scale(var(--scale, 1)); opacity: 0; }
+    10% { opacity: 0.85; }
+    50% { transform: translate(1.4rem, -50svh) scale(var(--scale, 1)); }
+    90% { opacity: 0.7; }
+    100% { transform: translate(-1rem, -105svh) scale(var(--scale, 1)); opacity: 0; }
+  }
+
+  /* sparse firework bursts high in the sky */
+  .firework {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    opacity: 0;
+    animation: firework-burst 5.5s ease-out infinite;
+  }
+
+  .firework i {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--mood-a);
+    transform: rotate(var(--a)) translateY(0);
+    animation: firework-spark 5.5s ease-out infinite;
+    animation-delay: inherit;
+  }
+
+  .firework.is-gold i {
+    background: var(--gold);
+  }
+
+  @keyframes firework-burst {
+    0%, 4% { opacity: 0; }
+    5% { opacity: 1; }
+    22% { opacity: 0; }
+    100% { opacity: 0; }
+  }
+
+  @keyframes firework-spark {
+    0%, 4% { transform: rotate(var(--a)) translateY(0); opacity: 0; }
+    5% { opacity: 1; }
+    22% { transform: rotate(var(--a)) translateY(-1.8rem); opacity: 0; }
+    100% { opacity: 0; }
+  }
+
+  /* the mountain/temple skyline: was near-black on a near-black void
+     (#0a0908 on #09080a) and only positioned inside the hero, so it read
+     as invisible except for a brief moment mid-scroll, then scrolled out
+     of the document entirely once the hero passed — she'd never see it
+     again for the rest of the page. Now fixed to the viewport (a real
+     backdrop for the whole scroll, gates included) and mixed with the
+     project's own mood color for actual contrast against the void. */
+  .roofline {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60vh;
+    z-index: 0;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--mood-b) 48%, #1c1712) 0%,
+      color-mix(in srgb, var(--mood-b) 26%, #0e0b09) 58%,
+      transparent 100%
+    );
+    pointer-events: none;
+  }
+
+  @media (max-width: 700px) {
+    .roofline { display: none; }
+  }
+
+  .crowd-strip {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2.2rem;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .crowd-figure {
+    position: absolute;
+    bottom: 0;
+    border-radius: 50% 50% 15% 15%;
+    background: #08070a;
+    opacity: 0.8;
+    transition: opacity 1.8s ease-out;
+  }
+
+  @media (max-width: 700px) {
+    .crowd-strip { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .firefly { animation: none; opacity: 0.35; }
+    .sky-lantern { animation: none; opacity: 0; }
+    .firework, .firework i { animation: none; opacity: 0; }
+  }
+
+  .ln-hero {
+    position: relative;
+    z-index: 2;
+    min-height: 100svh;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(2rem, 6vw, 5rem);
+    padding: var(--space-6) var(--edge) var(--space-5);
+    overflow: hidden;
+  }
+
+  .ln-hero-glow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 45% at 50% 35%, color-mix(in srgb, var(--mood-a) 20%, transparent), transparent 70%);
+    pointer-events: none;
+  }
+
+  .ln-cover {
+    position: relative;
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: clamp(11rem, 22vw, 22rem);
+  }
+
+  .ln-cover-frame {
+    width: 100%;
+  }
+
+  .ln-copy {
+    position: relative;
+    flex: 1 1 24rem;
+    max-width: 32rem;
+  }
+
+  .hero-eyebrow {
+    color: var(--gold);
+    margin-bottom: var(--space-2);
+  }
+
+  .ln-title {
+    font-size: var(--text-2xl);
+    line-height: 0.96;
+  }
+
+  .ln-subtitle {
+    font-size: var(--text-lg);
+    color: var(--bone-soft);
+    margin-top: var(--space-2);
+  }
+
+  .hero-roles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    list-style: none;
+    margin-top: var(--space-3);
+    padding: 0;
+  }
+
+  .hero-roles li {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    border: 1px solid var(--void-line);
+    padding: 0.4em 0.85em;
+    border-radius: 999px;
+  }
+
+  .ln-cue {
+    position: absolute;
+    left: var(--edge);
+    bottom: var(--space-3);
+  }
+
+  .chapters {
+    position: relative;
+    z-index: 2;
+  }
+
+  .chapter {
+    padding: var(--space-6) var(--edge);
+  }
+
+  .chapter-banner {
+    /* both .chapter-feature and .chapter-wall already center their
+       children via flex align-items:center — this used to ALSO carry
+       its own left:50%/translateX(-50%) centering trick (built for a
+       plain block-flow parent), which stacked on top of the flex
+       centering and shoved the banner far to the right */
+    display: inline-block;
+    margin: 0 auto var(--space-5);
+    padding: 0.4em 1.3em;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--bone);
+    background: color-mix(in srgb, #8a1f1f 55%, var(--void-raised));
+    clip-path: polygon(4% 0%, 96% 0%, 100% 50%, 96% 100%, 4% 100%, 0% 50%);
+  }
+
+  .lantern-cord {
+    width: 1px;
+    height: 1.6rem;
+    background: var(--void-line);
+  }
+
+  .lantern-frame {
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+    border-radius: 999px / 12%;
+    box-shadow: 0 1.5rem 3rem -1.2rem rgb(0 0 0 / 65%), 0 0 0 1px rgb(255 255 255 / 6%);
+  }
+
+  .lantern-frame :global(img) {
+    width: 100%;
+    display: block;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    filter: saturate(1.05) brightness(0.96);
+  }
+
+  /* ---- moon gates (月洞门): the round doorways cut into garden walls,
+     walked through one after another — a third, deliberately different
+     object from both the hanging-lantern string and the plaque wall
+     that came before it. One grand gate for the solo "Characters"
+     portrait; a path of smaller gates, each a little dimmer than the
+     last, for "World". ---- */
+  .chapter-grand,
+  .chapter-path {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* a path, not a row: with as few as three images for "World" a
+     wrapped horizontal row left visible empty space and read as sparse.
+     Walking through gates one after another reads truer stacked
+     vertically, each stepping slightly left or right of the last like an
+     actual garden path, joined by a single thread running down the
+     middle — and each gate can afford to be much bigger with only one
+     per line. */
+  .gate-path {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(2.5rem, 7vw, 5rem);
+  }
+
+  .gate-path::before {
+    content: '';
+    position: absolute;
+    top: 1rem;
+    bottom: 1rem;
+    left: 50%;
+    width: 1px;
+    background: linear-gradient(180deg, transparent, var(--void-line) 15%, var(--void-line) 85%, transparent);
+    z-index: -1;
+  }
+
+  .moon-gate {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: min(46rem, 88vw);
+    transform: translateX(calc(var(--side, 0) * clamp(1rem, 7vw, 4.5rem)));
+    filter: brightness(calc(1 - var(--row-i, 0) * 0.11));
+    transition: filter 0.4s;
+  }
+
+  .moon-gate.is-grand {
+    width: min(52rem, 92vw);
+  }
+
+  .gate-lintel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 1.6rem;
+  }
+
+  .gate-lintel::before {
+    content: '';
+    width: 1px;
+    height: 0.8rem;
+    background: var(--void-line);
+  }
+
+  .gate-lintel i {
+    display: block;
+    width: 0.5rem;
+    height: 0.6rem;
+    border-radius: 30% 30% 40% 40%;
+    background: linear-gradient(180deg, #ffd79a, var(--gold));
+    box-shadow: 0 0 0.5rem 0.1rem color-mix(in srgb, var(--gold) 60%, transparent);
+  }
+
+  .gate-frame {
+    position: relative;
+    width: 100%;
+  }
+
+  .gate-ring {
+    display: none;
+  }
+
+  .gate-opening {
+    position: relative;
+    overflow: hidden;
+    border-radius: 2px;
+    background: rgb(0 0 0 / 35%);
+    box-shadow: 0 1.5rem 3rem -1rem rgb(0 0 0 / 65%);
+  }
+
+  .gate-opening :global(img) {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    cursor: zoom-in;
+  }
+
+  .moon-gate:hover .gate-opening :global(img),
+  .moon-gate:focus-within .gate-opening :global(img) {
+    filter: none;
+  }
+
+  .moon-gate:hover,
+  .moon-gate:focus-within {
+    filter: brightness(1);
+  }
+
+  .moon-gate figcaption {
+    margin-top: var(--space-2);
+    font-size: var(--text-xs);
+    color: var(--bone-faint);
+    text-align: center;
+    max-width: 22ch;
+  }
+
+  @media (max-width: 700px) {
+    .moon-gate {
+      width: 72vw;
+      /* the left/right meander only reads as a path with room either
+         side — on a narrow viewport it just risks overflow */
+      transform: none;
+    }
+    .moon-gate.is-grand {
+      width: 82vw;
+    }
+    .gate-path::before {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gate-opening :global(img) {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  function initReel() {
+    const roots = document.querySelectorAll<HTMLElement>('[data-reel]');
+    if (!roots.length) return;
+    gsap.registerPlugin(ScrollTrigger);
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    roots.forEach((root) => {
+      if (root.dataset.reelInit === '1') return;
+      root.dataset.reelInit = '1';
+
+      const nightRow = root.querySelector<HTMLElement>('[data-night-row]');
+      const sky = root.querySelector<HTMLElement>('[data-sky]');
+      const crowdFigures = Array.from(root.querySelectorAll<HTMLElement>('[data-crowd] [data-dropout]'));
+
+      if (!nightRow || reduced) {
+        crowdFigures.forEach((el) => {
+          el.style.opacity = '0.35';
+        });
+        return;
+      }
+
+      gsap.to(root, {
+        '--night-progress': 100,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: nightRow,
+          start: 'top 80%',
+          end: 'bottom 40%',
+          scrub: 0.6,
+        },
+        onUpdate: function () {
+          const p = gsap.getProperty(root, '--night-progress') as number;
+          if (sky) {
+            sky.style.background = `
+              radial-gradient(ellipse 70% 40% at 20% 15%, color-mix(in srgb, var(--mood-a) ${22 - p * 0.15}%, transparent), transparent 70%),
+              radial-gradient(ellipse 70% 40% at 85% 55%, color-mix(in srgb, var(--mood-b) 14%, transparent), transparent 70%),
+              linear-gradient(180deg, color-mix(in srgb, var(--mood-a) ${16 - p * 0.13}%, var(--void)), var(--void) 55%)
+            `;
+          }
+          crowdFigures.forEach((el) => {
+            const dropout = Number(el.dataset.dropout ?? 100);
+            el.style.opacity = p > dropout ? '0' : '0.8';
+          });
+        },
+      });
+    });
+  }
+
+  document.addEventListener('astro:page-load', () => {
+    initReel();
+    requestAnimationFrame(() => ScrollTrigger.refresh());
+  });
+
+  document.addEventListener('astro:before-swap', () => {
+    ScrollTrigger.getAll().forEach((t) => t.kill());
+  });
+</script>

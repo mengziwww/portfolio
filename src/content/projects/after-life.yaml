@@ -1,0 +1,62 @@
+title: Life After
+year: 2025
+category: commission
+template: journey
+order: 6
+size: large
+accentFrom: "#3D4A45"
+accentTo: "#7B4FFF"
+client: New Session
+roles:
+  en: [Director, Concept, Background]
+  fr: [Réalisation, Concept, Décors]
+  zh: [导演, 概念设计, 背景美术]
+subtitle:
+  en: an ad for New Session
+  fr: une pub pour New Session
+  zh: 给 New Session 做的广告
+description:
+  en: >-
+    I directed this ad, from the concept through to the backgrounds.
+    It starts in a wasteland of scrap and wire, then opens onto something
+    brighter. Click an image to see it in its original colors.
+  fr: >-
+    J'ai réalisé cette pub, du concept jusqu'aux décors. Ça commence
+    dans un terrain vague de ferraille et de fil de fer, puis ça s'ouvre
+    sur quelque chose de plus clair. Clique une image pour la voir dans
+    ses couleurs d'origine.
+  zh: >-
+    这支广告我导演的，从概念做到背景。影片从废铁和铁丝的荒地开始，
+    再打开到更亮的地方。点开图片，可以看到原来的颜色。
+links:
+  - href: https://b23.tv/V1WT7tL
+    label:
+      en: watch the film
+      fr: voir le film
+      zh: 看成片
+cover: rebirth-01.png
+coverAlt:
+  en: Two glowing blue hands cradle an iridescent, rainbow-lit orb against a starry cosmic sky
+  fr: Deux mains bleues lumineuses tiennent un orbe irisé sous un ciel cosmique étoilé
+  zh: 两只发光的蓝色手掌捧着一颗虹彩流光的宝珠，背景是繁星点点的宇宙夜空
+gallery:
+  - file: wasteland-01.png
+    alt:
+      en: Two figures drag a wrapped, wire-bound machine through a junk-strewn shantytown
+      fr: Deux silhouettes traînent une machine ficelée de fils à travers un bidonville jonché de débris
+      zh: 两个身影拖着一台缠满铁丝的机器，穿过堆满废弃杂物的贫民区
+  - file: wasteland-02.png
+    alt:
+      en: A hooded figure recoils on a rail track beside a strange spinning cart rigged with tools
+      fr: Une silhouette encapuchonnée recule sur une voie ferrée près d'un étrange chariot tournoyant
+      zh: 一个戴兜帽的身影在铁轨旁惊退，旁边是一辆装满工具、不断旋转的怪异推车
+  - file: wasteland-03.png
+    alt:
+      en: Concept study of the wasteland's washed-out, wire-choked palette
+      fr: Étude de concept sur la palette délavée et enchevêtrée de fils du monde en ruine
+      zh: 废土世界褪色调、铁丝缠绕氛围的概念色彩研究
+  - file: rebirth-02.png
+    alt:
+      en: A second study of the glowing orb, held aloft as birds cross a violet sky
+      fr: Une autre étude de l'orbe lumineux, tenu en l'air tandis que des oiseaux traversent un ciel violet
+      zh: 另一张发光宝珠的概念稿，飞鸟掠过紫色天空，宝珠被高高托起

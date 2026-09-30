@@ -1,0 +1,100 @@
+---
+// Not a ring anymore — a precise dot that leaves a short trail of fading
+// ink behind it as it moves, like a brush tip. A static outline was easy
+// to lose against busy artwork; a trail occupies more of the screen and
+// reads as a deliberate mark rather than a decoration. The OS cursor only
+// disappears once this is confirmed live (see the has-custom-cursor class
+// below): if the script never runs, the native pointer is exactly what
+// was already there, never nothing.
+---
+
+<div class="cursor" data-cursor aria-hidden="true">
+  <div class="cursor-halo" data-cursor-halo></div>
+  <div class="cursor-dot" data-cursor-dot></div>
+</div>
+
+<script>
+  import { gsap } from 'gsap';
+
+  function initCursor() {
+    const cursor = document.querySelector<HTMLElement>('[data-cursor]');
+    const dot = cursor?.querySelector<HTMLElement>('[data-cursor-dot]');
+    if (!cursor || !dot || cursor.dataset.cursorInit === '1') return;
+    if (window.matchMedia('(hover: none), (pointer: coarse)').matches) return;
+    try {
+      if (localStorage.getItem('menghan-cursor') === 'system') return;
+    } catch {
+      /* private mode */
+    }
+    const motion = document.documentElement.dataset.motion;
+    if (motion === 'still') return;
+    cursor.dataset.cursorInit = '1';
+    document.documentElement.classList.add('has-custom-cursor');
+
+    const moveX = gsap.quickTo(cursor, 'x', { duration: 0.08, ease: 'none' });
+    const moveY = gsap.quickTo(cursor, 'y', { duration: 0.08, ease: 'none' });
+
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let lastTrailAt = 0;
+    const MAX_TRAIL = 14;
+    let trailCount = 0;
+
+    function spawnTrail(x: number, y: number) {
+      if (reduced) return;
+      const now = performance.now();
+      if (now - lastTrailAt < 40) return;
+      lastTrailAt = now;
+      if (trailCount >= MAX_TRAIL) return;
+      trailCount++;
+      const mark = document.createElement('span');
+      mark.className = 'cursor-trail';
+      mark.style.left = `${x}px`;
+      mark.style.top = `${y}px`;
+      mark.addEventListener(
+        'animationend',
+        () => {
+          mark.remove();
+          trailCount--;
+        },
+        { once: true }
+      );
+      document.body.appendChild(mark);
+    }
+
+    window.addEventListener('mousemove', (e) => {
+      moveX(e.clientX);
+      moveY(e.clientY);
+      spawnTrail(e.clientX, e.clientY);
+      cursor.classList.add('is-active');
+    });
+
+    const hoverables = 'a, button, [data-cursor-hover]';
+    // Native pointer on language, social icons and video controls. The custom
+    // dot sits on top of those and makes the real controls hard to use.
+    const native = 'video, .lang-switch, .social, .socials, .gear, .settings, .perf, [data-mb-stage]';
+    document.addEventListener('mouseover', (e) => {
+      const target = e.target as HTMLElement;
+      if (target?.closest?.(native)) {
+        cursor.classList.remove('is-active');
+        document.documentElement.classList.add('is-native-cursor');
+        return;
+      }
+      document.documentElement.classList.remove('is-native-cursor');
+      if (target?.closest?.(hoverables)) cursor.classList.add('is-hovering');
+    });
+    document.addEventListener('mouseout', (e) => {
+      const target = e.target as HTMLElement;
+      if (target?.closest?.(native)) {
+        document.documentElement.classList.remove('is-native-cursor');
+        cursor.classList.add('is-active');
+      }
+      if (target?.closest?.(hoverables)) cursor.classList.remove('is-hovering');
+    });
+
+    document.addEventListener('mousedown', () => cursor.classList.add('is-down'));
+    document.addEventListener('mouseup', () => cursor.classList.remove('is-down'));
+    document.addEventListener('mouseleave', () => cursor.classList.remove('is-active'));
+  }
+
+  document.addEventListener('astro:page-load', initCursor);
+</script>

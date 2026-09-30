@@ -1,0 +1,25 @@
+---
+// Renders all three languages inline; global.css shows only the active one
+// via an attribute selector on <html data-lang>, so switching language is a
+// single attribute write — no re-render, no flash, no JS text-replacement.
+interface Props {
+  en: string;
+  fr: string;
+  zh: string;
+  block?: boolean; // use display:block spans instead of inline (for whole paragraphs)
+}
+const { en, fr, zh, block = false } = Astro.props;
+const attr = block ? 'data-lang-block' : 'data-lang';
+---
+
+{block ? (
+  <>
+    <span {...{ [attr]: 'en' }}>{en}</span>
+    <span {...{ [attr]: 'fr' }}>{fr}</span>
+    <span {...{ [attr]: 'zh' }}>{zh}</span>
+  </>
+) : (
+  <>
+    <span data-lang="en">{en}</span><span data-lang="fr">{fr}</span><span data-lang="zh">{zh}</span>
+  </>
+)}

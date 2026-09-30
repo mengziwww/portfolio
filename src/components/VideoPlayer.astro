@@ -1,0 +1,812 @@
+---
+// One film player for every video on the site: a projector gate with
+// sprocket edges and hand-wired controls. The native <video controls>
+// bar never shows, except as a last resort if playback is refused.
+import { withBase } from '@/lib/projects';
+
+interface Props {
+  src: string;
+  poster?: string;
+  preload?: 'metadata' | 'auto';
+  class?: string;
+}
+const { src, poster, preload = 'metadata', class: className } = Astro.props;
+const speeds = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
+---
+
+<div class:list={['film-frame', className]} data-video-player tabindex="-1">
+  <span class="sprockets" aria-hidden="true"></span>
+  <div class="film-gate">
+    <video
+      class="vp-video"
+      data-vp-video
+      src={withBase(src)}
+      poster={poster ? withBase(poster) : undefined}
+      preload={preload}
+      playsinline
+    ></video>
+    <button type="button" class="vp-veil" data-vp-veil aria-label="Play">
+      <svg class="vp-veil-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor" /></svg>
+      <span class="vp-spinner" aria-hidden="true"></span>
+    </button>
+  </div>
+  <span class="sprockets" aria-hidden="true"></span>
+  <div class="vp-controls" data-vp-controls>
+    <button type="button" class="vp-btn" data-vp-play aria-label="Play">
+      <svg class="icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor" /></svg>
+      <svg class="icon-pause is-icon-hidden" viewBox="0 0 24 24"><path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="currentColor" /></svg>
+    </button>
+
+    <div class="vp-volume">
+      <button type="button" class="vp-btn" data-vp-mute aria-label="Mute">
+        <svg class="icon-vol" viewBox="0 0 24 24"><path d="M4 9v6h4l5 5V4L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z" fill="currentColor" /></svg>
+        <svg class="icon-vol-low is-icon-hidden" viewBox="0 0 24 24"><path d="M4 9v6h4l5 5V4L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4z" fill="currentColor" /></svg>
+        <svg class="icon-mute is-icon-hidden" viewBox="0 0 24 24"><path d="M4 9v6h4l5 5V4L8 9H4zm14.5 3L21 9.5l-1.4-1.4L17.1 10.6 14.6 8.1 13.2 9.5l2.5 2.5-2.5 2.5 1.4 1.4 2.5-2.5 2.5 2.5 1.4-1.4z" fill="currentColor" /></svg>
+      </button>
+      <input class="vp-volume-range" data-vp-volume type="range" min="0" max="1" step="0.01" value="1" aria-label="Volume" />
+    </div>
+
+    <span class="vp-time" data-vp-time>0:00 / 0:00</span>
+
+    <div class="vp-progress" data-vp-progress role="slider" aria-label="Seek" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <span class="vp-track"></span>
+      <span class="vp-buffered" data-vp-buffered></span>
+      <span class="vp-fill" data-vp-fill></span>
+      <span class="vp-knob" data-vp-knob></span>
+    </div>
+
+    <div class="vp-speed">
+      <button type="button" class="vp-btn vp-speed-btn" data-vp-speed-btn aria-haspopup="menu" aria-expanded="false" aria-label="Playback speed">1×</button>
+      <div class="vp-speed-menu" data-vp-speed-menu role="menu" hidden>
+        {speeds.map((s) => (
+          <button type="button" role="menuitemradio" aria-checked={s === 1 ? 'true' : 'false'} data-vp-rate={s}>
+            {s === 1 ? 'Normal' : `${s}×`}
+          </button>
+        ))}
+      </div>
+    </div>
+
+    <button type="button" class="vp-btn" data-vp-full aria-label="Fullscreen">
+      <svg class="icon-enter" viewBox="0 0 24 24"><path d="M4 9V4h5v2H6v3H4zm10-5h6v5h-2V6h-4V4zM4 15h2v3h3v2H4v-5zm14 0h2v5h-6v-2h4v-3z" fill="currentColor" /></svg>
+      <svg class="icon-exit is-icon-hidden" viewBox="0 0 24 24"><path d="M7 4h2v5H4V7h3V4zm8 0h2v3h3v2h-5V4zM4 15h5v5H7v-3H4v-2zm11 0h5v2h-3v3h-2v-5z" fill="currentColor" /></svg>
+    </button>
+  </div>
+</div>
+
+<style>
+  .film-frame {
+    --vp-accent: var(--gold, #d8b36a);
+    position: relative;
+    max-width: 58rem;
+    margin-inline: auto;
+    padding: 0.7rem 0;
+    background: #17120e;
+    box-shadow: 0 2rem 5rem -1.5rem rgb(0 0 0 / 75%), 0 0 0 1px rgb(255 255 255 / 6%),
+      0 0 4rem 0.4rem color-mix(in srgb, var(--mood-glow, transparent) 18%, transparent);
+    outline: none;
+  }
+
+  .sprockets {
+    display: block;
+    height: 0.85rem;
+    margin: 0 0.9rem;
+    background-color: color-mix(in srgb, var(--vp-accent) 22%, #2a2118);
+    background-image: repeating-linear-gradient(90deg, #17120e 0, #17120e 0.5rem, transparent 0.5rem, transparent 0.95rem);
+    border-radius: 1px;
+  }
+
+  .film-gate {
+    position: relative;
+    margin: 0.6rem 0.9rem;
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 8%);
+    background: #000;
+  }
+
+  .vp-video {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    height: auto;
+    display: block;
+    object-fit: contain;
+    background: #000;
+  }
+
+  .vp-video::-webkit-media-controls {
+    display: none !important;
+  }
+
+  .film-frame.is-native .vp-video::-webkit-media-controls {
+    display: initial !important;
+  }
+
+  .film-frame.is-native .vp-veil {
+    display: none;
+  }
+
+  /* Fullscreen is styled from a class set on fullscreenchange rather than
+     :fullscreen, which Safari only half supports. The grid pins the
+     controls to the bottom whatever the screen ratio. */
+  .film-frame.is-fs {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483000;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    max-width: none;
+    margin: 0;
+    padding: 0.9rem 0 0.6rem;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto auto;
+    box-shadow: none;
+  }
+
+  .film-frame.is-fs::backdrop {
+    background: #17120e;
+  }
+
+  .film-frame.is-fs .film-gate {
+    min-height: 0;
+    margin: 0.6rem 1.2rem;
+  }
+
+  .film-frame.is-fs .vp-video {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+  }
+
+  .film-frame.is-fs .sprockets {
+    margin-inline: 1.2rem;
+  }
+
+  .film-frame.is-fs .vp-controls {
+    margin-inline: 1.2rem;
+  }
+
+  /* the site's custom cursor lives outside the fullscreen layer */
+  .film-frame.is-fs,
+  .film-frame.is-fs * {
+    cursor: auto !important;
+  }
+
+  .film-frame.is-fs button,
+  .film-frame.is-fs .vp-progress,
+  .film-frame.is-fs input {
+    cursor: pointer !important;
+  }
+
+  .film-frame.is-fs.is-idle,
+  .film-frame.is-fs.is-idle * {
+    cursor: none !important;
+  }
+
+  .vp-controls,
+  .film-frame.is-fs .sprockets {
+    transition: opacity 0.35s;
+  }
+
+  .film-frame.is-fs.is-idle .vp-controls {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .vp-veil {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    width: 100%;
+    background: rgb(0 0 0 / 0%);
+    transition: background 0.3s;
+  }
+
+  .vp-veil:hover {
+    background: rgb(0 0 0 / 15%);
+  }
+
+  .vp-veil-icon {
+    grid-area: 1 / 1;
+    width: 4rem;
+    height: 4rem;
+    color: var(--bone);
+    filter: drop-shadow(0 0.3rem 1rem rgb(0 0 0 / 60%));
+    opacity: 0.92;
+    transition: transform 0.25s var(--ease-out-expo), opacity 0.25s;
+  }
+
+  .vp-veil:hover .vp-veil-icon {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+
+  .film-frame.is-playing .vp-veil-icon,
+  .film-frame.is-playing .vp-veil:hover .vp-veil-icon {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+
+  .vp-spinner {
+    grid-area: 1 / 1;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    border: 2px solid rgb(255 255 255 / 18%);
+    border-top-color: var(--vp-accent);
+    opacity: 0;
+    transition: opacity 0.2s;
+    animation: vp-spin 0.9s linear infinite;
+    pointer-events: none;
+  }
+
+  .film-frame.is-waiting .vp-spinner {
+    opacity: 1;
+  }
+
+  .film-frame.is-waiting .vp-veil-icon {
+    opacity: 0;
+  }
+
+  @keyframes vp-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .vp-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 0.7rem 0.9rem 0.2rem;
+    padding: 0 0.2rem;
+  }
+
+  .vp-btn {
+    flex: none;
+    width: 2.1rem;
+    height: 2.1rem;
+    display: grid;
+    place-items: center;
+    color: var(--bone);
+    border-radius: 50%;
+    transition: color var(--dur-fast), background var(--dur-fast);
+  }
+
+  .vp-btn:hover,
+  .vp-btn[aria-expanded='true'] {
+    color: var(--vp-accent);
+    background: rgb(255 255 255 / 8%);
+  }
+
+  .vp-btn svg {
+    width: 1.15rem;
+    height: 1.15rem;
+  }
+
+  .is-icon-hidden {
+    display: none;
+  }
+
+  .vp-volume {
+    flex: none;
+    display: flex;
+    align-items: center;
+  }
+
+  .vp-volume-range {
+    appearance: none;
+    width: 0;
+    height: 1.2rem;
+    margin: 0;
+    opacity: 0;
+    background: transparent;
+    transition: width 0.25s var(--ease-out-expo), opacity 0.2s, margin 0.25s;
+    --vp-vol: 100%;
+  }
+
+  .vp-volume:hover .vp-volume-range,
+  .vp-volume:focus-within .vp-volume-range {
+    width: 5rem;
+    margin-inline: 0.2rem 0.4rem;
+    opacity: 1;
+  }
+
+  .vp-volume-range::-webkit-slider-runnable-track {
+    height: 3px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--vp-accent) var(--vp-vol), rgb(255 255 255 / 18%) var(--vp-vol));
+  }
+
+  .vp-volume-range::-moz-range-track {
+    height: 3px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--vp-accent) var(--vp-vol), rgb(255 255 255 / 18%) var(--vp-vol));
+  }
+
+  .vp-volume-range::-webkit-slider-thumb {
+    appearance: none;
+    width: 0.7rem;
+    height: 0.7rem;
+    margin-top: calc(1.5px - 0.35rem);
+    border-radius: 50%;
+    background: var(--vp-accent);
+    border: none;
+  }
+
+  .vp-volume-range::-moz-range-thumb {
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 50%;
+    background: var(--vp-accent);
+    border: none;
+  }
+
+  .vp-time {
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: color-mix(in srgb, var(--bone) 70%, transparent);
+    letter-spacing: 0.02em;
+    min-width: 6.4em;
+  }
+
+  .vp-progress {
+    position: relative;
+    flex: 1 1 auto;
+    height: 1.2rem;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    touch-action: none;
+  }
+
+  .vp-track,
+  .vp-buffered,
+  .vp-fill {
+    position: absolute;
+    left: 0;
+    height: 3px;
+    border-radius: 999px;
+    pointer-events: none;
+  }
+
+  .vp-track {
+    right: 0;
+    background: rgb(255 255 255 / 15%);
+  }
+
+  .vp-buffered {
+    width: 0%;
+    background: rgb(255 255 255 / 14%);
+  }
+
+  .vp-fill {
+    width: 0%;
+    background: linear-gradient(90deg, var(--mood-a, var(--vp-accent)), var(--vp-accent));
+  }
+
+  .vp-knob {
+    position: absolute;
+    left: 0%;
+    width: 0.7rem;
+    height: 0.7rem;
+    margin-left: -0.35rem;
+    border-radius: 50%;
+    background: var(--vp-accent);
+    box-shadow: 0 0 0 3px rgb(0 0 0 / 30%);
+    pointer-events: none;
+    transition: transform 0.15s;
+  }
+
+  .vp-progress:hover .vp-knob {
+    transform: scale(1.25);
+  }
+
+  .vp-speed {
+    position: relative;
+    flex: none;
+  }
+
+  .vp-speed-btn {
+    width: auto;
+    min-width: 2.6rem;
+    padding: 0 0.5rem;
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+  }
+
+  .vp-speed-menu {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + 0.5rem);
+    z-index: 3;
+    display: grid;
+    min-width: 7rem;
+    padding: 0.35rem;
+    background: #17120e;
+    border: 1px solid rgb(255 255 255 / 10%);
+    border-radius: 6px;
+    box-shadow: 0 1rem 2rem -0.6rem rgb(0 0 0 / 70%);
+  }
+
+  .vp-speed-menu[hidden] {
+    display: none;
+  }
+
+  .vp-speed-menu button {
+    padding: 0.4rem 0.7rem;
+    text-align: left;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: color-mix(in srgb, var(--bone) 75%, transparent);
+    border-radius: 4px;
+  }
+
+  .vp-speed-menu button:hover,
+  .vp-speed-menu button:focus-visible {
+    background: rgb(255 255 255 / 8%);
+    color: var(--bone);
+  }
+
+  .vp-speed-menu button[aria-checked='true'] {
+    color: var(--vp-accent);
+  }
+
+  @media (hover: none) {
+    .vp-volume-range { display: none; }
+  }
+
+  @media (max-width: 700px) {
+    .sprockets { margin-inline: 0.5rem; }
+    .film-gate { margin-inline: 0.5rem; }
+    .vp-controls { margin-inline: 0.5rem; flex-wrap: wrap; gap: 0.3rem 0.5rem; }
+    .vp-progress { order: 5; flex-basis: 100%; }
+    .vp-time { margin-right: auto; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .vp-spinner { animation-duration: 2.4s; }
+    .vp-volume-range { transition: none; }
+  }
+</style>
+
+<script>
+  const VOLUME_KEY = 'vp-volume';
+
+  function formatTime(seconds: number): string {
+    if (!Number.isFinite(seconds)) return '0:00';
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60)
+      .toString()
+      .padStart(2, '0');
+    return h ? `${h}:${String(m).padStart(2, '0')}:${s}` : `${m}:${s}`;
+  }
+
+  function savedVolume(): number {
+    try {
+      const v = Number(localStorage.getItem(VOLUME_KEY));
+      return localStorage.getItem(VOLUME_KEY) !== null && Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : 1;
+    } catch {
+      return 1;
+    }
+  }
+
+  type WebkitDoc = Document & { webkitFullscreenElement?: Element | null; webkitExitFullscreen?: () => void };
+  type WebkitEl = HTMLElement & { webkitRequestFullscreen?: () => void };
+  type WebkitVideo = HTMLVideoElement & { webkitEnterFullscreen?: () => void };
+
+  const fsElement = () => document.fullscreenElement ?? (document as WebkitDoc).webkitFullscreenElement ?? null;
+
+  let teardown: (() => void)[] = [];
+
+  function initPlayers() {
+    document.querySelectorAll<HTMLElement>('[data-video-player]').forEach((player) => {
+      if (player.dataset.vpInit === '1') return;
+      player.dataset.vpInit = '1';
+
+      const q = <T extends Element>(sel: string) => player.querySelector<T>(sel);
+      const video = q<HTMLVideoElement>('[data-vp-video]');
+      const veil = q<HTMLButtonElement>('[data-vp-veil]');
+      const playBtn = q<HTMLButtonElement>('[data-vp-play]');
+      const muteBtn = q<HTMLButtonElement>('[data-vp-mute]');
+      const volume = q<HTMLInputElement>('[data-vp-volume]');
+      const fullBtn = q<HTMLButtonElement>('[data-vp-full]');
+      const speedBtn = q<HTMLButtonElement>('[data-vp-speed-btn]');
+      const speedMenu = q<HTMLElement>('[data-vp-speed-menu]');
+      const progress = q<HTMLElement>('[data-vp-progress]');
+      const fill = q<HTMLElement>('[data-vp-fill]');
+      const buffered = q<HTMLElement>('[data-vp-buffered]');
+      const knob = q<HTMLElement>('[data-vp-knob]');
+      const timeEl = q<HTMLElement>('[data-vp-time]');
+      if (!video || !veil || !playBtn || !muteBtn || !volume || !fullBtn || !speedBtn || !speedMenu || !progress || !fill || !buffered || !knob || !timeEl) return;
+
+      const ac = new AbortController();
+      const on = { signal: ac.signal };
+      const src = video.getAttribute('src') ?? '';
+      let retries = 0;
+      let wantPlay = false;
+
+      // A <video> that arrives through a view-transition swap was parsed in
+      // an inert document, so some browsers never run its resource
+      // selection until something forces it. load() does, on every path.
+      video.load();
+
+      const setPlaying = (playing: boolean) => {
+        player.classList.toggle('is-playing', playing);
+        playBtn.querySelector('.icon-play')?.classList.toggle('is-icon-hidden', playing);
+        playBtn.querySelector('.icon-pause')?.classList.toggle('is-icon-hidden', !playing);
+        const label = playing ? 'Pause' : 'Play';
+        playBtn.setAttribute('aria-label', label);
+        veil.setAttribute('aria-label', label);
+        wake();
+      };
+
+      const setWaiting = (waiting: boolean) => player.classList.toggle('is-waiting', waiting);
+
+      const reload = () => {
+        const at = video.currentTime;
+        const rate = video.playbackRate;
+        video.src = src;
+        video.load();
+        video.addEventListener('loadedmetadata', () => {
+          video.playbackRate = rate;
+          if (at > 0) video.currentTime = at;
+        }, { once: true, signal: ac.signal });
+      };
+
+      const startPlay = () => {
+        wantPlay = true;
+        if (video.networkState === HTMLMediaElement.NETWORK_EMPTY || video.error) reload();
+        if (video.readyState < HTMLMediaElement.HAVE_FUTURE_DATA) setWaiting(true);
+        video.play().catch((err: DOMException) => {
+          // AbortError only means a load() interrupted this call; the
+          // canplay handler below resumes it
+          if (err.name === 'AbortError') return;
+          wantPlay = false;
+          setWaiting(false);
+          if (err.name === 'NotAllowedError' || err.name === 'NotSupportedError') {
+            player.classList.add('is-native');
+            video.controls = true;
+          }
+        });
+      };
+
+      const togglePlay = () => {
+        if (!video.paused) {
+          wantPlay = false;
+          video.pause();
+          return;
+        }
+        startPlay();
+      };
+
+      // ---- volume ----
+      const paintVolume = () => {
+        const level = video.muted ? 0 : video.volume;
+        volume.value = String(level);
+        volume.style.setProperty('--vp-vol', `${level * 100}%`);
+        muteBtn.querySelector('.icon-vol')?.classList.toggle('is-icon-hidden', level === 0 || level < 0.5);
+        muteBtn.querySelector('.icon-vol-low')?.classList.toggle('is-icon-hidden', level === 0 || level >= 0.5);
+        muteBtn.querySelector('.icon-mute')?.classList.toggle('is-icon-hidden', level !== 0);
+        muteBtn.setAttribute('aria-label', level === 0 ? 'Unmute' : 'Mute');
+      };
+      const setVolume = (v: number) => {
+        const next = Math.min(1, Math.max(0, v));
+        video.volume = next;
+        video.muted = next === 0;
+        try {
+          localStorage.setItem(VOLUME_KEY, String(next));
+        } catch {}
+      };
+      video.volume = savedVolume();
+      paintVolume();
+      volume.addEventListener('input', () => setVolume(Number(volume.value)), on);
+      muteBtn.addEventListener('click', () => {
+        if (video.muted || video.volume === 0) {
+          video.muted = false;
+          if (video.volume === 0) video.volume = 0.6;
+        } else {
+          video.muted = true;
+        }
+      }, on);
+      video.addEventListener('volumechange', paintVolume, on);
+
+      // ---- speed ----
+      const rateButtons = Array.from(speedMenu.querySelectorAll<HTMLButtonElement>('[data-vp-rate]'));
+      const paintRate = () => {
+        const r = video.playbackRate;
+        speedBtn.textContent = `${r}×`;
+        rateButtons.forEach((b) => b.setAttribute('aria-checked', String(Number(b.dataset.vpRate) === r)));
+      };
+      const toggleMenu = (open: boolean) => {
+        speedMenu.hidden = !open;
+        speedBtn.setAttribute('aria-expanded', String(open));
+        if (open) (rateButtons.find((b) => b.getAttribute('aria-checked') === 'true') ?? rateButtons[0])?.focus();
+      };
+      speedBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleMenu(speedMenu.hidden);
+      }, on);
+      rateButtons.forEach((b) =>
+        b.addEventListener('click', () => {
+          video.playbackRate = Number(b.dataset.vpRate);
+          toggleMenu(false);
+          speedBtn.focus();
+        }, on)
+      );
+      speedMenu.addEventListener('keydown', (e) => {
+        const i = rateButtons.indexOf(document.activeElement as HTMLButtonElement);
+        if (e.key === 'ArrowDown') rateButtons[(i + 1) % rateButtons.length].focus();
+        else if (e.key === 'ArrowUp') rateButtons[(i - 1 + rateButtons.length) % rateButtons.length].focus();
+        else if (e.key === 'Escape') {
+          toggleMenu(false);
+          speedBtn.focus();
+        } else return;
+        e.preventDefault();
+        e.stopPropagation();
+      }, on);
+      document.addEventListener('click', (e) => {
+        if (!speedMenu.hidden && !speedMenu.contains(e.target as Node)) toggleMenu(false);
+      }, on);
+      video.addEventListener('ratechange', paintRate, on);
+
+      // ---- fullscreen ----
+      const isFs = () => fsElement() === player;
+      const toggleFullscreen = () => {
+        if (isFs()) {
+          if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+          else (document as WebkitDoc).webkitExitFullscreen?.();
+          return;
+        }
+        const el = player as WebkitEl;
+        if (el.requestFullscreen) el.requestFullscreen().catch(() => (video as WebkitVideo).webkitEnterFullscreen?.());
+        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+        else (video as WebkitVideo).webkitEnterFullscreen?.();
+      };
+      const onFsChange = () => {
+        const fs = isFs();
+        player.classList.toggle('is-fs', fs);
+        fullBtn.querySelector('.icon-enter')?.classList.toggle('is-icon-hidden', fs);
+        fullBtn.querySelector('.icon-exit')?.classList.toggle('is-icon-hidden', !fs);
+        fullBtn.setAttribute('aria-label', fs ? 'Exit fullscreen' : 'Fullscreen');
+        if (fs) player.focus({ preventScroll: true });
+        wake();
+      };
+      document.addEventListener('fullscreenchange', onFsChange, on);
+      document.addEventListener('webkitfullscreenchange', onFsChange, on);
+      fullBtn.addEventListener('click', toggleFullscreen, on);
+      veil.addEventListener('dblclick', toggleFullscreen, on);
+
+      // controls fade out in fullscreen while the film plays untouched
+      let idleTimer = 0;
+      function wake() {
+        player.classList.remove('is-idle');
+        window.clearTimeout(idleTimer);
+        if (player.classList.contains('is-fs') && !video!.paused && speedMenu!.hidden) {
+          idleTimer = window.setTimeout(() => player.classList.add('is-idle'), 2600);
+        }
+      }
+      player.addEventListener('pointermove', wake, on);
+      player.addEventListener('pointerdown', wake, on);
+
+      // ---- progress ----
+      const paintBuffered = () => {
+        if (!video.duration || !video.buffered.length) return;
+        const end = video.buffered.end(video.buffered.length - 1);
+        buffered.style.width = `${(end / video.duration) * 100}%`;
+      };
+
+      const updateProgress = () => {
+        const pct = video.duration ? (video.currentTime / video.duration) * 100 : 0;
+        fill.style.width = `${pct}%`;
+        knob.style.left = `${pct}%`;
+        progress.setAttribute('aria-valuenow', String(Math.round(pct)));
+        timeEl.textContent = `${formatTime(video.currentTime)} / ${formatTime(video.duration)}`;
+      };
+
+      const seekBy = (delta: number) => {
+        if (!Number.isFinite(video.duration)) return;
+        video.currentTime = Math.min(video.duration, Math.max(0, video.currentTime + delta));
+        updateProgress();
+      };
+
+      const seekFromEvent = (clientX: number) => {
+        const rect = progress.getBoundingClientRect();
+        const ratio = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+        if (Number.isFinite(video.duration)) {
+          video.currentTime = ratio * video.duration;
+          updateProgress();
+        }
+      };
+
+      let dragging = false;
+      progress.addEventListener('pointerdown', (e) => {
+        dragging = true;
+        progress.setPointerCapture(e.pointerId);
+        seekFromEvent(e.clientX);
+      }, on);
+      progress.addEventListener('pointermove', (e) => {
+        if (dragging) seekFromEvent(e.clientX);
+      }, on);
+      const endDrag = () => {
+        dragging = false;
+      };
+      progress.addEventListener('pointerup', endDrag, on);
+      progress.addEventListener('pointercancel', endDrag, on);
+
+      // ---- keyboard, only while focus is inside this player ----
+      player.addEventListener('keydown', (e) => {
+        if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
+        const target = e.target as HTMLElement;
+        const onButton = target.tagName === 'BUTTON' && target !== veil;
+        const onVolume = target === volume;
+        const k = e.key;
+        if ((k === ' ' || k === 'Enter') && onButton) return;
+        if (k === ' ' || k === 'k' || k === 'K') togglePlay();
+        else if (k === 'f' || k === 'F') toggleFullscreen();
+        else if (k === 'm' || k === 'M') muteBtn.click();
+        else if (k === 'ArrowRight' && !onVolume) seekBy(5);
+        else if (k === 'ArrowLeft' && !onVolume) seekBy(-5);
+        else if (k === 'ArrowUp' && !onVolume) setVolume(video.volume + 0.1);
+        else if (k === 'ArrowDown' && !onVolume) setVolume(video.volume - 0.1);
+        else if (k === 'Home') seekBy(-Infinity);
+        else if (k === 'End') seekBy(Infinity);
+        else return;
+        e.preventDefault();
+        wake();
+      }, on);
+
+      // ---- playback plumbing ----
+      veil.addEventListener('click', togglePlay, on);
+      playBtn.addEventListener('click', togglePlay, on);
+      video.addEventListener('play', () => setPlaying(true), on);
+      video.addEventListener('pause', () => setPlaying(false), on);
+      video.addEventListener('ended', () => setPlaying(false), on);
+      video.addEventListener('waiting', () => setWaiting(true), on);
+      video.addEventListener('playing', () => setWaiting(false), on);
+      video.addEventListener('canplay', () => {
+        setWaiting(false);
+        if (wantPlay && video.paused) video.play().catch(() => {});
+      }, on);
+      video.addEventListener('timeupdate', updateProgress, on);
+      video.addEventListener('loadedmetadata', updateProgress, on);
+      video.addEventListener('durationchange', updateProgress, on);
+      video.addEventListener('progress', paintBuffered, on);
+      video.addEventListener('error', () => {
+        if (retries >= 3) {
+          setWaiting(false);
+          return;
+        }
+        retries += 1;
+        window.setTimeout(reload, 600 * retries);
+      }, on);
+      // a request the browser quietly gave up on (network hiccup, a
+      // connection still held by the previous page) would otherwise
+      // leave the player dead until a hard refresh
+      video.addEventListener('stalled', () => {
+        if (video.readyState === HTMLMediaElement.HAVE_NOTHING && retries < 3) {
+          retries += 1;
+          reload();
+        }
+      }, on);
+
+      teardown.push(() => {
+        ac.abort();
+        window.clearTimeout(idleTimer);
+        if (isFs()) document.exitFullscreen?.().catch(() => {});
+        video.pause();
+        // detached media elements keep buffering until garbage-collected,
+        // holding connections the next page's videos need
+        video.removeAttribute('src');
+        video.load();
+      });
+    });
+  }
+
+  document.addEventListener('astro:page-load', initPlayers);
+  document.addEventListener('astro:before-swap', () => {
+    teardown.forEach((fn) => fn());
+    teardown = [];
+  });
+</script>
