@@ -20,9 +20,15 @@ description:
   zh: 先放着。画、委托和同人。每一叠我之后再写。
 cover: cover.png
 coverAlt:
-  en: Placeholder. I'll describe this image later.
-  fr: Texte provisoire. Je décrirai cette image plus tard.
-  zh: 说明先空着，之后再写。
+  en: "For a while I kept dreaming of the sea. My anxiety was like a tree swaying in a storm. It looks fragile, but it bends and doesn't fall easily. It doesn't fight back. It just grows."
+  fr: "Pendant un temps, je rêvais sans arrêt de la mer. Mon anxiété ressemblait à un arbre secoué par la tempête. Il a l'air fragile, mais il plie et ne tombe pas facilement. Il ne lutte pas. Il pousse, simplement."
+  zh: "有段时间总是梦见大海，我的焦虑像风暴中摇曳的树，虽然看起来脆弱，但也有韧性，不会轻易被刮倒。不对抗，只是生长。"
+videos:
+  - file: anakin-mustafar.mp4
+    label:
+      en: Anakin on Mustafar
+      fr: Anakin sur Mustafar
+      zh: 穆斯塔法星上的安纳金
 gallery:
   - file: since-tomorrow-01.gif
     chapter:
@@ -30,27 +36,39 @@ gallery:
       fr: Since Tomorrow
       zh: Since Tomorrow
     alt:
-      en: Placeholder. I'll describe this image later.
-      fr: Texte provisoire. Je décrirai cette image plus tard.
-      zh: 说明先空着，之后再写。
+      en: "Since Tomorrow fan art, for Qingfeng Mu."
+      fr: "Fan art du groupe Since Tomorrow, pour Qingfeng Mu."
+      zh: "Since Tomorrow 乐队同人，画的是穆清风。"
+    caption:
+      en: "Since Tomorrow fan art, for Qingfeng Mu."
+      fr: "Fan art du groupe Since Tomorrow, pour Qingfeng Mu."
+      zh: "Since Tomorrow 乐队同人，画的是穆清风。"
   - file: since-tomorrow-02.gif
     chapter:
       en: Since Tomorrow
       fr: Since Tomorrow
       zh: Since Tomorrow
     alt:
-      en: Placeholder. I'll describe this image later.
-      fr: Texte provisoire. Je décrirai cette image plus tard.
-      zh: 说明先空着，之后再写。
+      en: "Since Tomorrow fan art, for Ning Zhao."
+      fr: "Fan art du groupe Since Tomorrow, pour Ning Zhao."
+      zh: "Since Tomorrow 乐队同人，画的是宁哥。"
+    caption:
+      en: "Since Tomorrow fan art, for Ning Zhao."
+      fr: "Fan art du groupe Since Tomorrow, pour Ning Zhao."
+      zh: "Since Tomorrow 乐队同人，画的是宁哥。"
   - file: since-tomorrow-03.gif
     chapter:
       en: Since Tomorrow
       fr: Since Tomorrow
       zh: Since Tomorrow
     alt:
-      en: Placeholder. I'll describe this image later.
-      fr: Texte provisoire. Je décrirai cette image plus tard.
-      zh: 说明先空着，之后再写。
+      en: "Since Tomorrow fan art, for Bing Zhang."
+      fr: "Fan art du groupe Since Tomorrow, pour Bing Zhang."
+      zh: "Since Tomorrow 乐队同人，画的是兵哥。"
+    caption:
+      en: "Since Tomorrow fan art, for Bing Zhang."
+      fr: "Fan art du groupe Since Tomorrow, pour Bing Zhang."
+      zh: "Since Tomorrow 乐队同人，画的是兵哥。"
   - file: card-game-01.png
     chapter:
       en: Card game
@@ -122,27 +140,39 @@ gallery:
       fr: Commandes
       zh: 他人委托
     alt:
-      en: Placeholder. I'll describe this image later.
-      fr: Texte provisoire. Je décrirai cette image plus tard.
-      zh: 说明先空着，之后再写。
+      en: "A girl who cut her hair in anger."
+      fr: "Une fille qui s'est coupé les cheveux sous le coup de la colère."
+      zh: "一个愤怒地剪掉头发的女孩。"
+    caption:
+      en: "A girl who cut her hair in anger."
+      fr: "Une fille qui s'est coupé les cheveux sous le coup de la colère."
+      zh: "一个愤怒地剪掉头发的女孩。"
   - file: ocs-02.png
     chapter:
       en: Commissions
       fr: Commandes
       zh: 他人委托
     alt:
-      en: Placeholder. I'll describe this image later.
-      fr: Texte provisoire. Je décrirai cette image plus tard.
-      zh: 说明先空着，之后再写。
+      en: "A half-bird girl, in a Japanese style."
+      fr: "Une fille mi-oiseau, dans un style japonais."
+      zh: "一个半鸟的和风女孩。"
+    caption:
+      en: "A half-bird girl, in a Japanese style."
+      fr: "Une fille mi-oiseau, dans un style japonais."
+      zh: "一个半鸟的和风女孩。"
   - file: ocs-03.png
     chapter:
       en: Commissions
       fr: Commandes
       zh: 他人委托
     alt:
-      en: Placeholder. I'll describe this image later.
-      fr: Texte provisoire. Je décrirai cette image plus tard.
-      zh: 说明先空着，之后再写。
+      en: "Expressions and a standing pose."
+      fr: "Des expressions et une pose debout."
+      zh: "表情和站姿。"
+    caption:
+      en: "Expressions and a standing pose."
+      fr: "Des expressions et une pose debout."
+      zh: "表情和站姿。"
   - file: spring-festival-01.jpg
     chapter:
       en: Spring Festival
@@ -171,42 +201,62 @@ gallery:
       fr: 24 termes solaires
       zh: 二十四节气
     alt:
-      en: Placeholder. I'll describe this image later.
-      fr: Texte provisoire. Je décrirai cette image plus tard.
-      zh: 说明先空着，之后再写。
+      en: "The autumn equinox, a good time to eat persimmons."
+      fr: "L'équinoxe d'automne, le bon moment pour manger des kakis."
+      zh: "关于秋分，适合吃柿子。"
+    caption:
+      en: "The autumn equinox, a good time to eat persimmons."
+      fr: "L'équinoxe d'automne, le bon moment pour manger des kakis."
+      zh: "关于秋分，适合吃柿子。"
   - file: cover.png
     chapter:
       en: Sketchbook
       fr: Carnet
       zh: 速写
     alt:
-      en: Placeholder. I'll describe this image later.
-      fr: Texte provisoire. Je décrirai cette image plus tard.
-      zh: 说明先空着，之后再写。
+      en: "For a while I kept dreaming of the sea. My anxiety was like a tree swaying in a storm. It looks fragile, but it bends and doesn't fall easily. It doesn't fight back. It just grows."
+      fr: "Pendant un temps, je rêvais sans arrêt de la mer. Mon anxiété ressemblait à un arbre secoué par la tempête. Il a l'air fragile, mais il plie et ne tombe pas facilement. Il ne lutte pas. Il pousse, simplement."
+      zh: "有段时间总是梦见大海，我的焦虑像风暴中摇曳的树，虽然看起来脆弱，但也有韧性，不会轻易被刮倒。不对抗，只是生长。"
+    caption:
+      en: "For a while I kept dreaming of the sea. My anxiety was like a tree swaying in a storm. It looks fragile, but it bends and doesn't fall easily. It doesn't fight back. It just grows."
+      fr: "Pendant un temps, je rêvais sans arrêt de la mer. Mon anxiété ressemblait à un arbre secoué par la tempête. Il a l'air fragile, mais il plie et ne tombe pas facilement. Il ne lutte pas. Il pousse, simplement."
+      zh: "有段时间总是梦见大海，我的焦虑像风暴中摇曳的树，虽然看起来脆弱，但也有韧性，不会轻易被刮倒。不对抗，只是生长。"
   - file: practice-02.jpg
     chapter:
       en: Sketchbook
       fr: Carnet
       zh: 速写
     alt:
-      en: Placeholder. I'll describe this image later.
-      fr: Texte provisoire. Je décrirai cette image plus tard.
-      zh: 说明先空着，之后再写。
+      en: "A style test."
+      fr: "Un essai de style."
+      zh: "一个风格的测试。"
+    caption:
+      en: "A style test."
+      fr: "Un essai de style."
+      zh: "一个风格的测试。"
   - file: practice-03.png
     chapter:
       en: Sketchbook
       fr: Carnet
       zh: 速写
     alt:
-      en: Placeholder. I'll describe this image later.
-      fr: Texte provisoire. Je décrirai cette image plus tard.
-      zh: 说明先空着，之后再写。
+      en: "A redesign of Emma, made for my business cards."
+      fr: "Une nouvelle version d'Emma, faite pour mes cartes de visite."
+      zh: "Emma的设计改版，用来制作名片。"
+    caption:
+      en: "A redesign of Emma, made for my business cards."
+      fr: "Une nouvelle version d'Emma, faite pour mes cartes de visite."
+      zh: "Emma的设计改版，用来制作名片。"
   - file: practice-04.jpg
     chapter:
       en: Sketchbook
       fr: Carnet
       zh: 速写
     alt:
-      en: Placeholder. I'll describe this image later.
-      fr: Texte provisoire. Je décrirai cette image plus tard.
-      zh: 说明先空着，之后再写。
+      en: "Imagining a villainess, and the symbols she carries."
+      fr: "Imaginer une méchante, et les symboles qu'elle porte."
+      zh: "想象一个恶女，它所带来的符号。"
+    caption:
+      en: "Imagining a villainess, and the symbols she carries."
+      fr: "Imaginer une méchante, et les symboles qu'elle porte."
+      zh: "想象一个恶女，它所带来的符号。"

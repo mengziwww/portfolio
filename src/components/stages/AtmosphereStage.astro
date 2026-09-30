@@ -165,6 +165,13 @@ const slides = trackItems.map((item, i) => ({
       <h2>
         <I18nText en="manga" fr="manga" zh="漫画" />
       </h2>
+      <p class="manga-intro">
+        <I18nText
+          en="This manga is the story as it first was. A girl decides to end her life. Her parents are long gone, and she is the last one left of her tribe. Just then, a red-skinned girl appears in front of her and says: you are the last human in the world, and you have one task, to come with me and watch the new world being born. On the way they talk about the seven days in which the gods made the world. Sadly, it took humans only seven days to destroy it. So after nightfall the gods will make the world again, and the girl will be its witness. Her body keeps decaying. Until she fades, they stay in the grass looking at the stars, thinking about the future of the new world. She is grateful to the messenger for not letting her die alone. In the end, what the new world becomes doesn't matter, because I will always love this world. Under the stars, the girl promises the bones that they will meet again."
+          fr="Ce manga, c'est l'histoire telle qu'elle était au tout début. Une fille décide de mettre fin à ses jours. Ses parents sont partis depuis longtemps, et elle est la dernière de sa tribu. C'est alors qu'une fille à la peau rouge apparaît devant elle et lui dit : tu es la dernière humaine au monde, et tu as une mission, venir avec moi voir naître le nouveau monde. En chemin, elles parlent des sept jours pendant lesquels les dieux ont créé le monde. Dommage, il n'a fallu que sept jours aux humains pour le détruire. Alors, à la tombée de la nuit, les dieux vont recréer le monde, et la fille en sera le témoin. Son corps se décompose peu à peu. Jusqu'à ce qu'elle s'efface, elles restent dans l'herbe à regarder les étoiles, à penser à l'avenir du nouveau monde. La fille remercie la messagère de ne pas l'avoir laissée mourir seule. Au fond, peu importe ce que deviendra le nouveau monde, parce que j'aimerai toujours ce monde. Sous les étoiles, la fille promet aux ossements qu'ils se reverront."
+          zh="这个漫画是故事最初的模样。一个女孩决定自杀，她的父母早已离去，部落的人只剩下她一个了。但正在这时候，一个红皮肤女孩出现在她的面前，她说：你是世界上最后一个人类了，你有一个任务，那就是跟我去看看新世界的诞生。路上他们讨论了神创世界的七日谈，很可惜，人类毁灭世界也只用了七天。于是天黑之后，神将重新创造这个世界，而自杀的女孩就是见证人。女孩的身体不断腐烂，他们在女孩临消散前一直在草地上看星空，一直在想新世界的未来。女孩很感谢使者让她的死亡不再孤独。其实，新世界会变成什么样并不重要，因为我会一直爱这个世界。在星空下，女孩对着尸骨许诺下一次的再见。"
+        />
+      </p>
       <MangaBook projectId={project.id} items={mangaItems} />
     </section>
   )}
@@ -558,6 +565,17 @@ const slides = trackItems.map((item, i) => ({
     height: 100%;
     object-fit: contain;
     display: block;
+  }
+
+  .manga-intro {
+    max-width: 40rem;
+    margin: 0 auto var(--space-5);
+    padding-inline: var(--edge);
+    box-sizing: content-box;
+    font-size: var(--text-sm);
+    line-height: 1.75;
+    color: var(--bone-soft);
+    text-wrap: pretty;
   }
 
   .manga {

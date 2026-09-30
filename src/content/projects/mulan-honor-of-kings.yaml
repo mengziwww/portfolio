@@ -48,9 +48,9 @@ gallery:
 videos:
   - file: film.mp4
     label:
-      en: the film
-      fr: le film
-      zh: 成片
+      en: the storyboard of my part
+      fr: le storyboard de ma partie
+      zh: 我负责部分的分镜
   - file: sc-60.mp4
     label:
       en: a shot

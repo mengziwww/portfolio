@@ -15,9 +15,9 @@ posterGenre:
   fr: Gobelins 2026, CRFA
   zh: 高布兰 2026，CRFA
 roles:
-  en: [Concept, Character Design, Storyboard, Animation]
-  fr: [Concept, Character Design, Storyboard, Animation]
-  zh: [概念设计, 角色设计, 分镜, 动画]
+  en: [Concept, Character Design, Storyboard, Animation, Compositing]
+  fr: [Concept, Character Design, Storyboard, Animation, Compositing]
+  zh: [概念设计, 角色设计, 分镜, 动画, 合成]
 subtitle:
   en: publishing
   fr: en cours de publication
@@ -25,20 +25,26 @@ subtitle:
 description:
   en: >-
     Sophie heads out to cheer her brother Benoit up. He's been in a bad
-    place. I'm doing the concept, the characters and the animation.
-    The film isn't finished yet.
+    place. I did the concept, the characters, the animation and the
+    compositing. The film is on YouTube now.
   fr: >-
     Sophie prend la route pour rendre le sourire à son frère Benoit.
-    Il va mal. Je fais le concept, les personnages et l'animation.
-    Le film n'est pas encore fini.
+    Il va mal. J'ai fait le concept, les personnages, l'animation et le
+    compositing. Le film est maintenant sur YouTube.
   zh: >-
-    苏菲上路，想让哥哥博努瓦重新高兴起来。他最近很不好。概念、角色和动画
-    是我在做的。片子还没完成。
+    苏菲上路，想让哥哥博努瓦重新高兴起来。他最近很不好。概念、角色、动画
+    和合成是我做的。片子现在已经上线 YouTube 了。
+links:
+  - href: https://youtu.be/i3q_h7ywypE
+    label:
+      en: watch the film
+      fr: voir le film
+      zh: 看成片
 cover: style-frame2.png
 coverAlt:
-  en: A mother and daughter sit together in a golden sunflower field at sunset, petals drifting on the breeze
-  fr: Une mère et sa fille assises ensemble dans un champ de tournesols doré au coucher du soleil, des pétales portés par le vent
-  zh: 母女俩并肩坐在夕阳下的金色向日葵田中，花瓣随风飘落
+  en: Benoit and Sophie.
+  fr: Benoit et Sophie.
+  zh: 博努瓦和苏菲。
 gallery:
   - file: concept1.png
     chapter:
@@ -184,15 +190,6 @@ gallery:
       en: Concept of Sophie crossing the field.
       fr: Concept de Sophie traversant le champ.
       zh: 苏菲穿过田野。
-  - file: extra-61.png
-    chapter:
-      en: more from this project
-      fr: encore de ce projet
-      zh: 这个项目的其他画面
-    alt:
-      en: A style test of the render.
-      fr: Un essai de style pour le rendu.
-      zh: 渲染的风格测试。
   - file: extra-62.png
     chapter:
       en: more from this project
