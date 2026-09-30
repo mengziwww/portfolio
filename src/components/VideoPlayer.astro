@@ -102,9 +102,13 @@ const speeds = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
     background: #000;
   }
 
+  .film-frame.is-portrait:not(.is-fs) {
+    max-width: min(30rem, 100%);
+  }
+
   .vp-video {
     width: 100%;
-    aspect-ratio: 16 / 9;
+    aspect-ratio: var(--vp-ratio, 16 / 9);
     height: auto;
     display: block;
     object-fit: contain;
@@ -770,6 +774,13 @@ const speeds = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
         if (wantPlay && video.paused) video.play().catch(() => {});
       }, on);
       video.addEventListener('timeupdate', updateProgress, on);
+      const fitRatio = () => {
+        if (!video.videoWidth || !video.videoHeight) return;
+        player.style.setProperty('--vp-ratio', `${video.videoWidth} / ${video.videoHeight}`);
+        player.classList.toggle('is-portrait', video.videoHeight > video.videoWidth);
+      };
+      fitRatio();
+      video.addEventListener('loadedmetadata', fitRatio, on);
       video.addEventListener('loadedmetadata', updateProgress, on);
       video.addEventListener('durationchange', updateProgress, on);
       video.addEventListener('progress', paintBuffered, on);

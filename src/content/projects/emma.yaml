@@ -26,17 +26,35 @@ coverAlt:
 gallery:
   - file: frame.png
     alt:
-      en: Placeholder. I'll describe this image later.
-      fr: Texte provisoire. Je décrirai cette image plus tard.
-      zh: 说明先空着，之后再写。
+      en: "Style frame."
+      fr: "Style frame."
+      zh: "风格帧。"
+    caption:
+      en: "Style frame."
+      fr: "Style frame."
+      zh: "风格帧。"
   - file: characters.png
     alt:
-      en: Placeholder. I'll describe this image later.
-      fr: Texte provisoire. Je décrirai cette image plus tard.
-      zh: 说明先空着，之后再写。
+      en: "Character design."
+      fr: "Character design."
+      zh: "角色设计。"
+    caption:
+      en: "Character design."
+      fr: "Character design."
+      zh: "角色设计。"
   - file: sheet.png
     alt:
-      en: Placeholder. I'll describe this image later.
-      fr: Texte provisoire. Je décrirai cette image plus tard.
-      zh: 说明先空着，之后再写。
+      en: "Color key. I changed it during the making."
+      fr: "Color key. Je l'ai changée en cours de route."
+      zh: "色彩稿，制作过程中我有改动。"
+    caption:
+      en: "Color key. I changed it during the making."
+      fr: "Color key. Je l'ai changée en cours de route."
+      zh: "色彩稿，制作过程中我有改动。"
 video: /videos/emma/emma.mp4
+videos:
+  - file: shot.mp4
+    label:
+      en: a shot in motion
+      fr: un plan animé
+      zh: 一个动态镜头

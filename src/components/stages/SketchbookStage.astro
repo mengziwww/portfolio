@@ -29,7 +29,7 @@ interface Props {
   next: CollectionEntry<'projects'>;
 }
 const { project, next } = Astro.props;
-const { title, subtitle, description, year, roles, category, cover, coverAlt, gallery, accentFrom, accentTo, links, video } = project.data;
+const { title, subtitle, description, year, roles, category, cover, coverAlt, gallery, accentFrom, accentTo, links, video, videos } = project.data;
 const glow = vividOf(accentFrom, accentTo);
 const coverImg = getProjectImage(project.id, cover);
 const categoryLabel = trAll(`category.${category}` as const);
@@ -116,6 +116,12 @@ groups.forEach((group) => {
       <VideoPlayer src={video} />
     </figure>
   )}
+  {videos?.map((clip) => (
+    <figure class="sb-clip">
+      <VideoPlayer src={`/videos/${project.id}/${clip.file}`} />
+      <figcaption><I18nText en={clip.label.en} fr={clip.label.fr} zh={clip.label.zh} /></figcaption>
+    </figure>
+  ))}
 
   {gallery.length > 0 && groups.map((group) => (
     <section class="sb-group">
@@ -183,6 +189,14 @@ groups.forEach((group) => {
     max-width: 52rem;
     margin: 0 auto var(--space-5);
     padding-inline: var(--edge);
+  }
+
+  .sb-clip figcaption {
+    margin-top: 0.5rem;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--bone-soft);
   }
 
   .sb-group-title {
