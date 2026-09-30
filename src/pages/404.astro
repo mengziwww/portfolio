@@ -1,0 +1,55 @@
+---
+import Base from '@/layouts/Base.astro';
+import I18nText from '@/components/I18nText.astro';
+---
+
+<Base path="/404" title="Page not found, Menghan LI" description="Page not found." bodyClass="not-found">
+  <section class="lost">
+    <p class="lost-eyebrow">404</p>
+    <h1>
+      <span data-lang="en">Nothing here.</span>
+      <span data-lang="fr">Rien ici.</span>
+      <span data-lang="zh">这里什么都没有。</span>
+    </h1>
+    <p class="lost-line">
+      <I18nText
+        en="This page wandered off."
+        fr="Cette page s'est égarée."
+        zh="这个页面走丢了。"
+      /> <a href={import.meta.env.BASE_URL}>
+        <I18nText en="Back to Menghan's work" fr="Retour aux travaux de Menghan" zh="回到 Menghan 的作品" />
+      </a>.
+    </p>
+  </section>
+</Base>
+
+<style>
+  .lost {
+    min-height: 70svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--space-2);
+    padding: var(--space-6) var(--edge);
+    max-width: 40rem;
+  }
+
+  .lost-eyebrow {
+    font-family: var(--font-display);
+    font-size: var(--text-3xl);
+    color: var(--void-line);
+  }
+
+  .lost h1 {
+    font-size: var(--text-2xl);
+  }
+
+  .lost-line {
+    color: var(--bone-soft);
+  }
+
+  .lost-line a {
+    color: var(--bone);
+    text-decoration-color: var(--gold);
+  }
+</style>

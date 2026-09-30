@@ -1,0 +1,252 @@
+---
+// A real film poster, not a cropped photo with a caption slapped on: full
+// art, a proper title treatment, a "directed by" credit, a rating-style
+// badge for year/category. Hung on the wall at a slight, imperfect angle
+// (CSS 3D, not a flat rectangle) that straightens when you look at it —
+// no scale(), no zoom-on-hover.
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { getProjectImage, responsiveWidths } from '@/lib/images';
+import { projectPath } from '@/lib/projects';
+import I18nText from '@/components/I18nText.astro';
+import { trAll } from '@/i18n/ui';
+import { vividOf } from '@/lib/color';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+  index: number;
+  eager?: boolean;
+}
+const { project, index, eager = false } = Astro.props;
+const { title, subtitle, year, category, cover, coverAlt, accentFrom, accentTo, size, posterCredit, posterGenre } = project.data;
+const img = getProjectImage(project.id, cover);
+const categoryLabel = trAll(`category.${category}` as const);
+const glow = vividOf(accentFrom, accentTo);
+
+// deterministic "hung on a wall" jitter, stable across builds
+const seed = (index * 37 + 11) % 100;
+const tilt = (((seed % 7) - 3) * 0.6).toFixed(2);
+---
+
+<a
+  class="poster"
+  data-size={size}
+  href={projectPath(project.id)}
+  style={`--tilt:${tilt}deg; --poster-a:${accentFrom}; --poster-b:${accentTo}; --poster-glow:${glow};`}
+  data-poster
+  data-glow={glow}
+  data-cursor-hover
+>
+  <div class="poster-wrap" data-poster-wrap>
+    <div class="poster-art">
+      <Image
+        src={img}
+        alt={coverAlt.en}
+        widths={responsiveWidths(img, [480, 768, 1080, 1600])}
+        sizes="(max-width: 700px) 100vw, (max-width: 1200px) 50vw, 32vw"
+        loading={eager ? 'eager' : 'lazy'}
+        transition:name={`project-cover-${project.id}`}
+      />
+      <div class="poster-duotone" aria-hidden="true"></div>
+      <div class="poster-scrim" aria-hidden="true"></div>
+    </div>
+
+    <span class="poster-badge eyebrow">{String(year)}</span>
+
+    <div class="poster-copy">
+      <p class="poster-credit eyebrow">
+        {posterCredit ? (
+          <I18nText en={posterCredit.en} fr={posterCredit.fr} zh={posterCredit.zh} />
+        ) : category === 'personal' ? (
+          <I18nText en="something I made" fr="quelque chose que j'ai fait" zh="我做的" />
+        ) : (
+          <I18nText en="a film I worked on" fr="un film où j'ai travaillé" zh="我参与的片子" />
+        )}
+      </p>
+      <h2 class="poster-title" transition:name={`project-title-${project.id}`}>{title}</h2>
+      <p class="poster-tagline">
+        <I18nText en={subtitle.en} fr={subtitle.fr} zh={subtitle.zh} />
+      </p>
+      <p class="poster-genre eyebrow">
+        {posterGenre ? (
+          <I18nText en={posterGenre.en} fr={posterGenre.fr} zh={posterGenre.zh} />
+        ) : (
+          <I18nText {...categoryLabel} />
+        )}
+      </p>
+    </div>
+  </div>
+</a>
+
+<style>
+  .poster {
+    position: relative;
+    display: block;
+    text-decoration: none;
+    color: var(--bone);
+  }
+
+  .poster[data-size='normal'] {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+
+  .poster[data-size='wide'] {
+    grid-column: span 4;
+    grid-row: span 2;
+  }
+
+  .poster[data-size='large'] {
+    grid-column: span 3;
+    grid-row: span 3;
+  }
+
+  .poster-wrap {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 3px;
+    overflow: hidden;
+    transform: rotate(var(--tilt)) translateZ(0);
+    box-shadow: 0 1.5rem 3rem -1.2rem rgb(0 0 0 / 70%), 0 0 0 1px rgb(255 255 255 / 4%);
+    transition: transform 0.7s var(--ease-out-expo), box-shadow 0.5s;
+  }
+
+  .poster:hover .poster-wrap,
+  .poster:focus-visible .poster-wrap {
+    transform: rotate(0deg) translateZ(60px);
+    box-shadow: 0 2.5rem 4rem -1rem rgb(0 0 0 / 80%),
+      0 0 0 1px color-mix(in srgb, var(--poster-glow) 65%, transparent);
+  }
+
+  /* the glow itself lives on the unclipped outer anchor, not .poster-wrap —
+     a box-shadow meant to bloom outward has to sit outside any
+     overflow:hidden ancestor, or its softest, most visible edge gets
+     cropped exactly where it matters most. */
+  .poster {
+    border-radius: 3px;
+    /* same drop-shadow function at rest, just at zero strength — filter
+       only interpolates smoothly between two states that share the same
+       function list. Going from literally no filter to drop-shadow(...)
+       has no shared basis to animate between, so it used to just pop in
+       instead of fading. */
+    filter: drop-shadow(0 0 0rem color-mix(in srgb, var(--poster-glow) 0%, transparent));
+    transition: filter 0.5s;
+  }
+
+  .poster:hover,
+  .poster:focus-visible {
+    filter: drop-shadow(0 0 0.8rem color-mix(in srgb, var(--poster-glow) 55%, transparent));
+  }
+
+  .poster-art {
+    position: absolute;
+    inset: 0;
+  }
+
+  .poster-art :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 30%;
+  }
+
+  .poster-duotone {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(160deg, color-mix(in srgb, var(--poster-a) 38%, transparent), transparent 55%);
+    mix-blend-mode: multiply;
+  }
+
+  .poster-scrim {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(0deg, rgb(9 8 10 / 94%) 0%, rgb(9 8 10 / 82%) 22%, rgb(9 8 10 / 42%) 48%, transparent 70%),
+      linear-gradient(180deg, rgb(9 8 10 / 55%) 0%, transparent 28%);
+  }
+
+  .poster-badge {
+    position: absolute;
+    top: 0.9rem;
+    right: 0.9rem;
+    z-index: 1;
+    color: var(--bone);
+    background: rgb(9 8 10 / 55%);
+    backdrop-filter: blur(4px);
+    padding: 0.3em 0.6em;
+    border: 1px solid rgb(255 255 255 / 15%);
+    border-radius: 999px;
+  }
+
+  .poster-copy {
+    position: absolute;
+    z-index: 1;
+    inset-inline: 0;
+    bottom: 0;
+    padding: var(--space-3);
+  }
+
+  .poster-credit {
+    color: var(--bone);
+    margin-bottom: 0.5em;
+    text-shadow: 0 1px 2px rgb(0 0 0 / 90%);
+  }
+
+  .poster-title {
+    font-size: clamp(1.15rem, 0.9rem + 1.4vw, 2rem);
+    line-height: 1.02;
+    color: var(--bone);
+    text-shadow: 0 1px 2px rgb(0 0 0 / 90%), 0 8px 24px rgb(0 0 0 / 45%);
+  }
+
+  .poster[data-size='large'] .poster-title {
+    font-size: clamp(1.6rem, 1.1rem + 2.2vw, 3rem);
+  }
+
+  .poster-tagline {
+    margin-top: 0.5em;
+    font-size: var(--text-sm);
+    color: rgb(240 235 224 / 94%);
+    font-style: italic;
+    text-shadow: 0 1px 2px rgb(0 0 0 / 90%);
+  }
+
+  .poster-genre {
+    margin-top: var(--space-2);
+    color: rgb(240 235 224 / 90%);
+    padding-top: 0.6em;
+    border-top: 1px solid rgb(255 255 255 / 28%);
+    text-shadow: 0 1px 2px rgb(0 0 0 / 90%);
+  }
+
+  @media (max-width: 700px) {
+    .poster[data-size='normal'],
+    .poster[data-size='wide'],
+    .poster[data-size='large'] {
+      grid-column: 1 / -1;
+      grid-row: auto;
+    }
+
+    .poster-wrap {
+      min-height: 36rem;
+      height: auto;
+      transform: rotate(0deg);
+    }
+
+    .poster-title,
+    .poster[data-size='large'] .poster-title {
+      font-size: clamp(1.7rem, 8vw, 2.4rem);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .poster-wrap {
+      transition: box-shadow 0.4s;
+    }
+    .poster:hover .poster-wrap,
+    .poster:focus-visible .poster-wrap {
+      transform: rotate(var(--tilt));
+    }
+  }
+</style>

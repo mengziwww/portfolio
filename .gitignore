@@ -1,0 +1,24 @@
+# build
+dist/
+.astro/
+
+# deps
+node_modules/
+
+# env
+.env
+.env.production
+
+# editor / os
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+
+# logs
+npm-debug.log*
+
+# private artwork masters and watermarked downloads (not for the public repo)
+private/
+
+# files removed from the site, recovered from git history (local only)
+archive/

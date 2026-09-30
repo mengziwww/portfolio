@@ -1,0 +1,174 @@
+---
+import '@fontsource-variable/fraunces';
+import '@fontsource-variable/inter';
+import '@fontsource/space-mono';
+import '@/styles/global.css';
+import { ClientRouter } from 'astro:transitions';
+import SEO from '@/components/SEO.astro';
+import Header from '@/components/Header.astro';
+import Footer from '@/components/Footer.astro';
+import Cursor from '@/components/Cursor.astro';
+import Grain from '@/components/Grain.astro';
+import LoadingBar from '@/components/LoadingBar.astro';
+import Lightbox from '@/components/Lightbox.astro';
+import ArtworkGuard from '@/components/ArtworkGuard.astro';
+
+interface Props {
+  path: string;
+  title: string;
+  description: string;
+  ogImage?: string;
+  bodyClass?: string;
+  noindex?: boolean;
+}
+const { path, title, description, ogImage, bodyClass, noindex = false } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#09080a" />
+    <meta name="robots" content={noindex ? 'noindex, noai, noimageai' : 'noai, noimageai'} />
+    <meta name="tdm-reservation" content="1" />
+    <link rel="icon" href={`${import.meta.env.BASE_URL}favicon.svg`} type="image/svg+xml" />
+    <SEO path={path} title={title} description={description} image={ogImage} />
+    <script type="application/ld+json" is:inline set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'Person',
+      name: 'Menghan LI',
+      jobTitle: '2D visual development artist and animator',
+      alumniOf: { '@type': 'CollegeOrUniversity', name: 'Gobelins, l’école de l’image' },
+      url: new URL(import.meta.env.BASE_URL, Astro.site ?? 'https://mengziwww.github.io').toString(),
+      sameAs: [
+        'https://www.instagram.com/mengziwww/',
+        'https://space.bilibili.com/333172997',
+        'https://www.linkedin.com/in/menghan-li-0522b5339/',
+      ],
+    })} />
+    <ClientRouter />
+    <script is:inline>
+      // Runs before paint, on every navigation (Astro re-executes inline
+      // head scripts after each swap) — no flash of the wrong language.
+      (function () {
+        try {
+          var lang = localStorage.getItem('menghan-lang');
+          if (lang === 'fr' || lang === 'zh') {
+            // state lives only on `lang` — see global.css for why data-lang
+            // must never also be set on <html> itself
+            document.documentElement.setAttribute('lang', lang);
+          }
+          var motion = localStorage.getItem('menghan-motion');
+          if (!motion && window.matchMedia('(prefers-reduced-motion: reduce)').matches) motion = 'still';
+          if (motion === 'quiet' || motion === 'still') {
+            document.documentElement.setAttribute('data-motion', motion);
+          }
+          var text = localStorage.getItem('menghan-text');
+          if (text === 'lg' || text === 'xl') document.documentElement.setAttribute('data-text', text);
+          if (localStorage.getItem('menghan-contrast') === 'high') document.documentElement.setAttribute('data-contrast', 'high');
+          if (localStorage.getItem('menghan-space') === 'relaxed') document.documentElement.setAttribute('data-space', 'relaxed');
+          if (localStorage.getItem('menghan-transparent') === 'solid') document.documentElement.setAttribute('data-transparent', 'solid');
+          if (localStorage.getItem('menghan-focus') === 'strong') document.documentElement.setAttribute('data-focus', 'strong');
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body class={bodyClass}>
+    <a class="skip-link" href="#main">Skip to content<span data-lang="fr">Aller au contenu</span><span data-lang="zh">跳转到内容</span></a>
+    <LoadingBar />
+    <Grain />
+    <Cursor />
+    <ArtworkGuard />
+    <Header />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+    <Lightbox />
+  </body>
+</html>
+
+<script>
+  import Lenis from 'lenis';
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  let lenis: Lenis | undefined;
+  let tickerAttached = false;
+
+  function initLenis() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (window.matchMedia('(hover: none), (pointer: coarse)').matches) return;
+    lenis?.destroy();
+    lenis = new Lenis({ duration: 1.05, easing: (t) => 1 - Math.pow(1 - t, 3) });
+
+    // Required integration, not optional: ScrollTrigger listens for native
+    // scroll events by default, and Lenis's easing means the two drift out
+    // of sync without this — in practice every scroll-linked reveal on the
+    // site (color morphs, parallax) simply never fires. This is the fix.
+    lenis.on('scroll', ScrollTrigger.update);
+
+    // this used to run unconditionally on every single initLenis() call —
+    // i.e. on every navigation — and gsap.ticker.add() has no matching
+    // "replace" behavior, only "add another one": after browsing a few
+    // pages, several duplicate callbacks were all calling .raf() on the
+    // same lenis instance every frame, which is exactly the kind of
+    // accumulating-listener bug that shows up as "sometimes" — the
+    // interpolation only misbehaves once enough stray callbacks have
+    // piled up in a session, not on the first page. Attached once, ever.
+    if (!tickerAttached) {
+      tickerAttached = true;
+      gsap.ticker.add((time) => {
+        lenis?.raf(time * 1000);
+      });
+      gsap.ticker.lagSmoothing(0);
+    }
+
+    // resyncs Lenis's own interpolated scroll value to wherever the
+    // native scroll position actually is right now (0 after a normal
+    // forward navigation, Astro's own restored offset after back/
+    // forward) — without this a freshly-constructed Lenis could still
+    // carry a stale target from whatever the previous page's gesture was
+    // heading toward.
+    lenis.scrollTo(window.scrollY, { immediate: true, force: true });
+
+    // exposed so simple in-page controls (see ScrollCue.astro) can ask for
+    // a smooth scroll through the same engine driving everything else,
+    // rather than fighting it with a raw scrollTo
+    (window as any).__lenis = lenis;
+  }
+
+  // charReveal()/wordReveal() (see reveal-text.ts) render every hero title
+  // pre-clipped behind a mask — nothing shows until an ancestor gets
+  // `.is-revealed`. Centralized here so every stage template gets it for
+  // free by adding `data-reveal-root` to its own hero, one attribute
+  // instead of repeating this init in eight separate files.
+  function initReveals() {
+    document.querySelectorAll<HTMLElement>('[data-reveal-root]').forEach((root) => {
+      if (root.dataset.revealInit === '1') return;
+      root.dataset.revealInit = '1';
+      requestAnimationFrame(() => root.classList.add('is-revealed'));
+    });
+  }
+
+  // Every project's --mood-glow lives as an inline custom property on its
+  // own <article>, not on <html> — which is where the scrollbar itself is
+  // styled from (see global.css's --page-scrollbar). Copies it up so the
+  // scrollbar tints to whatever project is actually open; falls back to
+  // gold on the home page, which has no single project mood of its own.
+  function syncScrollbarColor() {
+    const stage = document.querySelector<HTMLElement>('[data-dream], [data-reel], [data-journey], [data-impact], [data-sketchbook], [data-breakdown], [data-atmosphere], [data-process]');
+    const glow = stage ? getComputedStyle(stage).getPropertyValue('--mood-glow').trim() : '';
+    document.documentElement.style.setProperty('--page-scrollbar', glow || 'var(--gold)');
+  }
+
+  document.addEventListener('astro:page-load', () => {
+    initLenis();
+    initReveals();
+    syncScrollbarColor();
+    requestAnimationFrame(() => requestAnimationFrame(() => ScrollTrigger.refresh()));
+  });
+</script>

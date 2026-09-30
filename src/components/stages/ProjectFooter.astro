@@ -1,0 +1,161 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { getProjectImage, responsiveWidths } from '@/lib/images';
+import { projectPath } from '@/lib/projects';
+import I18nText from '@/components/I18nText.astro';
+import { trAll } from '@/i18n/ui';
+import { vividOf } from '@/lib/color';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+  next: CollectionEntry<'projects'>;
+}
+const { next } = Astro.props;
+const img = getProjectImage(next.id, next.data.cover);
+const glow = vividOf(next.data.accentFrom, next.data.accentTo);
+---
+
+<footer class="project-footer">
+  <a class="next-card" href={projectPath(next.id)} style={`--next-glow:${glow};`} data-cursor-hover>
+    <span class="next-label eyebrow"><I18nText {...trAll('project.next')} /></span>
+    <span class="next-frame">
+      <Image src={img} alt="" widths={responsiveWidths(img, [160, 240, 320])} sizes="128px" loading="lazy" />
+    </span>
+    <span class="next-title">{next.data.title}</span>
+    <span class="next-arrow" aria-hidden="true">
+      <svg viewBox="0 0 40 16" fill="none"><path d="M0 8h37M30 1l7 7-7 7" stroke="currentColor" stroke-width="1.5" /></svg>
+    </span>
+  </a>
+  <a class="all-work" href={import.meta.env.BASE_URL} data-cursor-hover><I18nText {...trAll('project.allWork')} /></a>
+</footer>
+
+<style>
+  .project-footer {
+    position: relative;
+    background: var(--void);
+  }
+
+  .next-card {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--edge);
+    text-decoration: none;
+    color: var(--bone);
+    border-top: 1px solid var(--void-line);
+  }
+
+  .next-label {
+    color: var(--bone-faint);
+    flex: none;
+  }
+
+  .next-frame {
+    position: relative;
+    flex: none;
+    width: clamp(3.5rem, 6vw, 5rem);
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border-radius: 2px;
+    box-shadow: 0 0 0 1px var(--void-line);
+    transition: box-shadow 0.4s;
+  }
+
+  .next-frame :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: saturate(0.8) brightness(0.78);
+    transition: filter 0.5s, transform 0.7s var(--ease-out-expo);
+  }
+
+  .next-title {
+    flex: 1;
+    font-family: var(--font-display);
+    font-size: clamp(1.3rem, 1rem + 1.6vw, 2.4rem);
+    line-height: 1;
+    transition: color 0.4s, transform 0.5s var(--ease-out-expo);
+  }
+
+  .next-arrow {
+    flex: none;
+    width: clamp(1.8rem, 3vw, 2.6rem);
+    color: var(--bone-faint);
+    transition: transform 0.5s var(--ease-out-expo), color 0.4s;
+  }
+
+  .next-card:hover,
+  .next-card:focus-visible {
+    outline: none;
+  }
+
+  .next-card:hover .next-frame,
+  .next-card:focus-visible .next-frame {
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--next-glow) 70%, transparent),
+      0 0 1.6rem 0.1rem color-mix(in srgb, var(--next-glow) 40%, transparent);
+  }
+
+  .next-card:hover .next-frame :global(img),
+  .next-card:focus-visible .next-frame :global(img) {
+    filter: saturate(1) brightness(0.95);
+    transform: scale(1.08);
+  }
+
+  .next-card:hover .next-title,
+  .next-card:focus-visible .next-title {
+    color: var(--next-glow);
+    transform: translateX(0.3em);
+  }
+
+  .next-card:hover .next-arrow,
+  .next-card:focus-visible .next-arrow {
+    color: var(--next-glow);
+    transform: translateX(0.5em);
+  }
+
+  .all-work {
+    display: block;
+    text-align: center;
+    padding: var(--space-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--bone-soft);
+    text-decoration: none;
+    background: var(--void);
+    border-top: 1px solid var(--void-line);
+    transition: color var(--dur-fast);
+  }
+
+  :lang(zh) .all-work {
+    text-transform: none;
+  }
+
+  .all-work:hover {
+    color: var(--gold);
+  }
+
+  @media (max-width: 700px) {
+    .next-card {
+      gap: var(--space-2);
+    }
+
+    .next-label {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .next-frame :global(img),
+    .next-title,
+    .next-arrow {
+      transition: none;
+    }
+    .next-card:hover .next-frame :global(img) {
+      transform: none;
+    }
+  }
+</style>

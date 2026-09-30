@@ -1,0 +1,125 @@
+---
+import { getOrderedProjects } from '@/lib/projects';
+import { trAll } from '@/i18n/ui';
+import { charReveal, wordReveal } from '@/lib/reveal-text';
+import Poster from './Poster.astro';
+import DustField from './DustField.astro';
+import ScrollCue from '@/components/ScrollCue.astro';
+
+const projects = await getOrderedProjects();
+const tagline = trAll('site.tagline');
+---
+
+<section class="hero" data-reveal-root>
+  <DustField />
+  <h1 class="hero-name" set:html={charReveal('Menghan LI', 850, 32)} />
+  <p class="hero-tagline">
+    <span data-lang="en" set:html={wordReveal(tagline.en, 1500)} />
+    <span data-lang="fr" set:html={wordReveal(tagline.fr, 1500)} />
+    <span data-lang="zh" set:html={wordReveal(tagline.zh, 1500)} />
+  </p>
+  <div class="hero-cue">
+    <ScrollCue />
+  </div>
+</section>
+
+<section class="wall" aria-label="Selected work" data-wall>
+  {projects.map((project, i) => (
+    <Poster project={project} index={i} eager={i < 2} />
+  ))}
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: var(--space-6) var(--edge) var(--space-5);
+    overflow: hidden;
+  }
+
+  .hero-name {
+    position: relative;
+    font-size: var(--text-3xl);
+    line-height: 0.92;
+    max-width: 20ch;
+  }
+
+  .hero-tagline {
+    position: relative;
+    font-size: var(--text-lg);
+    color: var(--bone-soft);
+    max-width: 32ch;
+    margin-top: var(--space-3);
+  }
+
+  .hero-cue {
+    position: absolute;
+    left: var(--edge);
+    bottom: var(--space-3);
+  }
+
+  .wall {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    grid-auto-rows: minmax(6rem, 8vw);
+    grid-auto-flow: dense;
+    gap: clamp(1.5rem, 3vw, 3rem);
+    padding: var(--space-5) var(--edge) var(--space-6);
+    background: color-mix(in srgb, var(--void) 55%, transparent);
+    perspective: 1800px;
+  }
+
+  @media (max-width: 700px) {
+    .hero {
+      min-height: auto;
+      overflow: visible;
+      padding-top: 6.5rem;
+      padding-bottom: var(--space-5);
+    }
+
+    .hero-name {
+      font-size: clamp(2.7rem, 16vw, 4.4rem);
+      max-width: none;
+    }
+
+    .hero-tagline {
+      max-width: none;
+      font-size: var(--text-base, 1.05rem);
+    }
+
+    .wall {
+      grid-template-columns: 1fr;
+      grid-auto-rows: auto;
+      gap: var(--space-4);
+      padding: var(--space-4) var(--edge) var(--space-5);
+      perspective: none;
+    }
+  }
+</style>
+
+<script>
+  // hero title reveal itself is handled globally in Base.astro (any
+  // [data-reveal-root] gets it) — this file just needs the attribute
+  function initWall() {
+    const posters = document.querySelectorAll<HTMLAnchorElement>('[data-poster]');
+    if (!posters.length || (posters[0] as HTMLElement).dataset.posterInit === '1') return;
+
+    posters.forEach((poster) => {
+      poster.dataset.posterInit = '1';
+      const applyGlow = () => {
+        const glow = poster.dataset.glow;
+        if (glow) document.documentElement.style.setProperty('--mood-glow', glow);
+      };
+      poster.addEventListener('mouseenter', applyGlow);
+      poster.addEventListener('focus', applyGlow);
+    });
+  }
+
+  document.addEventListener('astro:page-load', () => {
+    initWall();
+  });
+</script>

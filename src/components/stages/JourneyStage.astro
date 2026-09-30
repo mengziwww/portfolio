@@ -1,0 +1,904 @@
+---
+// Two earlier passes (a horizontal filmstrip, then a vertical scroll of
+// torn-edge frames) both treated this as a photo gallery with heavy
+// color grading — neither one actually felt like a dead world. This
+// rebuilds the page as a different kind of object entirely: a
+// corrupted signal archive being recovered in real time. A sticky HUD
+// bar tracks "integrity" climbing as you scroll, boot-log lines open
+// the page, and every gallery image is filed as a numbered,
+// checksum-stamped fragment that gets visibly cleaner the further the
+// signal has been reconstructed — the wasteland-to-rebirth arc plays
+// out through the archive's own recovery quality, not just hue shifts.
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { getProjectImage, responsiveWidths } from '@/lib/images';
+import ProjectFooter from './ProjectFooter.astro';
+import ScrollCue from '@/components/ScrollCue.astro';
+import I18nText from '@/components/I18nText.astro';
+import { trAll } from '@/i18n/ui';
+import { vividOf } from '@/lib/color';
+import { charReveal } from '@/lib/reveal-text';
+import ProjectIntro from '@/components/ProjectIntro.astro';
+interface Props {
+  project: CollectionEntry<'projects'>;
+  next: CollectionEntry<'projects'>;
+}
+const { project, next } = Astro.props;
+const { title, subtitle, description, year, roles, client, cover, coverAlt, category, gallery, accentFrom, accentTo, links } = project.data;
+const glow = vividOf(accentFrom, accentTo);
+const coverImg = getProjectImage(project.id, cover);
+const categoryLabel = trAll(`category.${category}` as const);
+const clientLabel = trAll('project.client');
+
+function hexId(seed: number): string {
+  let h = seed * 2654435761 + 12345;
+  let out = '';
+  for (let i = 0; i < 8; i++) {
+    h = (h * 16807 + 2531011) % 2147483647;
+    out += (h % 16).toString(16);
+  }
+  return out.toUpperCase();
+}
+
+function noiseByte(seed: number): string {
+  let h = seed * 2654435761 + 98765;
+  h = (h * 16807 + 2531011) % 2147483647;
+  return (h % 256).toString(16).padStart(2, '0').toUpperCase();
+}
+
+const statusPool = {
+  corrupted: [
+    { en: 'NO LIFE SIGNS', fr: 'AUCUN SIGNE DE VIE', zh: '无生命迹象' },
+    { en: 'SIGNAL DEGRADED', fr: 'SIGNAL DÉGRADÉ', zh: '信号衰减' },
+    { en: 'STRUCTURE UNSTABLE', fr: 'STRUCTURE INSTABLE', zh: '结构不稳定' },
+  ],
+  stable: [
+    { en: 'SIGNAL STABILIZING', fr: 'SIGNAL EN STABILISATION', zh: '信号趋于稳定' },
+    { en: 'TRANSMISSION CLEAR', fr: 'TRANSMISSION CLAIRE', zh: '信号清晰' },
+  ],
+};
+
+const frames = gallery.map((item, i) => {
+  const corruption = Math.max(6, 74 - i * 19);
+  const pool = corruption > 40 ? statusPool.corrupted : statusPool.stable;
+  const status = pool[i % pool.length];
+  return { item, corruption, hex: hexId(i + 7), status, n: String(i + 1).padStart(2, '0') };
+});
+
+const bootLines = [
+  { en: 'UPLINK RE-ESTABLISHED…', fr: 'LIAISON RÉTABLIE…', zh: '信号连接已恢复…' },
+  { en: 'LAST CONTACT: UNKNOWN', fr: 'DERNIER CONTACT : INCONNU', zh: '最后联系时间：未知' },
+  { en: 'RECONSTRUCTING ARCHIVE…', fr: 'RECONSTRUCTION DES ARCHIVES…', zh: '正在重建档案…' },
+];
+
+const streamLines = Array.from({ length: 16 }, (_, i) =>
+  Array.from({ length: 6 }, (_, j) => noiseByte(i * 6 + j + 1)).join(' ')
+);
+---
+
+<article class="journey" style={`--mood-a:${accentFrom}; --mood-b:${accentTo}; --mood-glow:${glow};`} data-journey data-reveal-root>
+  <div class="dead-sweep" aria-hidden="true"></div>
+  <div class="af-hud" aria-hidden="true">
+    <span class="af-hud-dot"></span>
+    <span class="af-hud-label" data-hud-label>SIGNAL_042 · RECOVERING</span>
+    <span class="af-hud-bar"><span class="af-hud-fill" data-hud-fill style="width:4%"></span></span>
+    <span class="af-hud-pct"><b data-integrity>04</b>%</span>
+  </div>
+
+  <div class="af-datastream af-datastream-left" aria-hidden="true">
+    <span class="af-datastream-inner">
+      {[...streamLines, ...streamLines].map((l) => <span>{l}</span>)}
+    </span>
+  </div>
+  <div class="af-datastream af-datastream-right" aria-hidden="true">
+    <span class="af-datastream-inner">
+      {[...streamLines, ...streamLines].reverse().map((l) => <span>{l}</span>)}
+    </span>
+  </div>
+
+  <header class="af-hero">
+    <div class="af-boot">
+      {bootLines.map((line, i) => (
+        <p class="boot-line" style={`--d:${i * 0.5 + 0.15}s`}>
+          <span class="prompt">&gt;</span> <I18nText en={line.en} fr={line.fr} zh={line.zh} />
+        </p>
+      ))}
+    </div>
+
+    <div class="crt crt-hero">
+      <span class="monitor-rec"><i></i>REC</span>
+      <span class="monitor-timecode" data-timecode>00:00:00</span>
+      <Image
+        src={coverImg}
+        alt={coverAlt.en}
+        widths={responsiveWidths(coverImg, [640, 960, 1400])}
+        sizes="(max-width: 800px) 92vw, 55rem"
+        loading="eager"
+        fetchpriority="high"
+        transition:name={`project-cover-${project.id}`}
+      />
+      <span class="monitor-scanlines is-faint"></span>
+      <span class="monitor-vignette"></span>
+    </div>
+
+    <div class="af-hero-copy">
+      <p class="hero-eyebrow eyebrow">
+        <I18nText {...categoryLabel} /> · {year}{client ? (
+          <>
+            {' · '}<I18nText {...clientLabel} /> {client}
+          </>
+        ) : null}
+      </p>
+      <h1 class="af-title">
+        <span class="prompt">&gt;</span>
+        <span transition:name={`project-title-${project.id}`} set:html={charReveal(title, 120, 22)} />
+        <span class="af-caret"></span>
+      </h1>
+      <p class="af-subtitle">
+        <I18nText en={subtitle.en} fr={subtitle.fr} zh={subtitle.zh} />
+      </p>
+      <ProjectIntro description={description} links={links} />
+
+      <dl class="af-meta">
+        <div class="meta-row">
+          <dt class="pill pill-crew">CREW</dt>
+          <dd class="meta-value">
+            {roles.en.map((_, i) => (
+              <span class="crew-item">
+                <I18nText en={roles.en[i]} fr={roles.fr[i]} zh={roles.zh[i]} />{i < roles.en.length - 1 ? <span class="crew-sep"> / </span> : null}
+              </span>
+            ))}
+          </dd>
+        </div>
+        <div class="meta-row">
+          <dt class="pill pill-live"><I18nText en="STATUS" fr="ÉTAT" zh="状态" /></dt>
+          <dd class="meta-value">
+            <I18nText en="SIGNAL LOST, RECOVERING" fr="SIGNAL PERDU, RÉCUPÉRATION" zh="信号丢失，恢复中" />
+          </dd>
+        </div>
+        <div class="meta-row">
+          <dt class="pill pill-danger"><I18nText en="BIOSIGNS" fr="SIGNES VITAUX" zh="生命体征" /></dt>
+          <dd class="meta-value">
+            <I18nText en="NONE DETECTED" fr="AUCUN DÉTECTÉ" zh="未探测到" />
+          </dd>
+        </div>
+      </dl>
+    </div>
+
+    <div class="af-cue">
+      <ScrollCue />
+    </div>
+  </header>
+
+  <div class="archive-files" data-journey-track>
+    <p class="archive-label eyebrow">
+      <I18nText en="recovered fragments" fr="fragments récupérés" zh="已恢复的片段" />
+    </p>
+    {frames.map(({ item, corruption, hex, status, n }) => (
+      <figure class={`file-card ${corruption > 40 ? 'is-corrupted' : 'is-stable'}`} style={`--corruption:${corruption};`} data-file-card data-artwork data-note-id={`${project.id}:${item.file}`}>
+        <div class="file-card-head">
+          <span class="file-id">FILE_{n}.DAT</span>
+          <span class="file-hex">{hex}</span>
+          <span class="file-status">
+            <I18nText en={status.en} fr={status.fr} zh={status.zh} />
+          </span>
+          <span class="file-pct">{corruption}%</span>
+        </div>
+        <div class="crt">
+          <span class="monitor-rec"><i></i>REC</span>
+          <Image
+            src={getProjectImage(project.id, item.file)}
+            alt={item.alt.en}
+            widths={responsiveWidths(getProjectImage(project.id, item.file), [640, 960, 1280])}
+            sizes="(max-width: 800px) 92vw, 50rem"
+            loading={n === '01' ? 'eager' : 'lazy'}
+          />
+          <span class="monitor-scanlines"></span>
+          <span class="monitor-static"></span>
+        </div>
+        {item.caption && (
+          <figcaption><span class="prompt">&gt;</span> <I18nText en={item.caption.en} fr={item.caption.fr} zh={item.caption.zh} /></figcaption>
+        )}
+      </figure>
+    ))}
+  </div>
+
+  <ProjectFooter project={project} next={next} />
+</article>
+
+<style>
+  .journey {
+    position: relative;
+    background:
+      repeating-linear-gradient(90deg, color-mix(in srgb, var(--bone) 65%, transparent) 0px, color-mix(in srgb, var(--bone) 65%, transparent) 1px, transparent 1px, transparent 42px),
+      repeating-linear-gradient(0deg, color-mix(in srgb, var(--bone) 65%, transparent) 0px, color-mix(in srgb, var(--bone) 65%, transparent) 1px, transparent 1px, transparent 42px),
+      radial-gradient(ellipse 65% 40% at 50% 0%, color-mix(in srgb, var(--mood-glow) 12%, transparent), transparent 70%),
+      var(--journey-color-mix, color-mix(in srgb, var(--mood-a), var(--void) 55%));
+    /* two rounds of blend-mode tricks (screen, then difference) both
+       measured out worse in practice than expected — checked with an
+       actual WCAG contrast calc against both ends of the scroll
+       (color-mix'd murky green to violet): screen collapses to ~1.1:1
+       at the violet end, difference only really pays off near 100%
+       opacity (way too bold for a subtle grid). A plain, solidly-opaque
+       bone line with NO blend-mode cleverness measured 4.37:1 at the
+       start and never drops below 2.5:1 even at full violet — worse
+       peak contrast than the fancy versions, but the only one that
+       doesn't collapse toward invisible partway through the scroll,
+       which was the actual complaint.
+    */
+    transition: background-color 1.2s;
+  }
+
+  /* permanent inset vignette — the archive is being watched from
+     somewhere dark at the edges, not just lit evenly */
+  .journey::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    box-shadow: inset 0 0 14rem 2rem rgb(0 0 0 / 65%);
+  }
+
+  /* a dead scanner sweep — searching top to bottom, finding nothing,
+     over and over. rare enough to catch you off guard. */
+  .journey .dead-sweep {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: -2px;
+    height: 2px;
+    z-index: 2;
+    pointer-events: none;
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, #e08a6a 65%, transparent) 20%, color-mix(in srgb, #e08a6a 65%, transparent) 80%, transparent);
+    opacity: 0;
+    animation: dead-sweep 14s linear infinite;
+  }
+
+  @keyframes dead-sweep {
+    0% { top: -2px; opacity: 0; }
+    2% { opacity: 0.7; }
+    46% { opacity: 0.5; }
+    50% { top: 100%; opacity: 0; }
+    100% { top: 100%; opacity: 0; }
+  }
+
+  /* faint corruption blocks flashing across the whole page, not just the
+     per-card monitors — this is what made the background read as "just a
+     flat wash" before */
+  .journey::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0;
+    background: linear-gradient(90deg, transparent 20%, color-mix(in srgb, var(--mood-glow) 45%, transparent) 20.4%, transparent 21%);
+    animation: page-glitch 11s steps(1) infinite;
+  }
+
+  @keyframes page-glitch {
+    0%, 96.5%, 100% { opacity: 0; }
+    97% { opacity: 0.5; background-position: 0 30%; }
+    97.4% { opacity: 0; }
+    98.2% { opacity: 0.35; background-position: 0 74%; }
+    98.5% { opacity: 0; }
+  }
+
+  /* ---- HUD bar — fixed to the bottom edge, not the top: a sticky top:0
+     bar sat directly under the site's own fixed header (z-index 50) and
+     was rendered over by it ---- */
+  .af-hud {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 0.7em;
+    padding: 0.55em var(--edge);
+    background: rgb(6 8 7 / 88%);
+    backdrop-filter: blur(6px);
+    border-top: 1px solid color-mix(in srgb, var(--mood-glow) 30%, var(--void-line));
+    font-family: var(--font-mono);
+    font-size: clamp(0.6rem, 1.4vw, 0.72rem);
+    letter-spacing: 0.06em;
+    color: color-mix(in srgb, var(--bone) 80%, transparent);
+  }
+
+  .af-hud-dot {
+    width: 7px;
+    height: 7px;
+    flex: none;
+    border-radius: 50%;
+    background: #d84a3a;
+    box-shadow: 0 0 6px 1.5px rgb(216 74 58 / 70%);
+    animation: rec-pulse 1.6s ease-in-out infinite;
+  }
+
+  @keyframes rec-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
+
+  .af-hud-label {
+    flex: none;
+    white-space: nowrap;
+  }
+
+  .journey.is-recovered .af-hud-label {
+    color: var(--mood-glow);
+  }
+
+  .af-hud-bar {
+    flex: 1 1 auto;
+    height: 3px;
+    background: var(--void-line);
+    overflow: hidden;
+  }
+
+  .af-hud-fill {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, var(--mood-a), var(--mood-b));
+    transition: width 0.2s linear;
+  }
+
+  .af-hud-pct {
+    flex: none;
+  }
+
+  /* ---- side data streams ---- */
+  .af-datastream {
+    position: fixed;
+    top: 0;
+    bottom: 3rem;
+    z-index: 1;
+    width: 1.6rem;
+    overflow: hidden;
+    writing-mode: vertical-rl;
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.1em;
+    line-height: 1.8;
+    color: color-mix(in srgb, var(--mood-glow) 55%, transparent);
+    opacity: 0.3;
+    pointer-events: none;
+    mix-blend-mode: screen;
+  }
+
+  .af-datastream-left { left: 0; }
+  .af-datastream-right { right: 0; }
+
+  .af-datastream-inner {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    animation: stream-scroll 26s linear infinite;
+  }
+
+  .af-datastream-right .af-datastream-inner {
+    animation-duration: 31s;
+    animation-direction: reverse;
+  }
+
+  @keyframes stream-scroll {
+    from { transform: translateY(0); }
+    to { transform: translateY(-50%); }
+  }
+
+  @media (max-width: 900px) {
+    .af-datastream { display: none; }
+  }
+
+  /* ---- shared "monitor" bezel used for hero + every file card ---- */
+  .crt {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--bone) 14%, transparent);
+    background: #050505;
+    box-shadow: 0 1.5rem 4rem -1.5rem rgb(0 0 0 / 80%), inset 0 0 0 1px rgb(0 0 0 / 40%);
+  }
+
+  .crt :global(img) {
+    width: 100%;
+    display: block;
+  }
+
+  .monitor-rec {
+    position: absolute;
+    top: 0.6em;
+    left: 0.7em;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 0.4em;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.1em;
+    color: rgb(255 255 255 / 85%);
+    text-shadow: 0 1px 6px rgb(0 0 0 / 70%);
+  }
+
+  .monitor-rec i {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #d84a3a;
+    box-shadow: 0 0 6px 1px rgb(216 74 58 / 70%);
+    animation: rec-pulse 1.6s ease-in-out infinite;
+  }
+
+  .monitor-timecode {
+    position: absolute;
+    top: 0.6em;
+    right: 0.7em;
+    z-index: 2;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: rgb(255 255 255 / 70%);
+    text-shadow: 0 1px 6px rgb(0 0 0 / 70%);
+  }
+
+  .monitor-scanlines {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(0deg, rgb(0 0 0 / 22%) 0px, rgb(0 0 0 / 22%) 1px, transparent 1px, transparent 3px);
+  }
+
+  .monitor-scanlines.is-faint {
+    opacity: 0.4;
+  }
+
+  .monitor-vignette {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    box-shadow: inset 0 0 5rem 0.6rem rgb(0 0 0 / 55%);
+  }
+
+  .monitor-static {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+    opacity: calc(var(--corruption, 0) / 260);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ---- hero ---- */
+  .af-hero {
+    position: relative;
+    z-index: 1;
+    min-height: 100svh;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(1.5rem, 5vw, 4rem);
+    padding: var(--space-6) var(--edge) var(--space-5);
+    overflow: hidden;
+  }
+
+  .af-boot {
+    flex-basis: 100%;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: color-mix(in srgb, var(--mood-glow) 75%, var(--bone) 25%);
+    margin-bottom: -0.5rem;
+  }
+
+  .boot-line {
+    display: inline-block;
+    padding: 0.15em 0.5em;
+    margin-bottom: 0.3em;
+    background: rgb(5 5 6 / 45%);
+    border-radius: 3px;
+    opacity: 0;
+    animation: boot-in 0.5s steps(1) forwards;
+    animation-delay: var(--d);
+  }
+
+  .boot-line .prompt {
+    color: var(--mood-glow);
+  }
+
+  @keyframes boot-in {
+    0% { opacity: 0; }
+    40% { opacity: 1; }
+    55% { opacity: 0.2; }
+    70% { opacity: 1; }
+    100% { opacity: 1; }
+  }
+
+  .crt-hero {
+    flex: none;
+    width: clamp(12rem, 26vw, 28rem);
+  }
+
+  .af-hero-copy {
+    flex: 1 1 24rem;
+    max-width: 30rem;
+  }
+
+  .hero-eyebrow {
+    display: inline-block;
+    padding: 0.3em 0.6em;
+    background: rgb(5 5 6 / 45%);
+    border-radius: 3px;
+    color: var(--gold);
+    margin-bottom: var(--space-2);
+  }
+
+  .af-title {
+    font-size: var(--text-2xl);
+    line-height: 0.96;
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.25em;
+  }
+
+  .af-title .prompt {
+    color: var(--mood-glow);
+    font-family: var(--font-mono);
+    font-size: 0.6em;
+  }
+
+  .af-caret {
+    display: inline-block;
+    width: 0.45em;
+    height: 0.85em;
+    background: var(--gold);
+    animation: caret-blink 1s steps(1) infinite;
+  }
+
+  @keyframes caret-blink {
+    50% { opacity: 0; }
+  }
+
+  .af-subtitle {
+    display: inline-block;
+    padding: 0.2em 0.5em;
+    background: rgb(5 5 6 / 40%);
+    border-radius: 3px;
+    font-size: var(--text-lg);
+    color: var(--bone-soft);
+    margin-top: var(--space-2);
+  }
+
+  .af-meta {
+    margin-top: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+  }
+
+  .meta-row {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.6em;
+  }
+
+  .meta-row dt {
+    flex: none;
+    margin: 0;
+    letter-spacing: 0.08em;
+  }
+
+  .meta-row dd {
+    margin: 0;
+  }
+
+  /* ---- pills on the labels (CREW/STATUS/BIOSIGNS) — small colored
+     badges give each row its own identity and weight. The *values*
+     (role names, status text) get the plain scrim treatment instead
+     (.meta-value below), same as every other real line of text on this
+     page (see .file-card-head/figcaption) — a pill shape reads right
+     for a short fixed label, but wrong for a sentence. ---- */
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25em 0.7em;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+
+  .pill-crew {
+    color: var(--bone);
+    background: color-mix(in srgb, var(--bone) 12%, transparent);
+    border-color: color-mix(in srgb, var(--bone) 30%, transparent);
+  }
+
+  .pill-live {
+    color: var(--mood-glow);
+    background: color-mix(in srgb, var(--mood-glow) 16%, transparent);
+    border-color: color-mix(in srgb, var(--mood-glow) 45%, transparent);
+  }
+
+  .pill-danger {
+    color: #e08a6a;
+    background: color-mix(in srgb, #e08a6a 16%, transparent);
+    border-color: color-mix(in srgb, #e08a6a 45%, transparent);
+    animation: text-flicker 4.5s linear infinite;
+  }
+
+  /* the actual values — same discreet scrim as .file-card-head and
+     figcaption further down the page, so every real line of text on
+     this page gets the same treatment instead of just the ones inside
+     a .crt monitor */
+  .meta-value {
+    display: inline-block;
+    padding: 0.3em 0.6em;
+    background: rgb(5 5 6 / 45%);
+    border-radius: 3px;
+    color: var(--bone-soft);
+  }
+
+  .crew-sep {
+    color: color-mix(in srgb, var(--bone) 40%, transparent);
+  }
+
+  .af-cue {
+    position: absolute;
+    left: var(--edge);
+    bottom: var(--space-3);
+  }
+
+  /* ---- archive file cards ---- */
+  .archive-files {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-5);
+    padding: var(--space-5) var(--edge) var(--space-6);
+  }
+
+  .archive-label {
+    display: inline-block;
+    width: fit-content;
+    max-width: 50rem;
+    padding: 0.3em 0.6em;
+    background: rgb(5 5 6 / 45%);
+    border-radius: 3px;
+    color: var(--gold);
+  }
+
+  .file-card {
+    width: 100%;
+    max-width: 50rem;
+  }
+
+  .file-card-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.9em;
+    /* a discreet scrim behind the labels — the page background drifts
+       from a muted green to a fairly bright violet over the scroll (see
+       .journey's --journey-color-mix), and this text sat directly on top
+       of it with nothing behind it, going soft right when the color was
+       most saturated */
+    padding: 0.35em 0.6em;
+    margin-inline: -0.1rem;
+    background: rgb(5 5 6 / 45%);
+    border-radius: 3px;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.05em;
+  }
+
+  .file-id {
+    color: var(--bone);
+  }
+
+  .file-hex {
+    color: color-mix(in srgb, var(--bone) 45%, transparent);
+  }
+
+  .file-status {
+    color: color-mix(in srgb, var(--bone) 70%, transparent);
+  }
+
+  .file-card.is-corrupted .file-status {
+    color: #e08a6a;
+  }
+
+  .file-card.is-stable .file-status {
+    /* not --mood-glow: the page background itself scroll-transitions to
+       mood-b, so a glow-colored label would land on a same-colored
+       background right when corruption is lowest and the label matters
+       most */
+    color: var(--bone);
+  }
+
+  .file-pct {
+    margin-left: auto;
+    color: color-mix(in srgb, var(--bone) 55%, transparent);
+  }
+
+  .file-card.is-corrupted .file-id,
+  .file-card.is-corrupted .file-hex {
+    animation: text-flicker 4.5s linear infinite;
+  }
+
+  @keyframes text-flicker {
+    0%, 93%, 100% { opacity: 1; }
+    94% { opacity: 0.3; }
+    95% { opacity: 1; }
+    96% { opacity: 0.5; }
+    97% { opacity: 1; }
+  }
+
+  .file-card :global(img) {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    cursor: zoom-in;
+    filter: saturate(0.65) contrast(1.12) brightness(0.85);
+    transition: filter 0.6s;
+  }
+
+  .file-card.is-corrupted :global(img) {
+    filter: saturate(0.4) contrast(1.2) brightness(0.72) sepia(0.1) hue-rotate(60deg);
+  }
+
+  .file-card.is-corrupted .crt {
+    animation: file-glitch-jump 8s ease-in-out infinite;
+  }
+
+  @keyframes file-glitch-jump {
+    0%, 95%, 100% { transform: translateX(0); }
+    96% { transform: translateX(-4px); }
+    97.5% { transform: translateX(3px); }
+    99% { transform: translateX(-1px); }
+  }
+
+  .file-card figcaption {
+    margin-top: var(--space-2);
+    font-size: var(--text-sm);
+    /* real content, not chrome — everything else on this page (hex ids,
+       percentages) can stay dim for texture, but her actual words need
+       to survive whatever color the archive background has drifted to.
+       The text-shadow alone still wasn't enough against the brighter,
+       more saturated end of the scroll, hence the scrim as well. */
+    color: var(--bone-soft);
+    text-shadow: 0 1px 8px rgb(0 0 0 / 55%);
+    max-width: 60ch;
+    width: fit-content;
+    padding: 0.5em 0.7em;
+    background: rgb(5 5 6 / 45%);
+    border-radius: 3px;
+  }
+
+  .file-card figcaption .prompt {
+    color: var(--mood-glow);
+    font-family: var(--font-mono);
+  }
+
+  @media (max-width: 700px) {
+    .af-hud { font-size: 0.58rem; gap: 0.5em; }
+    .meta-row dt { width: 4.2em; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .af-hud-dot,
+    .monitor-rec i,
+    .monitor-static,
+    .af-caret,
+    .file-card.is-corrupted .file-id,
+    .file-card.is-corrupted .file-hex,
+    .file-card.is-corrupted .crt,
+    .af-datastream-inner,
+    .dead-sweep,
+    .pill-danger {
+      animation: none;
+    }
+    .dead-sweep {
+      opacity: 0;
+    }
+    .boot-line {
+      opacity: 1;
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  let timecodeInterval: number | undefined;
+
+  function initJourney() {
+    const roots = document.querySelectorAll<HTMLElement>('[data-journey]');
+    if (!roots.length) return;
+    gsap.registerPlugin(ScrollTrigger);
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    roots.forEach((root) => {
+      if (root.dataset.journeyInit === '1') return;
+      root.dataset.journeyInit = '1';
+
+      const track = root.querySelector<HTMLElement>('[data-journey-track]');
+      const integrityEls = root.querySelectorAll<HTMLElement>('[data-integrity]');
+      const fillEl = root.querySelector<HTMLElement>('[data-hud-fill]');
+      const labelEl = root.querySelector<HTMLElement>('[data-hud-label]');
+
+      if (track && !reduced) {
+        gsap.to(root, {
+          '--journey-progress': 100,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: track,
+            start: 'top 75%',
+            end: 'bottom bottom',
+            scrub: 0.6,
+          },
+          onUpdate: function () {
+            const p = gsap.getProperty(root, '--journey-progress') as number;
+            // a custom property, not root.style.background directly — the
+            // full shorthand would blow away the grid/vignette texture
+            // layers declared in CSS, leaving only a flat color wash again.
+            // Keep the same 55%-void darkening the static fallback below
+            // uses — without it this drifted toward raw, undarkened
+            // --mood-b (a fairly bright, saturated violet here) by the end
+            // of the scroll, and every low-opacity bone/mono label on top
+            // of it lost most of its contrast right when there was the
+            // most text on screen to read.
+            root.style.setProperty(
+              '--journey-color-mix',
+              `color-mix(in srgb, color-mix(in srgb, var(--mood-a), var(--mood-b) ${p}%), var(--void) 55%)`
+            );
+            const pct = Math.round(4 + p * 0.96);
+            integrityEls.forEach((el) => {
+              el.textContent = String(pct).padStart(2, '0');
+            });
+            if (fillEl) fillEl.style.width = `${pct}%`;
+            if (labelEl) labelEl.textContent = pct > 80 ? 'SIGNAL_042 · STABLE' : 'SIGNAL_042 · RECOVERING';
+            root.classList.toggle('is-recovered', pct > 80);
+          },
+        });
+      } else {
+        integrityEls.forEach((el) => {
+          el.textContent = '98';
+        });
+        if (fillEl) fillEl.style.width = '98%';
+        if (labelEl) labelEl.textContent = 'SIGNAL_042 · STABLE';
+        root.classList.add('is-recovered');
+      }
+
+      const timecodeEl = root.querySelector<HTMLElement>('[data-timecode]');
+      if (timecodeEl && !reduced) {
+        let secs = 0;
+        timecodeInterval = window.setInterval(() => {
+          secs += 1;
+          const h = String(Math.floor(secs / 3600)).padStart(2, '0');
+          const m = String(Math.floor((secs % 3600) / 60)).padStart(2, '0');
+          const s = String(secs % 60).padStart(2, '0');
+          timecodeEl.textContent = `${h}:${m}:${s}`;
+        }, 1000);
+      }
+    });
+  }
+
+  document.addEventListener('astro:page-load', () => {
+    initJourney();
+    requestAnimationFrame(() => ScrollTrigger.refresh());
+  });
+
+  document.addEventListener('astro:before-swap', () => {
+    ScrollTrigger.getAll().forEach((t) => t.kill());
+    if (timecodeInterval) window.clearInterval(timecodeInterval);
+  });
+</script>

@@ -1,0 +1,462 @@
+---
+// This is the one project on the site that isn't finished — a graduate
+// film still being built, in the middle of its own process. Every other
+// stage presents a completed world; this one is honest about being a
+// work in progress, so instead of a polished gallery it reads like a
+// production board: sketches pinned up in the order they were made,
+// warm and sunlit (a road-trip film, a field of sunflowers in its own
+// key art), building up through three real reels of the actual footage.
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { getProjectImage, responsiveWidths } from '@/lib/images';
+import ProjectFooter from './ProjectFooter.astro';
+import ScrollCue from '@/components/ScrollCue.astro';
+import I18nText from '@/components/I18nText.astro';
+import { trAll } from '@/i18n/ui';
+import { vividOf } from '@/lib/color';
+import { charReveal } from '@/lib/reveal-text';
+import VideoPlayer from '@/components/VideoPlayer.astro';
+import ProjectIntro from '@/components/ProjectIntro.astro';
+interface Props {
+  project: CollectionEntry<'projects'>;
+  next: CollectionEntry<'projects'>;
+}
+const { project, next } = Astro.props;
+const { title, subtitle, description, year, roles, category, client, cover, coverAlt, gallery, accentFrom, accentTo, videos, links } = project.data;
+const glow = vividOf(accentFrom, accentTo);
+const coverImg = getProjectImage(project.id, cover);
+const categoryLabel = trAll(`category.${category}` as const);
+const clientLabel = trAll('project.client');
+
+type Item = (typeof gallery)[number];
+type Chapter = { label: Item['chapter']; items: Item[] };
+
+const chapters: Chapter[] = [];
+for (const item of gallery) {
+  const last = chapters[chapters.length - 1];
+  if (last && last.label?.en === item.chapter?.en) {
+    last.items.push(item);
+  } else {
+    chapters.push({ label: item.chapter, items: [item] });
+  }
+}
+
+// pinned-up, slightly-off, hand-placed — never a perfect grid, because
+// none of this is a finished, deliberately-composed board yet
+function pinSeed(seed: number) {
+  return {
+    rot: ((seed * 37) % 9) - 4.5,
+    pin: ['pin-a', 'pin-b', 'pin-c'][seed % 3],
+  };
+}
+
+const pollen = Array.from({ length: 26 }, (_, i) => ({
+  left: `${(i * 41 + 5) % 100}%`,
+  delay: `${(i % 10) * 1.3}s`,
+  dur: `${13 + (i % 7) * 2}s`,
+  size: 2 + (i % 3),
+}));
+---
+
+<article class="process" style={`--mood-a:${accentFrom}; --mood-b:${accentTo}; --mood-glow:${glow};`} data-process data-reveal-root>
+  <div class="pr-pollen" aria-hidden="true">
+    {pollen.map((p) => (
+      <span class="pollen-mote" style={`left:${p.left}; animation-delay:${p.delay}; animation-duration:${p.dur}; width:${p.size}px; height:${p.size}px;`}></span>
+    ))}
+  </div>
+
+  <header class="pr-hero">
+    <span class="pr-hero-scrim" aria-hidden="true"></span>
+    <Image
+      class="pr-hero-bg"
+      src={coverImg}
+      alt=""
+      aria-hidden="true"
+      widths={responsiveWidths(coverImg, [900, 1400, 2000])}
+      sizes="100vw"
+      loading="eager"
+      fetchpriority="high"
+      transition:name={`project-cover-${project.id}`}
+    />
+    <div class="pr-hero-copy">
+      <p class="hero-eyebrow eyebrow">
+        <I18nText {...categoryLabel} /> · {year}{client ? (
+          <>
+            {' · '}<I18nText {...clientLabel} /> {client}
+          </>
+        ) : null}
+      </p>
+      <h1 class="pr-hero-title" transition:name={`project-title-${project.id}`} set:html={charReveal(title, 120, 22)} />
+      <p class="pr-hero-subtitle">
+        <I18nText en={subtitle.en} fr={subtitle.fr} zh={subtitle.zh} />
+      </p>
+      <p class="pr-hero-desc">
+        <I18nText en={description.en} fr={description.fr} zh={description.zh} />
+      </p>
+      <ProjectIntro links={links} />
+      <ul class="hero-roles">
+        {roles.en.map((_, i) => (
+          <li style={`--i:${i}`}>
+            <I18nText en={roles.en[i]} fr={roles.fr[i]} zh={roles.zh[i]} />
+          </li>
+        ))}
+      </ul>
+      <p class="pr-wip-badge">
+        <I18nText en="still taking shape" fr="encore en chantier" zh="仍在创作中" />
+      </p>
+    </div>
+    <figure class="pr-hero-credit">
+      <figcaption><I18nText en={coverAlt.en} fr={coverAlt.fr} zh={coverAlt.zh} /></figcaption>
+    </figure>
+    <div class="pr-hero-cue">
+      <ScrollCue />
+    </div>
+  </header>
+
+  {chapters.map((chapter, ci) => (
+    <section class="pr-chapter" style={`--chapter-tint:${ci % 2 === 0 ? accentFrom : accentTo};`}>
+      {chapter.label && (
+        <h2 class="pr-chapter-title">
+          <span class="pr-chapter-index">{String(ci + 1).padStart(2, '0')}</span>
+          <I18nText en={chapter.label.en} fr={chapter.label.fr} zh={chapter.label.zh} />
+        </h2>
+      )}
+      <div class="pr-board">
+        {chapter.items.map((item, ii) => {
+          const seed = pinSeed(ci * 7 + ii * 3 + 2);
+          return (
+            <figure class={`pr-card ${seed.pin}`} style={`--rot:${seed.rot}deg;`} data-artwork data-note-id={`${project.id}:${item.file}`}>
+              <span class="pr-card-frame">
+                <Image
+                  src={getProjectImage(project.id, item.file)}
+                  alt={item.alt.en}
+                  widths={responsiveWidths(getProjectImage(project.id, item.file), [420, 640, 960])}
+                  sizes="(max-width: 800px) 88vw, 26vw"
+                  loading="lazy"
+                />
+              </span>
+              <figcaption>
+                <I18nText en={item.alt.en} fr={item.alt.fr} zh={item.alt.zh} />
+              </figcaption>
+            </figure>
+          );
+        })}
+      </div>
+    </section>
+  ))}
+
+  {videos && videos.length > 0 && (
+    <section class="pr-reels">
+      <h2 class="pr-chapter-title">
+        <span class="pr-chapter-index">{String(chapters.length + 1).padStart(2, '0')}</span>
+        <I18nText en="in motion" fr="en mouvement" zh="动起来的画面" />
+      </h2>
+      {videos.map((v, vi) => (
+        <div class="pr-reel">
+          <p class="pr-reel-label eyebrow">
+            <span class="pr-reel-num">{String(vi + 1).padStart(2, '0')}</span>
+            <I18nText en={v.label.en} fr={v.label.fr} zh={v.label.zh} />
+          </p>
+          <VideoPlayer src={`/videos/${project.id}/${v.file}`} />
+        </div>
+      ))}
+    </section>
+  )}
+
+  <ProjectFooter project={project} next={next} />
+</article>
+
+<style>
+  .process {
+    position: relative;
+    background:
+      radial-gradient(ellipse 70% 45% at 50% 0%, color-mix(in srgb, var(--mood-a) 22%, transparent), transparent 70%),
+      color-mix(in srgb, var(--mood-a) 6%, var(--void));
+    overflow: hidden;
+  }
+
+  .pr-pollen {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .pollen-mote {
+    position: absolute;
+    top: -2%;
+    border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 5px 1px color-mix(in srgb, var(--gold) 70%, transparent);
+    opacity: 0;
+    animation: pollen-drift linear infinite;
+  }
+
+  @keyframes pollen-drift {
+    0% { transform: translate(0, 0); opacity: 0; }
+    10% { opacity: 0.7; }
+    90% { opacity: 0.4; }
+    100% { transform: translate(2.5rem, 108svh); opacity: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pollen-mote { animation: none; opacity: 0; }
+  }
+
+  /* ---- hero: the sunflower field itself as the backdrop, not a small
+     card off to the side — the one image on the whole site that earns
+     full-bleed treatment ---- */
+  .pr-hero {
+    position: relative;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: var(--space-6) var(--edge) var(--space-6);
+  }
+
+  .pr-hero-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 35%;
+    filter: saturate(1.05) brightness(0.82);
+  }
+
+  .pr-hero-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background:
+      linear-gradient(0deg, var(--void) 0%, color-mix(in srgb, var(--void) 78%, transparent) 32%, color-mix(in srgb, var(--void) 15%, transparent) 62%, transparent 85%),
+      linear-gradient(100deg, color-mix(in srgb, var(--void) 55%, transparent) 0%, transparent 45%);
+  }
+
+  .pr-hero-copy {
+    position: relative;
+    z-index: 2;
+    max-width: 38rem;
+  }
+
+  .hero-eyebrow {
+    color: var(--gold);
+    margin-bottom: var(--space-2);
+  }
+
+  .pr-hero-title {
+    font-size: var(--text-2xl);
+    line-height: 0.96;
+    color: var(--bone);
+    text-shadow: 0 0.3rem 1.5rem rgb(0 0 0 / 45%);
+  }
+
+  .pr-hero-subtitle {
+    font-size: var(--text-lg);
+    color: var(--bone-soft);
+    margin-top: var(--space-2);
+  }
+
+  .pr-hero-desc {
+    font-size: var(--text-sm);
+    color: var(--bone-faint);
+    max-width: 48ch;
+    margin-top: var(--space-3);
+    line-height: 1.6;
+  }
+
+  .hero-roles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    list-style: none;
+    margin-top: var(--space-4);
+    padding: 0;
+  }
+
+  .hero-roles li {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    border: 1px solid rgb(255 255 255 / 25%);
+    background: rgb(0 0 0 / 20%);
+    backdrop-filter: blur(3px);
+    padding: 0.4em 0.85em;
+    border-radius: 999px;
+    color: var(--bone);
+  }
+
+  .pr-wip-badge {
+    display: inline-block;
+    margin-top: var(--space-4);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--void);
+    background: var(--gold);
+    padding: 0.5em 1.1em;
+    border-radius: 2px;
+    transform: rotate(-2deg);
+    box-shadow: 0 0.5rem 1rem -0.4rem rgb(0 0 0 / 50%);
+  }
+
+  :lang(zh) .pr-wip-badge {
+    text-transform: none;
+  }
+
+  .pr-hero-credit {
+    position: absolute;
+    right: var(--edge);
+    bottom: var(--space-3);
+    z-index: 2;
+    max-width: 22rem;
+    text-align: right;
+  }
+
+  .pr-hero-credit figcaption {
+    font-size: 0.68rem;
+    line-height: 1.4;
+    color: rgb(255 255 255 / 55%);
+  }
+
+  .pr-hero-cue {
+    position: absolute;
+    left: var(--edge);
+    bottom: var(--space-3);
+    z-index: 2;
+  }
+
+  @media (max-width: 700px) {
+    .pr-hero-credit { display: none; }
+  }
+
+  .pr-chapter {
+    position: relative;
+    z-index: 1;
+    padding: var(--space-5) var(--edge);
+    border-top: 1px solid var(--void-line);
+  }
+
+  .pr-chapter-title {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6em;
+    font-size: var(--text-xl);
+    margin-bottom: var(--space-5);
+  }
+
+  .pr-chapter-index {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: var(--chapter-tint, var(--gold));
+    letter-spacing: 0.05em;
+  }
+
+  /* ---- pin-board: nothing lines up perfectly, because this is a wall
+     of reference, not a finished spread ---- */
+  .pr-board {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: var(--space-5) var(--space-4);
+  }
+
+  .pr-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    transform: rotate(var(--rot, 0deg));
+    transition: transform 0.4s var(--ease-out-expo);
+  }
+
+  .pr-card:hover,
+  .pr-card:focus-within {
+    transform: rotate(0deg) translateY(-0.2rem);
+  }
+
+  .pr-card-frame {
+    display: block;
+    overflow: hidden;
+    background: var(--bone-faint);
+    padding: 0.5rem 0.5rem 0;
+    box-shadow: 0 1rem 2rem -0.8rem rgb(0 0 0 / 55%);
+  }
+
+  .pr-card-frame :global(img) {
+    width: 100%;
+    display: block;
+    object-fit: contain;
+    background: #efe6d8;
+  }
+
+  .pr-card figcaption {
+    margin-top: var(--space-2);
+    font-size: var(--text-xs);
+    color: var(--bone-faint);
+    max-width: 45ch;
+  }
+
+  .pr-card::before {
+    content: '';
+    position: absolute;
+    top: -0.5rem;
+    left: 50%;
+    width: 2.4rem;
+    height: 1.1rem;
+    z-index: 1;
+    transform: translateX(-50%) rotate(-3deg);
+    background: rgb(255 255 255 / 18%);
+    border: 1px solid rgb(255 255 255 / 25%);
+  }
+
+  .pr-card.pin-b::before {
+    left: 30%;
+    transform: translateX(-50%) rotate(4deg);
+  }
+
+  .pr-card.pin-c::before {
+    left: 70%;
+    transform: translateX(-50%) rotate(-6deg);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pr-card { transition: none; }
+  }
+
+  /* ---- the three reels — same projector-gate treatment proven on
+     Bajiajiang's process reel, warmed up to this project's own palette ---- */
+  .pr-reels {
+    position: relative;
+    z-index: 1;
+    padding: var(--space-5) var(--edge) var(--space-6);
+    border-top: 1px solid var(--void-line);
+  }
+
+  .pr-reel {
+    max-width: 58rem;
+    margin: 0 auto var(--space-6);
+  }
+
+  .pr-reel:last-child {
+    margin-bottom: 0;
+  }
+
+  .pr-reel-label {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6em;
+    color: var(--gold);
+    margin-bottom: var(--space-3);
+  }
+
+  .pr-reel-num {
+    font-family: var(--font-mono);
+    font-size: 0.7em;
+    color: color-mix(in srgb, var(--gold) 65%, var(--bone-faint));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pr-card { transition: none; }
+  }
+</style>

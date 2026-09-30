@@ -1,0 +1,103 @@
+title: Bajiajiang
+year: 2025
+category: school
+template: breakdown
+order: 3
+size: wide
+accentFrom: "#C47A12"
+accentTo: "#152020"
+client: Gobelins
+roles:
+  en: [Concept, Color Script, Character Design]
+  fr: [Concept, Color Script, Character Design]
+  zh: [概念设计, 色彩脚本, 角色设计]
+subtitle:
+  en: school film
+  fr: film d'école
+  zh: 学生短片
+description:
+  en: >-
+    I went to Fujian for a traditional parade where people walk with
+    their gods. Their lives don't look especially protected. They are
+    happy anyway. Faith gives them room to breathe, and a life that is
+    their own. The story follows a 14 year old boy. He is restless, and
+    he wants a thrill. With no parents looking after him, he lives with
+    the older boys from the hall. They train and parade as Bajiajiang.
+    Then one day, just before the New Year parade, that simple happiness
+    seems to be ending.
+  fr: >-
+    Je suis allée dans le Fujian pour une procession traditionnelle,
+    où les gens marchent avec leurs dieux. Leur vie n'a pas l'air
+    particulièrement protégée. Ils sont heureux quand même. La foi leur
+    laisse un endroit pour respirer, et une vie à eux. L'histoire suit
+    un garçon de 14 ans. Il est rebelle, il a besoin de sensations.
+    Sans parents pour le surveiller, il vit avec les frères de la salle.
+    Ensemble ils s'entraînent et défilent en Bajiajiang. Un jour, juste
+    avant la procession du Nouvel An, cette vie simple et joyeuse semble
+    arriver au bout.
+  zh: >-
+    我曾经去过中国福建，参加传统游神。那里的人与神同行，生活看起来却并不被护佑。
+    即便如此，他们仍然快乐。信仰让他们在现实里有了喘息的地方，也带给他们不一样的生活。
+    故事的主人公是一个14岁的初中男孩。他叛逆，也需要刺激。没有父母管教，他更多和堂口的兄弟们一起生活。
+    大家经常做八家将的游神训练和活动。可有一天，春节游神之前，这样简单快乐的生活似乎走到了尽头。
+cover: concept-styleframe.png
+coverAlt:
+  en: A style frame rendered in the same warm lantern palette as the color script
+  fr: Un style frame rendu dans la même palette chaleureuse de lanternes que le color script
+  zh: 与色彩脚本同一暖色灯笼色调的风格定稿
+gallery:
+  - file: concept-colorscript.png
+    chapter:
+      en: Concept & color script
+      fr: Concept et color script
+      zh: 概念与色彩脚本
+    alt:
+      en: An eight-panel color script, lantern light, temple smoke, a guardian lion and a wall of fire
+      fr: Un color script en huit plans, lumière de lanterne, fumée de temple, lion gardien et mur de flammes
+      zh: 八格色彩脚本，灯笼光影、庙宇香烟、护法石狮与一面烈焰之墙
+  - file: concept-character.png
+    chapter:
+      en: Concept & color script
+      fr: Concept et color script
+      zh: 概念与色彩脚本
+    alt:
+      en: Character sketches of a running, startled boy and a quiet girl holding a lotus
+      fr: "Croquis de personnages : un garçon en fuite, surpris, et une fillette silencieuse tenant un lotus"
+      zh: 人物速写：一个惊慌奔跑的男孩，以及一个安静地捧着莲花的女孩
+  - file: concept-keypose.png
+    chapter:
+      en: Concept & color script
+      fr: Concept et color script
+      zh: 概念与色彩脚本
+    alt:
+      en: Key poses exploring the protagonist's walk and stance
+      fr: Poses clés explorant la démarche et la posture du protagoniste
+      zh: 探索主角走路姿态与站姿的关键动作稿
+  - file: concept-styleframe.png
+    chapter:
+      en: Concept & color script
+      fr: Concept et color script
+      zh: 概念与色彩脚本
+    alt:
+      en: A style frame rendered in the same warm lantern palette as the color script
+      fr: Un style frame rendu dans la même palette chaleureuse de lanternes que le color script
+      zh: 与色彩脚本同一暖色灯笼色调的风格定稿
+  - file: still-temple.jpg
+    chapter:
+      en: more from this project
+      fr: encore de ce projet
+      zh: 这个项目的其他画面
+    alt:
+      en: A background test.
+      fr: Un essai de décor.
+      zh: 一张背景测试。
+  - file: still-figure.jpg
+    chapter:
+      en: more from this project
+      fr: encore de ce projet
+      zh: 这个项目的其他画面
+    alt:
+      en: Expressions.
+      fr: Expressions.
+      zh: 表情。
+video: /videos/bajiajiang/storyboard.mp4

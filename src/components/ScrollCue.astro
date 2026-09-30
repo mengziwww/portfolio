@@ -1,0 +1,103 @@
+---
+// A falling-thread line plus a vertical word, not a dot dropping in a
+// pill — and it actually scrolls the page when clicked, so it's a control
+// rather than pure decoration.
+interface Props {
+  label?: { en: string; fr: string; zh: string };
+}
+const { label = { en: 'scroll', fr: 'défiler', zh: '向下滚动' } } = Astro.props;
+---
+
+<button type="button" class="scroll-cue" data-scroll-cue data-cursor-hover aria-label={label.en}>
+  <span class="cue-line" aria-hidden="true"></span>
+  <span class="cue-label">
+    <span data-lang="en">{label.en}</span>
+    <span data-lang="fr">{label.fr}</span>
+    <span data-lang="zh">{label.zh}</span>
+  </span>
+</button>
+
+<style>
+  .scroll-cue {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    background: none;
+    border: none;
+    padding: 0.4rem;
+  }
+
+  .cue-line {
+    position: relative;
+    width: 1px;
+    height: 3.2rem;
+    background: var(--void-line);
+    overflow: hidden;
+  }
+
+  .cue-line::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--gold);
+    clip-path: inset(0 0 100% 0);
+    animation: cue-thread 2.4s ease-in-out infinite;
+  }
+
+  .cue-label {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--bone-faint);
+    writing-mode: vertical-rl;
+    transition: color var(--dur-fast);
+  }
+
+  :lang(zh) .cue-label {
+    text-transform: none;
+  }
+
+  .scroll-cue:hover .cue-label,
+  .scroll-cue:focus-visible .cue-label {
+    color: var(--gold);
+  }
+
+  /* drawn from the top down, held, then eroded away starting from the
+     same top edge — the tail is always the last part to vanish, so it
+     reads as a thread dropping through and out rather than a blink */
+  @keyframes cue-thread {
+    0% { clip-path: inset(0 0 100% 0); }
+    40%, 60% { clip-path: inset(0 0 0% 0); }
+    100% { clip-path: inset(100% 0 0% 0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cue-line::after {
+      animation: none;
+      clip-path: inset(0 0 0% 0);
+      opacity: 0.6;
+    }
+  }
+</style>
+
+<script>
+  function initScrollCues() {
+    document.querySelectorAll<HTMLButtonElement>('[data-scroll-cue]').forEach((cue) => {
+      if (cue.dataset.scrollCueInit === '1') return;
+      cue.dataset.scrollCueInit = '1';
+      cue.addEventListener('click', () => {
+        const distance = window.innerHeight * 0.92;
+        const lenis = (window as any).__lenis;
+        if (lenis?.scrollTo) {
+          lenis.scrollTo(window.scrollY + distance, { duration: 1.2 });
+        } else {
+          window.scrollBy({ top: distance, behavior: 'smooth' });
+        }
+      });
+    });
+  }
+
+  document.addEventListener('astro:page-load', initScrollCues);
+</script>

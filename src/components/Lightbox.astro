@@ -1,0 +1,204 @@
+---
+// Click a picture in the work to see it whole, then zoom. The page can
+// crop or grade an image; this view uses the file itself, unfiltered.
+---
+
+<div class="lightbox" data-lightbox hidden>
+  <div class="lightbox-bar">
+    <button type="button" data-lb-out aria-label="Zoom out">−</button>
+    <button type="button" data-lb-in aria-label="Zoom in">+</button>
+    <button type="button" data-lb-close aria-label="Close">×</button>
+  </div>
+  <div class="lightbox-stage" data-lb-stage>
+    <img data-lb-img alt="" draggable="false" />
+  </div>
+</div>
+
+<style>
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 800;
+    background: rgb(9 8 10 / 94%);
+    display: grid;
+  }
+
+  .lightbox[hidden] {
+    display: none;
+  }
+
+  .lightbox-bar {
+    position: absolute;
+    top: var(--space-2);
+    right: var(--space-2);
+    z-index: 2;
+    display: flex;
+    gap: 0.4rem;
+  }
+
+  .lightbox-bar button {
+    width: 2.4rem;
+    height: 2.4rem;
+    border: 1px solid var(--void-line);
+    border-radius: 999px;
+    background: rgb(9 8 10 / 72%);
+    color: var(--bone);
+    font-family: var(--font-mono);
+    font-size: 1.15rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .lightbox-bar button:hover {
+    color: var(--gold);
+    border-color: var(--gold);
+  }
+
+  .lightbox-stage {
+    min-height: 0;
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+    cursor: grab;
+    touch-action: none;
+  }
+
+  .lightbox-stage.is-dragging {
+    cursor: grabbing;
+  }
+
+  .lightbox-stage img {
+    max-width: min(92vw, 1100px);
+    max-height: 86vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    transform-origin: center center;
+    user-select: none;
+    filter: none;
+  }
+</style>
+
+<script>
+  function initLightbox() {
+    const root = document.querySelector<HTMLElement>('[data-lightbox]');
+    if (!root || root.dataset.lbReady === '1') return;
+    root.dataset.lbReady = '1';
+
+    const stage = root.querySelector<HTMLElement>('[data-lb-stage]');
+    const img = root.querySelector<HTMLImageElement>('[data-lb-img]');
+    const btnIn = root.querySelector<HTMLButtonElement>('[data-lb-in]');
+    const btnOut = root.querySelector<HTMLButtonElement>('[data-lb-out]');
+    const btnClose = root.querySelector<HTMLButtonElement>('[data-lb-close]');
+    if (!stage || !img || !btnIn || !btnOut || !btnClose) return;
+
+    let scale = 1;
+    let x = 0;
+    let y = 0;
+
+    const paint = () => {
+      img.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
+    };
+
+    const clampScale = (n: number) => Math.min(4, Math.max(1, n));
+
+    const reset = () => {
+      scale = 1;
+      x = 0;
+      y = 0;
+      paint();
+    };
+
+    const open = (source: HTMLImageElement) => {
+      img.src = source.currentSrc || source.src;
+      img.alt = source.alt || '';
+      reset();
+      root.hidden = false;
+      document.documentElement.style.overflow = 'hidden';
+      btnClose.focus();
+    };
+
+    const close = () => {
+      root.hidden = true;
+      img.removeAttribute('src');
+      document.documentElement.style.overflow = '';
+    };
+
+    const zoomBy = (factor: number) => {
+      const next = clampScale(scale * factor);
+      if (next === 1) {
+        x = 0;
+        y = 0;
+      }
+      scale = next;
+      paint();
+    };
+
+    document.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement | null;
+      if (!target || root.contains(target)) return;
+      if (target.closest('a, button, video, [data-video-player], [data-pin-flip], [data-manga]')) return;
+      const hit = target.closest('img');
+      if (!hit || !hit.closest('main')) return;
+      if (hit.clientWidth < 64) return;
+      event.preventDefault();
+      open(hit as HTMLImageElement);
+    });
+
+    btnClose.addEventListener('click', close);
+    btnIn.addEventListener('click', () => zoomBy(1.25));
+    btnOut.addEventListener('click', () => zoomBy(0.8));
+
+    stage.addEventListener(
+      'wheel',
+      (event) => {
+        if (root.hidden) return;
+        event.preventDefault();
+        zoomBy(event.deltaY < 0 ? 1.12 : 0.9);
+      },
+      { passive: false }
+    );
+
+    let dragging = false;
+    let lastX = 0;
+    let lastY = 0;
+
+    stage.addEventListener('pointerdown', (event) => {
+      if (scale <= 1 || event.target === btnClose) return;
+      dragging = true;
+      lastX = event.clientX;
+      lastY = event.clientY;
+      stage.classList.add('is-dragging');
+      stage.setPointerCapture(event.pointerId);
+    });
+
+    stage.addEventListener('pointermove', (event) => {
+      if (!dragging) return;
+      x += event.clientX - lastX;
+      y += event.clientY - lastY;
+      lastX = event.clientX;
+      lastY = event.clientY;
+      paint();
+    });
+
+    const endDrag = () => {
+      dragging = false;
+      stage.classList.remove('is-dragging');
+    };
+    stage.addEventListener('pointerup', endDrag);
+    stage.addEventListener('pointercancel', endDrag);
+
+    document.addEventListener('keydown', (event) => {
+      if (root.hidden) return;
+      if (event.key === 'Escape') close();
+      if (event.key === '+' || event.key === '=') zoomBy(1.25);
+      if (event.key === '-' || event.key === '_') zoomBy(0.8);
+    });
+
+    root.addEventListener('click', (event) => {
+      if (event.target === stage || event.target === root) close();
+    });
+  }
+
+  document.addEventListener('astro:page-load', initLightbox);
+</script>

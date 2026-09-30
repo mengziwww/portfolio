@@ -1,0 +1,93 @@
+---
+// A short entrance moment for the home page. Not the thin top progress
+// bar (LoadingBar.astro, which runs on every navigation). Each visit to
+// "/" plays it once, then it clears. Only included on index.astro, so
+// Astro's view-transition swap mounts a fresh copy (and re-fires
+// astro:page-load) every time the visitor comes back to "/".
+//
+// A plain spinner, spinning at a constant rate. It starts hidden so
+// nothing paints before the script decides to show it.
+---
+
+<div id="loader-root" data-loader-root hidden aria-hidden="true">
+  <svg class="loader-spinner" viewBox="0 0 40 40" aria-hidden="true">
+    <circle class="loader-spinner-track" cx="20" cy="20" r="17" />
+    <circle class="loader-spinner-arc" cx="20" cy="20" r="17" />
+  </svg>
+</div>
+
+<style>
+  #loader-root {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    display: grid;
+    place-items: center;
+    background: var(--void);
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 0.5s var(--ease-out-expo);
+  }
+
+  #loader-root[hidden] {
+    display: none;
+  }
+
+  #loader-root.is-leaving {
+    opacity: 0;
+  }
+
+  .loader-spinner {
+    width: 2.2rem;
+    height: 2.2rem;
+    animation: loader-rotate 0.9s linear infinite;
+  }
+
+  .loader-spinner-track {
+    fill: none;
+    stroke: var(--void-line);
+    stroke-width: 2;
+  }
+
+  .loader-spinner-arc {
+    fill: none;
+    stroke: var(--bone-soft);
+    stroke-width: 2;
+    stroke-linecap: round;
+    /* circumference of r=17 is ~106.8 — a fixed ~75% gap, no dashoffset
+       easing over time, so the only motion is the rotation itself */
+    stroke-dasharray: 80 107;
+  }
+
+  @keyframes loader-rotate {
+    to { transform: rotate(360deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #loader-root {
+      transition: opacity 0.2s;
+    }
+    .loader-spinner {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  function initLoader() {
+    const root = document.querySelector<HTMLElement>('[data-loader-root]');
+    if (!root) return;
+
+    root.hidden = false;
+
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const holdMs = reduced ? 300 : 1100;
+
+    window.setTimeout(() => {
+      root.classList.add('is-leaving');
+      window.setTimeout(() => root.remove(), 500);
+    }, holdMs);
+  }
+
+  document.addEventListener('astro:page-load', initLoader);
+</script>

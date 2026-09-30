@@ -1,0 +1,212 @@
+title: Personal works
+year: 2025
+category: personal
+template: sketchbook
+order: 8
+size: wide
+accentFrom: "#8A5A3A"
+accentTo: "#161310"
+roles:
+  en: [Drawing]
+  fr: [Dessin]
+  zh: [画]
+subtitle:
+  en: smaller pieces, in a few piles
+  fr: des pièces plus petites, en quelques tas
+  zh: 一些小作品，分成几叠
+description:
+  en: Placeholder. Drawings, commissions and fan art. I'll write about each pile later.
+  fr: Texte provisoire. Dessins, commandes et fan art. J'écrirai sur chaque tas plus tard.
+  zh: 先放着。画、委托和同人。每一叠我之后再写。
+cover: cover.png
+coverAlt:
+  en: Placeholder. I'll describe this image later.
+  fr: Texte provisoire. Je décrirai cette image plus tard.
+  zh: 说明先空着，之后再写。
+gallery:
+  - file: since-tomorrow-01.gif
+    chapter:
+      en: Since Tomorrow
+      fr: Since Tomorrow
+      zh: Since Tomorrow
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: since-tomorrow-02.gif
+    chapter:
+      en: Since Tomorrow
+      fr: Since Tomorrow
+      zh: Since Tomorrow
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: since-tomorrow-03.gif
+    chapter:
+      en: Since Tomorrow
+      fr: Since Tomorrow
+      zh: Since Tomorrow
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: card-game-01.png
+    chapter:
+      en: Card game
+      fr: Jeu de cartes
+      zh: 卡牌游戏
+    alt:
+      en: The party's artificial berserker, a humanoid weapon of the legion.
+      fr: Le berserker artificiel du groupe, une arme humanoïde de la légion.
+      zh: 主角团人造人狂战士，军团人形兵器。
+    caption:
+      en: The party's artificial berserker, a humanoid weapon of the legion.
+      fr: Le berserker artificiel du groupe, une arme humanoïde de la légion.
+      zh: 主角团人造人狂战士，军团人形兵器。
+  - file: card-game-02.png
+    chapter:
+      en: Card game
+      fr: Jeu de cartes
+      zh: 卡牌游戏
+    alt:
+      en: A goblin, a basic monster in the game. I wanted it to feel frightening.
+      fr: Un gobelin, un monstre de base du jeu. Je voulais qu'il fasse peur.
+      zh: 哥布林，游戏内基础怪物，我想画得恐怖一点。
+    caption:
+      en: A goblin, a basic monster in the game. I wanted it to feel frightening.
+      fr: Un gobelin, un monstre de base du jeu. Je voulais qu'il fasse peur.
+      zh: 哥布林，游戏内基础怪物，我想画得恐怖一点。
+  - file: card-game-03.jpg
+    chapter:
+      en: Card game
+      fr: Jeu de cartes
+      zh: 卡牌游戏
+    alt:
+      en: A mage. She is gentle, and close to nature.
+      fr: Une mage. Elle est douce, proche de la nature.
+      zh: 法师角色女孩，性格温和，亲近自然。
+    caption:
+      en: A mage. She is gentle, and close to nature.
+      fr: Une mage. Elle est douce, proche de la nature.
+      zh: 法师角色女孩，性格温和，亲近自然。
+  - file: card-game-04.jpg
+    chapter:
+      en: Card game
+      fr: Jeu de cartes
+      zh: 卡牌游戏
+    alt:
+      en: A design for the game's title.
+      fr: Une proposition pour le titre du jeu.
+      zh: 游戏标题设计。
+    caption:
+      en: A design for the game's title.
+      fr: Une proposition pour le titre du jeu.
+      zh: 游戏标题设计。
+  - file: card-game-05.jpg
+    chapter:
+      en: Card game
+      fr: Jeu de cartes
+      zh: 卡牌游戏
+    alt:
+      en: A monster from one region, something a polluted mind produced.
+      fr: Un monstre de région, produit d'un esprit contaminé.
+      zh: 一个区域怪物，精神被污染的产物。
+    caption:
+      en: A monster from one region, something a polluted mind produced.
+      fr: Un monstre de région, produit d'un esprit contaminé.
+      zh: 一个区域怪物，精神被污染的产物。
+  - file: ocs-01.jpg
+    chapter:
+      en: Commissions
+      fr: Commandes
+      zh: 他人委托
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: ocs-02.png
+    chapter:
+      en: Commissions
+      fr: Commandes
+      zh: 他人委托
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: ocs-03.png
+    chapter:
+      en: Commissions
+      fr: Commandes
+      zh: 他人委托
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: spring-festival-01.jpg
+    chapter:
+      en: Spring Festival
+      fr: Fête du printemps
+      zh: 春节
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: spring-festival-02.jpg
+    chapter:
+      en: Spring Festival
+      fr: Fête du printemps
+      zh: 春节
+    alt:
+      en: A New Year picture for the year of the tiger.
+      fr: Une image de nouvel an pour l'année du tigre.
+      zh: 虎年新年贺图。
+    caption:
+      en: A New Year picture for the year of the tiger.
+      fr: Une image de nouvel an pour l'année du tigre.
+      zh: 虎年新年贺图。
+  - file: solar-terms-01.jpg
+    chapter:
+      en: 24 solar terms
+      fr: 24 termes solaires
+      zh: 二十四节气
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: cover.png
+    chapter:
+      en: Sketchbook
+      fr: Carnet
+      zh: 速写
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: practice-02.jpg
+    chapter:
+      en: Sketchbook
+      fr: Carnet
+      zh: 速写
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: practice-03.png
+    chapter:
+      en: Sketchbook
+      fr: Carnet
+      zh: 速写
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: practice-04.jpg
+    chapter:
+      en: Sketchbook
+      fr: Carnet
+      zh: 速写
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。

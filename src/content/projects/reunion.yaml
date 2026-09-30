@@ -1,0 +1,101 @@
+title: Reunion
+year: 2023
+category: school
+template: reel
+order: 5
+size: wide
+accentFrom: "#D98A2B"
+accentTo: "#3F6B4A"
+client: Communication University of China
+posterGenre:
+  en: CUC 2023
+  fr: CUC 2023
+  zh: 中传 2023
+roles:
+  en: [Concept, Prop design, Storyboard, Background, Animation, Compositing]
+  fr: [Concept, Design d'accessoires, Storyboard, Décors, Animation, Compositing]
+  zh: [概念设计, 道具设计, 分镜, 背景美术, 动画, 合成]
+subtitle:
+  en: collaborative short, Communication University of China, 2023
+  fr: court métrage collectif, Communication University of China, 2023
+  zh: 中国传媒大学合作短片，2023
+description:
+  en: >-
+    A short I made with others, before Gobelins, at the Communication
+    University of China. A reunion night, streets full of temple-fair
+    spirits and lanterns.
+  fr: >-
+    Un court que j'ai fait avec d'autres, avant les Gobelins, à la
+    Communication University of China. Une nuit de retrouvailles, des
+    rues pleines d'esprits de fête et de lanternes.
+  zh: >-
+    去高布兰之前，我和别人一起在中国传媒大学做的短片。团圆之夜，街上是庙会的精怪和灯笼。
+cover: hero.png
+coverAlt:
+  en: A crowded, lantern-lit temple street with a golden-robed deity figure, a guardian lion statue and a grinning child
+  fr: Une rue de temple animée et éclairée de lanternes, avec une divinité en robe dorée, un lion gardien et une enfant souriante
+  zh: 灯笼高挂的热闹庙会街道，金袍神将、护法石狮与咧嘴笑的孩童
+gallery:
+  - file: deity.png
+    chapter: &chapterCharacters
+      en: final effect
+      fr: rendu final
+      zh: 最终效果
+    alt:
+      en: Close-up of a fierce, ornately masked deity figure in red and gold temple dress, a mischievous girl at their feet
+      fr: Gros plan sur une divinité au masque orné et féroce, en robe de temple rouge et or, avec une fillette espiègle à ses pieds
+      zh: 一位面容威严、头戴精致法冠的神将特写，身穿红金庙袍，脚边是调皮的女孩
+  - file: scene-02.png
+    chapter: &chapterWorld
+      en: World
+      fr: Univers
+      zh: 世界
+    alt:
+      en: Environment study of the reunion-night street, warm and crowded
+      fr: Étude d'environnement de la rue de la nuit des retrouvailles, chaleureuse et animée
+      zh: 团圆之夜街景环境稿，暖意融融、人声鼎沸
+  - file: scene-03.png
+    chapter: *chapterWorld
+    alt:
+      en: A quieter corner of the same street, lanterns reflected in the dark
+      fr: Un coin plus calme de la même rue, lanternes se reflétant dans l'obscurité
+      zh: 同一条街道更安静的一角，灯笼倒影在夜色中
+  - file: scene-04.png
+    chapter: *chapterWorld
+    alt:
+      en: A final environment pass, the crowd thinning as the night deepens
+      fr: Un dernier passage d'environnement, la foule se dispersant tandis que la nuit s'approfondit
+      zh: 最后一版环境稿，夜色渐深，人群渐渐散去
+  - file: extra-34.png
+    chapter: *chapterWorld
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: prop-1.png
+    chapter: *chapterWorld
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: prop-2.png
+    chapter: *chapterWorld
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: prop-3.png
+    chapter: *chapterWorld
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: extra-30.png
+    chapter:
+      en: more from this project
+      fr: encore de ce projet
+      zh: 这个项目的其他画面
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。

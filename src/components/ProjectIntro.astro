@@ -1,0 +1,57 @@
+---
+import I18nText from './I18nText.astro';
+
+interface Copy {
+  en: string;
+  fr: string;
+  zh: string;
+}
+interface Props {
+  description?: Copy;
+  links?: { href: string; label: Copy }[];
+}
+const { description, links } = Astro.props;
+const visibleLinks = links?.filter((link) => link.href) ?? [];
+---
+
+{description && (
+  <p class="project-desc">
+    <I18nText en={description.en} fr={description.fr} zh={description.zh} />
+  </p>
+)}
+{visibleLinks.length > 0 && (
+  <p class="project-links">
+    {visibleLinks.map((link) => (
+      <a href={link.href} target="_blank" rel="noopener noreferrer" data-cursor-hover>
+        <I18nText en={link.label.en} fr={link.label.fr} zh={link.label.zh} /> ↗
+      </a>
+    ))}
+  </p>
+)}
+
+<style>
+  .project-desc {
+    margin-top: var(--space-2);
+    max-width: 40rem;
+    color: var(--bone-soft);
+    font-size: var(--text-base);
+  }
+
+  .project-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.15rem;
+    margin-top: var(--space-2);
+  }
+
+  .project-links a {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: var(--gold);
+    text-decoration: none;
+  }
+
+  .project-links a:hover {
+    color: var(--bone);
+  }
+</style>

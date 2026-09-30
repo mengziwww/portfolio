@@ -1,0 +1,412 @@
+---
+// Bajiajiang's gallery isn't film stills — it's production documents: a
+// color script, character sheets, key poses, a storyboard. Journey and Reel
+// both assume you're looking at a finished world; this assumes you're
+// looking at the work that built one, so it reads like a reference board
+// grouped by phase, not a narrative you scroll through.
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { getProjectImage, responsiveWidths } from '@/lib/images';
+import ProjectFooter from './ProjectFooter.astro';
+import ScrollCue from '@/components/ScrollCue.astro';
+import I18nText from '@/components/I18nText.astro';
+import { trAll } from '@/i18n/ui';
+import { vividOf } from '@/lib/color';
+import { charReveal } from '@/lib/reveal-text';
+import ProjectIntro from '@/components/ProjectIntro.astro';
+import VideoPlayer from '@/components/VideoPlayer.astro';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+  next: CollectionEntry<'projects'>;
+}
+const { project, next } = Astro.props;
+const { title, subtitle, description, year, roles, category, client, cover, coverAlt, gallery, accentFrom, accentTo, video, links } = project.data;
+const glow = vividOf(accentFrom, accentTo);
+const coverImg = getProjectImage(project.id, cover);
+const categoryLabel = trAll(`category.${category}` as const);
+const clientLabel = trAll('project.client');
+
+type Item = (typeof gallery)[number];
+type Phase = { label: Item['chapter']; items: Item[] };
+
+const phases: Phase[] = [];
+for (const item of gallery) {
+  const last = phases[phases.length - 1];
+  if (last && last.label?.en === item.chapter?.en) {
+    last.items.push(item);
+  } else {
+    phases.push({ label: item.chapter, items: [item] });
+  }
+}
+
+// drifting incense smoke + embers — the reference-board layout is
+// deliberately calm/static, but the page background behind it was flat
+// var(--void) with no texture at all
+const smoke = Array.from({ length: 5 }, (_, i) => ({
+  left: `${8 + i * 21}%`,
+  delay: `${i * 3.4}s`,
+  dur: `${24 + (i % 3) * 6}s`,
+  scale: 0.7 + (i % 3) * 0.25,
+}));
+const embers = Array.from({ length: 20 }, (_, i) => ({
+  left: `${(i * 47) % 100}%`,
+  delay: `${(i % 8) * 1.4}s`,
+  dur: `${9 + (i % 5) * 2}s`,
+}));
+---
+
+<article class="breakdown" style={`--mood-a:${accentFrom}; --mood-b:${accentTo}; --mood-glow:${glow};`} data-breakdown data-reveal-root>
+  <div class="bd-lattice" aria-hidden="true"></div>
+  <div class="bd-smoke" aria-hidden="true">
+    {smoke.map((s) => (
+      <span class="smoke-wisp" style={`left:${s.left}; animation-delay:${s.delay}; animation-duration:${s.dur}; --scale:${s.scale};`}></span>
+    ))}
+  </div>
+  <div class="bd-embers" aria-hidden="true">
+    {embers.map((e) => (
+      <span class="bd-ember" style={`left:${e.left}; animation-delay:${e.delay}; animation-duration:${e.dur};`}></span>
+    ))}
+  </div>
+  <header class="bd-hero">
+    <figure class="bd-hero-card">
+      <span class="bd-card-frame bd-hero-frame">
+        <Image
+          src={coverImg}
+          alt={coverAlt.en}
+          widths={responsiveWidths(coverImg, [420, 640, 900])}
+          sizes="(max-width: 700px) 78vw, 24rem"
+          loading="eager"
+          fetchpriority="high"
+          transition:name={`project-cover-${project.id}`}
+        />
+      </span>
+      <span class="bd-hero-pin" aria-hidden="true"></span>
+    </figure>
+    <div class="bd-hero-copy">
+      <p class="hero-eyebrow eyebrow">
+        <I18nText {...categoryLabel} /> · {year}{client ? (
+          <>
+            {' · '}<I18nText {...clientLabel} /> {client}
+          </>
+        ) : null}
+      </p>
+      <h1 class="bd-hero-title" transition:name={`project-title-${project.id}`} set:html={charReveal(title, 120, 22)} />
+      <p class="bd-hero-subtitle">
+        <I18nText en={subtitle.en} fr={subtitle.fr} zh={subtitle.zh} />
+      </p>
+      <ProjectIntro description={description} links={links} />
+      <ul class="hero-roles">
+        {roles.en.map((_, i) => (
+          <li style={`--i:${i}`}>
+            <I18nText en={roles.en[i]} fr={roles.fr[i]} zh={roles.zh[i]} />
+          </li>
+        ))}
+      </ul>
+    </div>
+    <div class="bd-hero-cue">
+      <ScrollCue />
+    </div>
+  </header>
+
+  {phases.map((phase, pi) => (
+    <section class="bd-phase" style={`--phase-tint:${pi % 2 === 0 ? accentFrom : accentTo};`}>
+      {phase.label && (
+        <h2 class="bd-phase-title">
+          <span class="bd-phase-index">{String(pi + 1).padStart(2, '0')}</span>
+          <I18nText en={phase.label.en} fr={phase.label.fr} zh={phase.label.zh} />
+        </h2>
+      )}
+      <div class="bd-grid">
+        {phase.items.map((item) => (
+          <figure class="bd-card" data-artwork data-note-id={`${project.id}:${item.file}`}>
+            <span class="bd-card-frame">
+              <Image
+                src={getProjectImage(project.id, item.file)}
+                alt={item.alt.en}
+                widths={responsiveWidths(getProjectImage(project.id, item.file), [400, 640, 960])}
+                sizes="(max-width: 800px) 90vw, 30vw"
+                loading="lazy"
+              />
+            </span>
+            <figcaption>
+              <I18nText en={item.alt.en} fr={item.alt.fr} zh={item.alt.zh} />
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    </section>
+  ))}
+
+  {video && (
+    <section class="bd-reel">
+      <p class="bd-reel-label eyebrow">
+        <I18nText en="storyboard" fr="storyboard" zh="分镜" />
+      </p>
+      <VideoPlayer src={video} />
+    </section>
+  )}
+
+  <ProjectFooter project={project} next={next} />
+</article>
+
+<style>
+  .breakdown {
+    position: relative;
+    /* was nearly flat var(--void) past the very top of the hero — three
+       warm points down the page instead of one, and a lighter base so
+       the whole page reads as dim lantern-lit, not just-shy-of-black */
+    background:
+      radial-gradient(ellipse 75% 50% at 50% 0%, color-mix(in srgb, var(--mood-a) 30%, transparent), transparent 70%),
+      radial-gradient(ellipse 60% 40% at 12% 45%, color-mix(in srgb, var(--mood-a) 16%, transparent), transparent 70%),
+      radial-gradient(ellipse 60% 40% at 88% 75%, color-mix(in srgb, var(--mood-b) 14%, transparent), transparent 70%),
+      repeating-linear-gradient(90deg, rgb(255 255 255 / 4%) 0 2px, transparent 2px 34px),
+      color-mix(in srgb, var(--mood-a) 14%, var(--void));
+    overflow: hidden;
+  }
+
+  /* a lattice shadow drifting very slowly across everything — temple
+     window lattice, or the feeling of being watched through one; the
+     project's own description turns from warm lantern light to "a
+     harsher, watchful world", and this is what carries that through the
+     whole page rather than just the color grading on two images */
+  .bd-lattice {
+    position: fixed;
+    inset: -10%;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.16;
+    background-image:
+      repeating-linear-gradient(55deg, #000 0 3px, transparent 3px 11rem),
+      repeating-linear-gradient(-55deg, #000 0 3px, transparent 3px 11rem);
+    animation: lattice-drift 90s linear infinite;
+  }
+
+  @keyframes lattice-drift {
+    0% { transform: translate(0, 0); }
+    100% { transform: translate(-11rem, -11rem); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bd-lattice { animation: none; }
+  }
+
+  .bd-smoke,
+  .bd-embers {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .smoke-wisp {
+    position: absolute;
+    bottom: -10%;
+    width: 14rem;
+    height: 60svh;
+    background: radial-gradient(ellipse 50% 100% at 50% 100%, color-mix(in srgb, var(--mood-a) 10%, transparent), transparent 75%);
+    transform: scale(var(--scale, 1));
+    animation: smoke-rise linear infinite;
+  }
+
+  @keyframes smoke-rise {
+    0% { transform: translate(0, 0) scale(var(--scale, 1)); opacity: 0; }
+    12% { opacity: 0.55; }
+    88% { opacity: 0.3; }
+    100% { transform: translate(3rem, -70svh) scale(var(--scale, 1)); opacity: 0; }
+  }
+
+  .bd-ember {
+    position: absolute;
+    bottom: -1rem;
+    width: 2px;
+    height: 2px;
+    border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 5px 1px color-mix(in srgb, var(--gold) 70%, transparent);
+    animation: bd-ember-rise linear infinite;
+  }
+
+  @keyframes bd-ember-rise {
+    0% { transform: translate(0, 0); opacity: 0; }
+    10% { opacity: 0.8; }
+    85% { opacity: 0.4; }
+    100% { transform: translate(-1.5rem, -90svh); opacity: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .smoke-wisp,
+    .bd-ember {
+      animation: none;
+      opacity: 0;
+    }
+  }
+
+  .bd-hero {
+    position: relative;
+    min-height: 100svh;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(2rem, 6vw, 5rem);
+    padding: var(--space-6) var(--edge) var(--space-5);
+  }
+
+  .bd-hero-card {
+    position: relative;
+    flex: none;
+    width: clamp(11rem, 22vw, 24rem);
+  }
+
+  .bd-hero-frame {
+    width: 100%;
+    box-shadow: 0 2rem 5rem -1.5rem rgb(0 0 0 / 70%), 0 0 3.5rem 0.3rem color-mix(in srgb, var(--mood-glow) 25%, transparent);
+  }
+
+  .bd-hero-pin {
+    position: absolute;
+    top: -0.5rem;
+    left: 50%;
+    margin-left: -0.45rem;
+    width: 0.9rem;
+    height: 0.9rem;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, var(--bone), var(--mood-b) 70%);
+    box-shadow: 0 0.3rem 0.4rem rgb(0 0 0 / 45%);
+  }
+
+  .bd-hero-copy {
+    flex: 1 1 24rem;
+    max-width: 32rem;
+  }
+
+  .hero-eyebrow {
+    color: var(--gold);
+    margin-bottom: var(--space-2);
+  }
+
+  .bd-hero-title {
+    font-size: var(--text-2xl);
+    line-height: 0.96;
+  }
+
+  .bd-hero-subtitle {
+    font-size: var(--text-lg);
+    color: var(--bone-soft);
+    margin-top: var(--space-2);
+  }
+
+  .hero-roles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    list-style: none;
+    margin-top: var(--space-3);
+    padding: 0;
+  }
+
+  .hero-roles li {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    border: 1px solid var(--void-line);
+    padding: 0.4em 0.85em;
+    border-radius: 999px;
+  }
+
+  .bd-hero-cue {
+    position: absolute;
+    left: var(--edge);
+    bottom: var(--space-3);
+  }
+
+  .bd-phase {
+    padding: var(--space-5) var(--edge);
+    border-top: 1px solid var(--void-line);
+  }
+
+  .bd-phase:first-of-type {
+    border-top: none;
+  }
+
+  .bd-reel {
+    padding: var(--space-5) var(--edge);
+  }
+
+  .bd-reel-label {
+    color: var(--gold);
+    margin-bottom: var(--space-3);
+  }
+
+  .bd-phase-title {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6em;
+    font-size: var(--text-xl);
+    margin-bottom: var(--space-4);
+  }
+
+  .bd-phase-index {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: var(--phase-tint);
+    letter-spacing: 0.05em;
+  }
+
+  .bd-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+    gap: var(--space-4);
+  }
+
+  .bd-card {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .bd-card-frame {
+    display: block;
+    overflow: hidden;
+    border-radius: 2px;
+    background: var(--void-raised);
+    box-shadow: 0 0 0 1px var(--void-line);
+    transition: box-shadow 0.4s;
+  }
+
+  .bd-card-frame :global(img) {
+    width: 100%;
+    display: block;
+    object-fit: contain;
+    filter: saturate(0.94);
+    transition: filter 0.4s, transform 0.6s var(--ease-out-expo);
+  }
+
+  .bd-card:hover .bd-card-frame,
+  .bd-card:focus-within .bd-card-frame {
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--phase-tint) 70%, transparent),
+      0 0 1.8rem 0.1rem color-mix(in srgb, var(--phase-tint) 30%, transparent);
+  }
+
+  .bd-card:hover .bd-card-frame :global(img),
+  .bd-card:focus-within .bd-card-frame :global(img) {
+    filter: saturate(1.05);
+    transform: scale(1.03);
+  }
+
+  .bd-card figcaption {
+    margin-top: var(--space-2);
+    font-size: var(--text-xs);
+    color: var(--bone-faint);
+    max-width: 45ch;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bd-card-frame,
+    .bd-card-frame :global(img) {
+      transition: none;
+    }
+    .bd-card:hover .bd-card-frame :global(img) {
+      transform: none;
+    }
+  }
+</style>

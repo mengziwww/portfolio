@@ -1,0 +1,93 @@
+---
+import LanguageSwitch from './LanguageSwitch.astro';
+import SocialLinks from './SocialLinks.astro';
+import I18nText from './I18nText.astro';
+import { trAll } from '@/i18n/ui';
+import { withBase } from '@/lib/projects';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer" data-site-footer>
+  <div class="container footer-grid">
+    <p class="footer-name">Menghan LI</p>
+    <p class="footer-tagline"><I18nText {...trAll('site.tagline')} /></p>
+    <div class="footer-links">
+      <SocialLinks />
+      <LanguageSwitch />
+    </div>
+    <p class="footer-fine">
+      © {year} Menghan LI. <I18nText {...trAll('footer.rights')} />
+      <a href={withBase('/rights')}><I18nText {...trAll('footer.usage')} /></a>
+    </p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    position: relative;
+    /* several project pages have their own position:fixed background
+       layers (sky gradients, veils, grids) that stay mounted and full-
+       viewport for as long as the article exists in the DOM — with no
+       fill of its own here, this footer just let them show straight
+       through instead of the solid void ProjectFooter (right above it)
+       already correctly uses. */
+    background: var(--void);
+    padding-block: var(--space-5) var(--space-4);
+    border-top: 1px solid var(--void-line);
+  }
+
+  .footer-grid {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .footer-name {
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+  }
+
+  .footer-tagline {
+    max-width: 34ch;
+    color: var(--bone-soft);
+    font-size: var(--text-sm);
+  }
+
+  .footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    padding-top: var(--space-2);
+  }
+
+  .footer-links > a,
+  .footer-links > button {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    text-decoration: none;
+    color: var(--bone);
+  }
+
+  .footer-links > button {
+    color: var(--bone-soft);
+    transition: color var(--dur-fast);
+  }
+
+  .footer-links > button:hover {
+    color: var(--gold);
+  }
+
+  .footer-fine {
+    font-size: var(--text-xs);
+    color: var(--bone-faint);
+    padding-top: var(--space-3);
+  }
+
+  .footer-fine a {
+    margin-left: 0.7em;
+    color: var(--gold);
+    text-decoration: none;
+  }
+</style>

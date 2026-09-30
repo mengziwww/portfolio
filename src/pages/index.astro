@@ -1,0 +1,15 @@
+---
+import Base from '@/layouts/Base.astro';
+import HomeContent from '@/components/home/HomeContent.astro';
+import Loader from '@/components/Loader.astro';
+import { ui } from '@/i18n/ui';
+---
+
+<Base
+  path="/"
+  title="Menghan LI, 2D Animator, Character Designer & Storyboard Artist"
+  description={ui.en['meta.description']}
+>
+  <Loader />
+  <HomeContent />
+</Base>

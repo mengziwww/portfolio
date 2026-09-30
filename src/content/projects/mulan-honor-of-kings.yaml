@@ -1,0 +1,58 @@
+title: Mulan, Honor of Kings
+year: 2025
+category: commission
+template: impact
+order: 2
+size: normal
+accentFrom: "#0A0A0A"
+accentTo: "#C81E1E"
+client: Honor of Kings
+roles:
+  en: [Storyboard, Concept, Animation]
+  fr: [Storyboard, Concept, Animation]
+  zh: [分镜, 概念设计, 动画]
+subtitle:
+  en: commissioned music video
+  fr: clip musical de commande
+  zh: 委托制作音乐短片
+description:
+  en: >-
+    A music video for Honor of Kings, about Mulan. I did the storyboard,
+    the concept and the 2D animation. Ink, fire and red.
+  fr: >-
+    Un clip pour Honor of Kings, autour de Mulan. J'ai fait le
+    storyboard, le concept et l'animation 2D. Encre, feu et rouge.
+  zh: >-
+    《王者荣耀》木兰的音乐短片。分镜、概念和二维动画是我做的。墨、火、红。
+cover: 01.png
+coverAlt:
+  en: A wolf-like silhouette lunges through ink-black brushstrokes as a blade streaks white-hot across a red field
+  fr: Une silhouette de loup surgit à travers des traits d'encre noire, une lame incandescente traversant un champ rouge
+  zh: 狼形剪影在浓墨笔触中扑出，一道炽白的刀光划过赤红战场
+gallery:
+  - file: 03.png
+    alt:
+      en: A horned, demonic silhouette rendered in gold and violet against a burning red backdrop
+      fr: Une silhouette cornue et démoniaque en or et violet sur un fond rouge ardent
+      zh: 一个头生双角的恶魔剪影，以金色与紫色勾勒，背景是灼热的红
+  - file: 02.png
+    alt:
+      en: Storyboard frame of the warrior mid-strike, motion lines tearing across the panel
+      fr: Plan de storyboard du guerrier en pleine frappe, des lignes de mouvement déchirant le cadre
+      zh: 分镜画面中战士挥击的瞬间，动态线撕裂整个画面
+  - file: 04.png
+    alt:
+      en: A second storyboard beat, silhouette and blade caught in the same violent red light
+      fr: Un autre plan de storyboard, silhouette et lame saisies dans la même lumière rouge et violente
+      zh: 另一幅分镜稿，剪影与刀锋同样被这片猛烈的红光笼罩
+videos:
+  - file: film.mp4
+    label:
+      en: the film
+      fr: le film
+      zh: 成片
+  - file: sc-60.mp4
+    label:
+      en: a shot
+      fr: un plan
+      zh: 一个镜头

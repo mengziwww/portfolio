@@ -1,0 +1,44 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import Base from '@/layouts/Base.astro';
+import JourneyStage from '@/components/stages/JourneyStage.astro';
+import ImpactStage from '@/components/stages/ImpactStage.astro';
+import ReelStage from '@/components/stages/ReelStage.astro';
+import AtmosphereStage from '@/components/stages/AtmosphereStage.astro';
+import SketchbookStage from '@/components/stages/SketchbookStage.astro';
+import BreakdownStage from '@/components/stages/BreakdownStage.astro';
+import DreamStage from '@/components/stages/DreamStage.astro';
+import ProcessStage from '@/components/stages/ProcessStage.astro';
+import { getProjectImage } from '@/lib/images';
+import { getImage } from 'astro:assets';
+import NotesMode from '@/components/NotesMode.astro';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+  next: CollectionEntry<'projects'>;
+  notes?: boolean;
+}
+const { project, next, notes = false } = Astro.props;
+const { title, subtitle, description, cover } = project.data;
+
+const ogSource = getProjectImage(project.id, cover);
+const ogImg = await getImage({ src: ogSource, width: 1200, height: 630 });
+---
+
+<Base
+  path={notes ? `/notes/works/${project.id}` : `/works/${project.id}`}
+  title={`${title}, Menghan LI`}
+  description={`${subtitle.en} ${description.en}`.slice(0, 200)}
+  ogImage={ogImg.src}
+  noindex={notes}
+>
+  {notes && <NotesMode />}
+  {project.data.template === 'journey' && <JourneyStage project={project} next={next} />}
+  {project.data.template === 'impact' && <ImpactStage project={project} next={next} />}
+  {project.data.template === 'reel' && <ReelStage project={project} next={next} />}
+  {project.data.template === 'atmosphere' && <AtmosphereStage project={project} next={next} />}
+  {project.data.template === 'sketchbook' && <SketchbookStage project={project} next={next} />}
+  {project.data.template === 'breakdown' && <BreakdownStage project={project} next={next} />}
+  {project.data.template === 'dream' && <DreamStage project={project} next={next} />}
+  {project.data.template === 'process' && <ProcessStage project={project} next={next} />}
+</Base>

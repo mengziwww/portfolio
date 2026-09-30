@@ -1,0 +1,469 @@
+---
+// Full rebuild, not another pass on the same idea. A scattered field of
+// floating cards, no matter how the drift or the background got tuned,
+// was always fundamentally a gallery with atmosphere layered on top.
+// This is a different object: falling through the dream itself. Scroll
+// is the fall — a tunnel of light recedes and rotates slowly behind
+// everything, the void deepens from a warm near-dusk at the top to a
+// cold, distant indigo further down, and each image is a window she
+// passes at its own depth, nearer ones drifting past faster than far
+// ones as she scrolls (real GSAP-scrubbed parallax, not just a shared
+// ambient sway).
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { getProjectImage, responsiveWidths } from '@/lib/images';
+import ProjectFooter from './ProjectFooter.astro';
+import ScrollCue from '@/components/ScrollCue.astro';
+import I18nText from '@/components/I18nText.astro';
+import { trAll } from '@/i18n/ui';
+import { vividOf } from '@/lib/color';
+import { charReveal } from '@/lib/reveal-text';
+import ProjectIntro from '@/components/ProjectIntro.astro';
+interface Props {
+  project: CollectionEntry<'projects'>;
+  next: CollectionEntry<'projects'>;
+}
+const { project, next } = Astro.props;
+const { title, subtitle, description, year, roles, category, client, cover, coverAlt, gallery, accentFrom, accentTo, links } = project.data;
+const glow = vividOf(accentFrom, accentTo);
+const coverImg = getProjectImage(project.id, cover);
+const categoryLabel = trAll(`category.${category}` as const);
+const clientLabel = trAll(category === 'commission' ? 'project.client' : 'project.at');
+
+// depth is the whole idea here: a near window (depth close to 1) is
+// bigger, sharper and drifts past faster on scroll; a far one (depth
+// close to 0) is smaller, softer, and barely moves — an actual sense of
+// passing through layers, not just images sharing one ambient sway.
+const portals = gallery.map((item, i) => {
+  const seed = (i * 61 + 17) % 100;
+  const seed2 = (i * 97 + 41) % 100;
+  const depth = 0.35 + (seed % 6) * 0.12;
+  return {
+    item,
+    depth: depth.toFixed(2),
+    side: i % 2 === 0 ? -1 : 1,
+    offset: 3 + (seed % 5) * 2.2,
+    rot: (((seed % 7) - 3) * 2.2).toFixed(2),
+    swayDur: 13 + (seed2 % 7) * 2,
+    swayDelay: -((seed % 9) * 1.3),
+    blobA: 40 + (seed % 20),
+    blobB: 60 - (seed % 20),
+  };
+});
+
+const motes = Array.from({ length: 30 }, (_, i) => {
+  const seed = (i * 37 + 5) % 100;
+  return {
+    left: `${(i * 41) % 100}%`,
+    top: `${(i * 29 + 13) % 100}%`,
+    size: 0.3 + (seed % 5) * 0.4,
+    warm: seed % 2 === 0,
+    delay: `${(i % 9) * 1.1}s`,
+    dur: `${16 + (seed % 7) * 2}s`,
+  };
+});
+
+// thin rays radiating from a vanishing point, the tunnel she's falling
+// through — evenly spaced angles, jittered length/opacity so it never
+// reads as a perfect, mechanical starburst
+const rays = Array.from({ length: 16 }, (_, i) => {
+  const seed = (i * 43 + 11) % 100;
+  return {
+    angle: (i / 16) * 360,
+    len: 38 + (seed % 30),
+    op: 0.08 + (seed % 10) * 0.012,
+  };
+});
+---
+
+<article class="dream" style={`--mood-a:${accentFrom}; --mood-b:${accentTo}; --mood-glow:${glow};`} data-dream data-reveal-root>
+  <div class="dream-tunnel" data-dream-tunnel aria-hidden="true">
+    <div class="tunnel-rays">
+      {rays.map((r) => (
+        <span
+          class="ray"
+          style={`--angle:${r.angle}deg; --len:${r.len}vmax; --op:${r.op};`}
+        ></span>
+      ))}
+    </div>
+  </div>
+  <div class="dream-motes" aria-hidden="true">
+    {motes.map((m) => (
+      <span
+        class={`mote ${m.warm ? 'is-warm' : ''}`}
+        style={`left:${m.left}; top:${m.top}; width:${m.size}rem; height:${m.size}rem; animation-delay:${m.delay}; animation-duration:${m.dur};`}
+      ></span>
+    ))}
+  </div>
+  <header class="dr-hero">
+    <div class="dr-cover">
+      <Image
+        src={coverImg}
+        alt={coverAlt.en}
+        widths={responsiveWidths(coverImg, [420, 640, 900])}
+        sizes="(max-width: 700px) 78vw, 24rem"
+        loading="eager"
+        fetchpriority="high"
+        transition:name={`project-cover-${project.id}`}
+      />
+    </div>
+    <div class="dr-copy">
+      <p class="hero-eyebrow eyebrow">
+        <I18nText {...categoryLabel} /> · {year}{client ? (
+          <>
+            {' · '}<I18nText {...clientLabel} /> {client}
+          </>
+        ) : null}
+      </p>
+      <h1 class="dr-title" transition:name={`project-title-${project.id}`} set:html={charReveal(title, 120, 22)} />
+      <p class="dr-subtitle">
+        <I18nText en={subtitle.en} fr={subtitle.fr} zh={subtitle.zh} />
+      </p>
+      <ProjectIntro description={description} links={links} />
+      <ul class="hero-roles">
+        {roles.en.map((_, i) => (
+          <li style={`--i:${i}`}>
+            <I18nText en={roles.en[i]} fr={roles.fr[i]} zh={roles.zh[i]} />
+          </li>
+        ))}
+      </ul>
+    </div>
+    <div class="dr-cue">
+      <ScrollCue />
+    </div>
+  </header>
+
+  <div class="dream-fall" data-dream-fall>
+    {portals.map((p) => (
+      <figure
+        class="dream-portal"
+        data-portal
+        data-artwork
+        data-note-id={`${project.id}:${p.item.file}`}
+        data-depth={p.depth}
+        style={`--depth:${p.depth}; --side:${p.side}; --offset:${p.offset}vw; --rot:${p.rot}deg; --sway-dur:${p.swayDur}s; --sway-delay:${p.swayDelay}s; --blob-a:${p.blobA}%; --blob-b:${p.blobB}%;`}
+      >
+        <div class="dream-sway">
+        <div class="portal-mask">
+          <Image
+            src={getProjectImage(project.id, p.item.file)}
+            alt={p.item.alt.en}
+            widths={responsiveWidths(getProjectImage(project.id, p.item.file), [320, 480, 640])}
+            sizes="(max-width: 700px) 60vw, 22vw"
+            loading="lazy"
+          />
+        </div>
+        {p.item.caption && (
+          <figcaption>
+            <I18nText en={p.item.caption.en} fr={p.item.caption.fr} zh={p.item.caption.zh} />
+          </figcaption>
+        )}
+        </div>
+      </figure>
+    ))}
+  </div>
+
+  <ProjectFooter project={project} next={next} />
+</article>
+
+<style>
+  .dream {
+    position: relative;
+    background: var(--void);
+    overflow: hidden;
+    /* deepens from a warm near-dusk at the hero to a colder, more
+       distant indigo the further she falls — updated by the scroll-
+       scrubbed script below, same custom-property technique already
+       used for After Life's archive background */
+    background-image: radial-gradient(
+      ellipse 90% 60% at 50% 0%,
+      color-mix(in srgb, var(--mood-a) var(--dream-glow-pct, 22%), transparent),
+      transparent 70%
+    );
+  }
+
+  /* ---- the tunnel: a slow, barely-rotating starburst of thin rays from
+     a vanishing point above the page, standing in for the sensation of
+     falling through something rather than sitting in front of a lit
+     backdrop. Deliberately not the veil/blob wash used before — the
+     point this time was a different visual language, not a retune of
+     the same one. ---- */
+  .dream-tunnel {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+  }
+
+  .tunnel-rays {
+    position: relative;
+    width: 1px;
+    height: 1px;
+    animation: tunnel-spin 90s linear infinite;
+  }
+
+  .ray {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: var(--len, 50vmax);
+    transform-origin: top center;
+    transform: rotate(var(--angle, 0deg));
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--mood-glow) calc(var(--op, 0.1) * 100%), transparent),
+      transparent 85%
+    );
+  }
+
+  @keyframes tunnel-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .dream-motes {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .mote {
+    position: absolute;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--mood-b) 70%, var(--bone) 30%);
+    filter: blur(1.5px);
+    opacity: 0;
+    animation: mote-float ease-in-out infinite;
+  }
+
+  .mote.is-warm {
+    background: color-mix(in srgb, var(--mood-a) 70%, var(--gold) 30%);
+  }
+
+  @keyframes mote-float {
+    0% { opacity: 0; transform: translate(0, 0); }
+    20% { opacity: 0.5; }
+    50% { transform: translate(1.5rem, -2rem); }
+    80% { opacity: 0.35; }
+    100% { opacity: 0; transform: translate(-1rem, -4rem); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tunnel-rays,
+    .mote {
+      animation: none;
+      opacity: 0.12;
+    }
+    .dr-cover :global(img) {
+      filter: saturate(1.05);
+    }
+  }
+
+  .dr-hero {
+    position: relative;
+    z-index: 2;
+    min-height: 100svh;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(2rem, 6vw, 5rem);
+    padding: var(--space-6) var(--edge) var(--space-5);
+  }
+
+  .dr-cover {
+    flex: none;
+    width: clamp(11rem, 22vw, 24rem);
+    overflow: hidden;
+    border-radius: 2px;
+    box-shadow: 0 2rem 5rem -1.5rem rgb(0 0 0 / 70%), 0 0 4rem 0.4rem color-mix(in srgb, var(--mood-glow) 25%, transparent);
+    transform: rotate(-1.5deg);
+  }
+
+  .dr-cover :global(img) {
+    width: 100%;
+    display: block;
+    filter: saturate(1.05);
+  }
+
+  .dr-copy {
+    flex: 1 1 24rem;
+    max-width: 32rem;
+  }
+
+  .hero-eyebrow {
+    color: var(--gold);
+    margin-bottom: var(--space-2);
+  }
+
+  .dr-title {
+    font-size: var(--text-2xl);
+    line-height: 0.96;
+  }
+
+  .dr-subtitle {
+    font-size: var(--text-lg);
+    color: var(--bone-soft);
+    margin-top: var(--space-2);
+  }
+
+  .hero-roles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    list-style: none;
+    margin-top: var(--space-3);
+    padding: 0;
+  }
+
+  .hero-roles li {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    border: 1px solid var(--void-line);
+    padding: 0.4em 0.85em;
+    border-radius: 999px;
+  }
+
+  .dr-cue {
+    position: absolute;
+    left: var(--edge);
+    bottom: var(--space-3);
+  }
+
+  /* ---- the fall: normal document flow, not an absolutely-positioned
+     scatter — each portal's actual position in the page is simply
+     "next", with depth expressed through size/blur/opacity and a small
+     side offset, then real motion comes from two independent sources:
+     a gentle idle sway (CSS) and scroll-scrubbed parallax (script,
+     translateY driven by --depth, see below). ---- */
+  .dream-fall {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(3rem, 9vw, 7rem);
+    padding: var(--space-6) var(--edge) var(--space-6);
+  }
+
+  .dream-portal {
+    position: relative;
+    width: min(52rem, 92vw);
+    opacity: 1;
+    --tilt: 0deg;
+  }
+
+  .dream-sway {
+    animation: portal-sway var(--sway-dur, 15s) ease-in-out infinite;
+    animation-delay: var(--sway-delay, 0s);
+  }
+
+  @keyframes portal-sway {
+    0%, 100% { transform: translateX(calc(var(--side, 0) * 1.5rem)) rotate(var(--tilt)); }
+    50% { transform: translateX(calc(var(--side, 0) * 1.5rem)) translateY(-0.8rem) rotate(var(--tilt)); }
+  }
+
+  .portal-mask {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 1.1rem;
+    background: rgb(0 0 0 / 28%);
+    box-shadow: 0 0 3rem 0.2rem color-mix(in srgb, var(--mood-glow) 22%, transparent);
+  }
+
+  @keyframes portal-morph {
+    0%, 100% {
+      border-radius: var(--blob-a, 45%) calc(100% - var(--blob-a, 45%)) var(--blob-b, 55%) calc(100% - var(--blob-b, 55%)) / var(--blob-b, 55%) var(--blob-a, 45%) calc(100% - var(--blob-a, 45%)) calc(100% - var(--blob-b, 55%));
+    }
+    50% {
+      border-radius: calc(100% - var(--blob-a, 45%)) var(--blob-a, 45%) calc(100% - var(--blob-b, 55%)) var(--blob-b, 55%) / calc(100% - var(--blob-a, 45%)) calc(100% - var(--blob-b, 55%)) var(--blob-b, 55%) var(--blob-a, 45%);
+    }
+  }
+
+  .portal-mask :global(img) {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    cursor: zoom-in;
+  }
+
+  .dream-portal figcaption {
+    margin-top: var(--space-2);
+    padding-inline: 0.4rem;
+    font-size: var(--text-xs);
+    color: var(--bone-faint);
+    text-align: center;
+    max-width: 22ch;
+    margin-inline: auto;
+    opacity: 0.85;
+  }
+
+  @media (max-width: 700px) {
+    .dream-portal {
+      width: min(70vw, 18rem);
+      --tilt: var(--rot, 0deg);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dream-sway,
+    .portal-mask {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  function initDream() {
+    const roots = document.querySelectorAll<HTMLElement>('[data-dream]');
+    if (!roots.length) return;
+    gsap.registerPlugin(ScrollTrigger);
+    const motion = document.documentElement.dataset.motion;
+    const reduced = motion === 'quiet' || motion === 'still' || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    roots.forEach((root) => {
+      if (root.dataset.dreamInit === '1') return;
+      root.dataset.dreamInit = '1';
+
+      // background warms near the hero, cools toward deep indigo the
+      // further into the fall she scrolls — same idea as After Life's
+      // scroll-driven color mix, tuned for a dream rather than a ruin
+      gsap.to(root, {
+        '--dream-glow-pct': '4%',
+        ease: 'none',
+        scrollTrigger: { trigger: root, start: 'top top', end: 'bottom bottom', scrub: 0.6 },
+      });
+
+      if (reduced) return;
+
+      // near portals (depth close to 1) drift past faster than far ones
+      // (depth close to 0) as the page scrolls — real parallax, not a
+      // shared ambient sway
+      root.querySelectorAll<HTMLElement>('[data-portal]').forEach((el) => {
+        const depth = Number(el.dataset.depth ?? '0.6');
+        gsap.to(el, {
+          y: () => -60 * depth,
+          ease: 'none',
+          scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: 0.8 },
+        });
+      });
+    });
+  }
+
+  document.addEventListener('astro:page-load', () => {
+    initDream();
+    requestAnimationFrame(() => ScrollTrigger.refresh());
+  });
+
+  document.addEventListener('astro:before-swap', () => {
+    ScrollTrigger.getAll().forEach((t) => t.kill());
+  });
+</script>

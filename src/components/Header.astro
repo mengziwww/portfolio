@@ -1,0 +1,48 @@
+---
+import LanguageSwitch from './LanguageSwitch.astro';
+import SocialLinks from './SocialLinks.astro';
+import SiteSettings from './SiteSettings.astro';
+---
+
+<header class="site-header" data-site-header>
+  <a class="wordmark" href={import.meta.env.BASE_URL} data-cursor-hover>Menghan LI</a>
+  <div class="header-right">
+    <SocialLinks />
+    <LanguageSwitch />
+    <SiteSettings />
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: fixed;
+    inset-inline: 0;
+    top: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-2) var(--edge);
+    pointer-events: none;
+  }
+
+  .site-header > * {
+    pointer-events: auto;
+  }
+
+  .wordmark {
+    font-family: var(--font-display);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    text-decoration: none;
+    color: var(--bone);
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+</style>

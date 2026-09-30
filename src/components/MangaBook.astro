@@ -1,0 +1,250 @@
+---
+import { Image, getImage } from 'astro:assets';
+import { getProjectImage, responsiveWidths } from '@/lib/images';
+import I18nText from '@/components/I18nText.astro';
+
+type Item = { file: string; alt: { en: string; fr: string; zh: string } };
+interface Props {
+  projectId: string;
+  items: Item[];
+}
+const { projectId, items } = Astro.props;
+
+const pages = await Promise.all(
+  items.map(async (item) => {
+    const src = getProjectImage(projectId, item.file);
+    const [sm, lg] = await Promise.all([
+      getImage({ src, width: Math.min(1000, src.width), format: 'webp' }),
+      getImage({ src, width: Math.min(1400, src.width), format: 'webp' }),
+    ]);
+    return { item, src, sm: sm.src, lg: lg.src };
+  }),
+);
+const helpId = `manga-help-${projectId}`;
+---
+
+<div class="mb" data-manga-book>
+  <div
+    class="mb-stage"
+    data-mb-stage
+    data-artwork
+    tabindex="0"
+    role="group"
+    aria-roledescription="book"
+    aria-describedby={helpId}
+  >
+    <canvas class="mb-canvas" aria-hidden="true"></canvas>
+  </div>
+  <p id={helpId} class="visually-hidden">
+    <I18nText
+      en="Manga, read right to left. Take the left page by its edge and drag it to the right to turn it, or use the left arrow key for the next page and the right arrow key to go back."
+      fr="Manga, lu de droite à gauche. Prends la page de gauche par le bord et fais-la glisser vers la droite pour la tourner, ou utilise la flèche gauche pour avancer et la flèche droite pour revenir."
+      zh="漫画，从右往左读。按住左页边缘向右拖动即可翻页，也可以用左方向键前进、右方向键后退。"
+    />
+  </p>
+  <p class="visually-hidden" aria-live="polite" data-mb-status></p>
+
+  <div class="mb-sources" data-order-group="manga">
+    {pages.map((p) => (
+      <figure data-mb-src data-artwork data-note-id={`${projectId}:${p.item.file}`} data-sm={p.sm} data-lg={p.lg}>
+        <Image
+          src={p.src}
+          alt={p.item.alt.en}
+          widths={responsiveWidths(p.src, [320, 640])}
+          sizes="(max-width: 700px) 30vw, 10rem"
+          loading="lazy"
+        />
+      </figure>
+    ))}
+  </div>
+</div>
+
+<style>
+  .mb {
+    position: relative;
+    width: min(66rem, 96vw);
+    margin: 0 auto var(--space-4);
+  }
+
+  .mb-stage {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    max-height: 86vh;
+    outline: none;
+    border-radius: 6px;
+  }
+
+  .mb-stage::before {
+    content: '';
+    position: absolute;
+    inset: -6% -4%;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 46% 44% at 50% 56%, rgb(216 167 94 / 11%), transparent 70%),
+      radial-gradient(ellipse 70% 60% at 50% 60%, rgb(10 8 14 / 55%), transparent 75%);
+  }
+
+  .mb-stage:focus-visible {
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--gold) 70%, transparent);
+  }
+
+  .mb-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    opacity: 0;
+    transition: opacity 0.9s ease;
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mb.is-ready .mb-canvas {
+    opacity: 1;
+  }
+
+  .mb-sources {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .mb.is-notes .mb-sources,
+  .mb.is-fallback .mb-sources {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+    white-space: normal;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
+    gap: 0.6rem;
+    margin-top: var(--space-3);
+  }
+
+  .mb.is-fallback .mb-stage {
+    display: none;
+  }
+
+  .mb.is-fallback .mb-sources {
+    grid-template-columns: 1fr;
+    max-width: 34rem;
+    margin-inline: auto;
+  }
+
+  .mb-sources figure {
+    margin: 0;
+    background: #f3eee4;
+  }
+
+  .mb-sources :global(img) {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  @media (max-width: 640px) {
+    .mb-stage {
+      aspect-ratio: 3 / 4;
+      max-height: 80vh;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mb-canvas {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import type { BookStatus } from '@/lib/manga-book';
+
+  const WORDS = {
+    en: { cover: 'Cover', back: 'Back cover', end: 'End of the volume', pages: (p: number[]) => `Page ${p.join(' and ')}` },
+    fr: { cover: 'Couverture', back: 'Quatrième de couverture', end: 'Fin du volume', pages: (p: number[]) => `Page ${p.join(' et ')}` },
+    zh: { cover: '封面', back: '封底', end: '本卷完', pages: (p: number[]) => `第${p.join('、')}页` },
+  };
+
+  function describe(status: BookStatus) {
+    const lang = (document.documentElement.getAttribute('lang') || 'en').slice(0, 2) as keyof typeof WORDS;
+    const words = WORDS[lang] ?? WORDS.en;
+    if (status.kind === 'cover') return words.cover;
+    if (status.kind === 'back') return words.back;
+    if (status.kind === 'end') return words.end;
+    return words.pages(status.pages);
+  }
+
+  const cleanups: Array<() => void> = [];
+
+  async function mount(root: HTMLElement) {
+    const stage = root.querySelector<HTMLElement>('[data-mb-stage]');
+    const canvas = root.querySelector<HTMLCanvasElement>('.mb-canvas');
+    const status = root.querySelector<HTMLElement>('[data-mb-status]');
+    if (!stage || !canvas) return;
+    const sources = [...root.querySelectorAll<HTMLElement>('[data-mb-src]')].map((fig) => ({
+      sm: fig.dataset.sm || '',
+      lg: fig.dataset.lg || '',
+    }));
+    const motion = document.documentElement.dataset.motion;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches || motion === 'still';
+    const calm = reduced || motion === 'quiet';
+    let first = true;
+    try {
+      const { createBook } = await import('@/lib/manga-book');
+      const book = createBook({
+        stage,
+        canvas,
+        sources,
+        reduced,
+        calm,
+        onReady: () => root.classList.add('is-ready'),
+        onStatus: (s) => {
+          if (first) {
+            first = false;
+            return;
+          }
+          if (status) status.textContent = describe(s);
+        },
+      });
+      if (!book) {
+        root.classList.add('is-fallback');
+        return;
+      }
+      cleanups.push(() => book.destroy());
+    } catch {
+      root.classList.add('is-fallback');
+    }
+  }
+
+  function initBooks() {
+    document.querySelectorAll<HTMLElement>('[data-manga-book]').forEach((root) => {
+      if (root.dataset.bookInit === '1') return;
+      root.dataset.bookInit = '1';
+      if (location.pathname.includes('/notes')) root.classList.add('is-notes');
+      const io = new IntersectionObserver(
+        (entries) => {
+          if (!entries.some((entry) => entry.isIntersecting)) return;
+          io.disconnect();
+          mount(root);
+        },
+        { rootMargin: '900px 0px' },
+      );
+      io.observe(root);
+      cleanups.push(() => io.disconnect());
+    });
+  }
+
+  document.addEventListener('astro:page-load', initBooks);
+  document.addEventListener('astro:before-swap', () => {
+    cleanups.splice(0).forEach((fn) => fn());
+  });
+</script>

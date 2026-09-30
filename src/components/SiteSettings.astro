@@ -1,0 +1,382 @@
+---
+// A small gear. It opens display and accessibility options.
+// If this device cannot keep a steady frame rate, a short prompt offers
+// to quiet the motion. The choice is remembered on this browser.
+---
+<button type="button" class="gear" data-settings-open aria-haspopup="dialog">
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.6" />
+    <path
+      d="M12 3.2v2.1M12 18.7v2.1M4.8 6.5l1.6 1.4M17.6 16.1l1.6 1.4M3.2 12h2.1M18.7 12h2.1M4.8 17.5l1.6-1.4M17.6 7.9l1.6-1.4"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.6"
+      stroke-linecap="round"
+    />
+  </svg>
+  <span class="visually-hidden">
+    <span data-lang="en">Display settings</span>
+    <span data-lang="fr">Réglages d'affichage</span>
+    <span data-lang="zh">显示设置</span>
+  </span>
+</button>
+
+<dialog class="settings" data-settings-dialog>
+  <form method="dialog">
+    <header class="settings-head">
+      <p>
+        <span data-lang="en">Display</span>
+        <span data-lang="fr">Affichage</span>
+        <span data-lang="zh">显示</span>
+      </p>
+      <button type="submit" class="settings-close" aria-label="Close">×</button>
+    </header>
+
+    <fieldset>
+      <legend>
+        <span data-lang="en">Motion</span>
+        <span data-lang="fr">Mouvement</span>
+        <span data-lang="zh">动态</span>
+      </legend>
+      <label><input type="radio" name="motion" value="full" /> <span data-lang="en">Normal</span><span data-lang="fr">Normal</span><span data-lang="zh">正常</span></label>
+      <label><input type="radio" name="motion" value="quiet" /> <span data-lang="en">Reduced</span><span data-lang="fr">Réduit</span><span data-lang="zh">减少</span></label>
+      <label><input type="radio" name="motion" value="still" /> <span data-lang="en">Off</span><span data-lang="fr">Aucun</span><span data-lang="zh">关闭</span></label>
+    </fieldset>
+
+    <fieldset>
+      <legend>
+        <span data-lang="en">Text size</span>
+        <span data-lang="fr">Taille du texte</span>
+        <span data-lang="zh">文字大小</span>
+      </legend>
+      <label><input type="radio" name="text" value="md" /> <span data-lang="en">Normal</span><span data-lang="fr">Normale</span><span data-lang="zh">正常</span></label>
+      <label><input type="radio" name="text" value="lg" /> <span data-lang="en">Large</span><span data-lang="fr">Grande</span><span data-lang="zh">大</span></label>
+      <label><input type="radio" name="text" value="xl" /> <span data-lang="en">Larger</span><span data-lang="fr">Plus grande</span><span data-lang="zh">更大</span></label>
+    </fieldset>
+
+    <fieldset>
+      <legend>
+        <span data-lang="en">Contrast</span>
+        <span data-lang="fr">Contraste</span>
+        <span data-lang="zh">对比度</span>
+      </legend>
+      <label><input type="radio" name="contrast" value="off" /> <span data-lang="en">Normal</span><span data-lang="fr">Normal</span><span data-lang="zh">正常</span></label>
+      <label><input type="radio" name="contrast" value="high" /> <span data-lang="en">High</span><span data-lang="fr">Élevé</span><span data-lang="zh">高</span></label>
+    </fieldset>
+
+    <fieldset>
+      <legend>
+        <span data-lang="en">Spacing</span>
+        <span data-lang="fr">Espacement</span>
+        <span data-lang="zh">间距</span>
+      </legend>
+      <label><input type="radio" name="space" value="normal" /> <span data-lang="en">Normal</span><span data-lang="fr">Normal</span><span data-lang="zh">正常</span></label>
+      <label><input type="radio" name="space" value="relaxed" /> <span data-lang="en">Relaxed</span><span data-lang="fr">Aéré</span><span data-lang="zh">宽松</span></label>
+    </fieldset>
+
+    <fieldset>
+      <legend>
+        <span data-lang="en">Transparency</span>
+        <span data-lang="fr">Transparence</span>
+        <span data-lang="zh">透明</span>
+      </legend>
+      <label><input type="radio" name="transparent" value="normal" /> <span data-lang="en">Normal</span><span data-lang="fr">Normale</span><span data-lang="zh">正常</span></label>
+      <label><input type="radio" name="transparent" value="solid" /> <span data-lang="en">Solid panels</span><span data-lang="fr">Panneaux opaques</span><span data-lang="zh">不透明</span></label>
+    </fieldset>
+
+    <fieldset>
+      <legend>
+        <span data-lang="en">Focus</span>
+        <span data-lang="fr">Focus</span>
+        <span data-lang="zh">焦点</span>
+      </legend>
+      <label><input type="radio" name="focus" value="off" /> <span data-lang="en">Normal</span><span data-lang="fr">Normal</span><span data-lang="zh">正常</span></label>
+      <label><input type="radio" name="focus" value="strong" /> <span data-lang="en">Always visible</span><span data-lang="fr">Toujours visible</span><span data-lang="zh">始终可见</span></label>
+    </fieldset>
+
+    <fieldset>
+      <legend>
+        <span data-lang="en">Pointer</span>
+        <span data-lang="fr">Pointeur</span>
+        <span data-lang="zh">指针</span>
+      </legend>
+      <label><input type="radio" name="cursor" value="custom" /> <span data-lang="en">Site cursor</span><span data-lang="fr">Curseur du site</span><span data-lang="zh">网站光标</span></label>
+      <label><input type="radio" name="cursor" value="system" /> <span data-lang="en">System cursor</span><span data-lang="fr">Curseur du système</span><span data-lang="zh">系统光标</span></label>
+    </fieldset>
+  </form>
+</dialog>
+
+<dialog class="perf" data-perf-dialog>
+  <p>
+    <span data-lang="en">This device is having trouble keeping up. I can quiet the moving parts.</span>
+    <span data-lang="fr">Cet appareil a du mal à suivre. Je peux calmer les animations.</span>
+    <span data-lang="zh">这台设备有点跟不上。我可以把动画减弱。</span>
+  </p>
+  <div class="perf-actions">
+    <button type="button" data-perf-quiet>
+      <span data-lang="en">Quiet them</span>
+      <span data-lang="fr">Les calmer</span>
+      <span data-lang="zh">减弱</span>
+    </button>
+    <button type="button" data-perf-keep>
+      <span data-lang="en">Leave them</span>
+      <span data-lang="fr">Les laisser</span>
+      <span data-lang="zh">保持</span>
+    </button>
+  </div>
+</dialog>
+
+<style>
+  .gear {
+    display: grid;
+    place-items: center;
+    width: 1.7rem;
+    height: 1.7rem;
+    color: var(--bone-faint);
+    background: transparent;
+  }
+
+  .gear svg {
+    width: 1.05rem;
+    height: 1.05rem;
+  }
+
+  .gear:hover,
+  .gear[aria-expanded='true'] {
+    color: var(--gold);
+  }
+
+  .settings,
+  .perf {
+    border: 1px solid var(--void-line);
+    background: var(--void);
+    color: var(--bone);
+    padding: var(--space-3);
+    max-width: min(22rem, calc(100vw - 2rem));
+    max-height: min(85vh, 40rem);
+    overflow: auto;
+  }
+
+  .settings::backdrop,
+  .perf::backdrop {
+    background: rgb(0 0 0 / 45%);
+  }
+
+  .settings-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .settings-close {
+    color: var(--bone-soft);
+    font-size: 1.2rem;
+    line-height: 1;
+  }
+
+  .settings fieldset {
+    border: 0;
+    margin: 0 0 var(--space-3);
+    padding: 0;
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  .settings legend {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.4rem;
+  }
+
+  .settings label {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-size: var(--text-sm);
+  }
+
+  .perf p {
+    margin: 0 0 var(--space-3);
+    max-width: 28ch;
+  }
+
+  .perf-actions {
+    display: flex;
+    gap: 0.6rem;
+  }
+
+  .perf-actions button {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border: 1px solid var(--void-line);
+    padding: 0.55em 0.8em;
+    color: var(--bone);
+  }
+
+  .perf-actions button[data-perf-quiet] {
+    background: var(--gold);
+    color: var(--void);
+    border-color: var(--gold);
+  }
+</style>
+
+<script>
+  const MOTION_KEY = 'menghan-motion';
+  const CURSOR_KEY = 'menghan-cursor';
+  const ASKED_KEY = 'menghan-motion-asked';
+
+  function motionValue(): string {
+    return document.documentElement.dataset.motion || 'full';
+  }
+
+  function cursorValue(): string {
+    try {
+      return localStorage.getItem(CURSOR_KEY) === 'system' ? 'system' : 'custom';
+    } catch {
+      return 'custom';
+    }
+  }
+
+  function stored(name: string, fallback: string): string {
+    const value = document.documentElement.dataset[name];
+    return value || fallback;
+  }
+
+  function paint(dialog: HTMLElement) {
+    const current: Record<string, string> = {
+      motion: motionValue(),
+      cursor: cursorValue(),
+      text: stored('text', 'md'),
+      contrast: stored('contrast', 'off'),
+      space: stored('space', 'normal'),
+      transparent: stored('transparent', 'normal'),
+      focus: stored('focus', 'off'),
+    };
+    for (const [name, value] of Object.entries(current)) {
+      dialog.querySelectorAll<HTMLInputElement>(`input[name="${name}"]`).forEach((input) => {
+        input.checked = input.value === value;
+      });
+    }
+  }
+
+  function saveVisual(name: string, value: string, off: string) {
+    const key = `menghan-${name}`;
+    try {
+      if (value === off) localStorage.removeItem(key);
+      else localStorage.setItem(key, value);
+    } catch {
+      /* private mode */
+    }
+    if (value === off) delete document.documentElement.dataset[name];
+    else document.documentElement.dataset[name] = value;
+  }
+
+  function saveMotion(value: string) {
+    try {
+      if (value === 'full') localStorage.removeItem(MOTION_KEY);
+      else localStorage.setItem(MOTION_KEY, value);
+      localStorage.setItem(ASKED_KEY, '1');
+    } catch {
+      /* private mode */
+    }
+    location.reload();
+  }
+
+  function saveCursor(value: string) {
+    try {
+      if (value === 'custom') localStorage.removeItem(CURSOR_KEY);
+      else localStorage.setItem(CURSOR_KEY, value);
+    } catch {
+      /* private mode */
+    }
+    location.reload();
+  }
+
+  function sampleFps(ms: number): Promise<number> {
+    return new Promise((resolve) => {
+      let frames = 0;
+      const start = performance.now();
+      function tick(now: number) {
+        frames += 1;
+        if (now - start < ms) requestAnimationFrame(tick);
+        else resolve((frames * 1000) / (now - start));
+      }
+      requestAnimationFrame(tick);
+    });
+  }
+
+  function initSettings() {
+    const openBtn = document.querySelector<HTMLButtonElement>('[data-settings-open]');
+    const dialog = document.querySelector<HTMLDialogElement>('[data-settings-dialog]');
+    const perf = document.querySelector<HTMLDialogElement>('[data-perf-dialog]');
+    if (!openBtn || !dialog || openBtn.dataset.settingsBound === '1') return;
+    openBtn.dataset.settingsBound = '1';
+
+    openBtn.addEventListener('click', () => {
+      paint(dialog);
+      dialog.showModal();
+      openBtn.setAttribute('aria-expanded', 'true');
+    });
+    dialog.addEventListener('close', () => openBtn.setAttribute('aria-expanded', 'false'));
+    dialog.querySelectorAll<HTMLInputElement>('input[name="motion"]').forEach((input) => {
+      input.addEventListener('change', () => {
+        if (input.checked) saveMotion(input.value);
+      });
+    });
+    dialog.querySelectorAll<HTMLInputElement>('input[name="cursor"]').forEach((input) => {
+      input.addEventListener('change', () => {
+        if (input.checked) saveCursor(input.value);
+      });
+    });
+    const visualOff: Record<string, string> = {
+      text: 'md',
+      contrast: 'off',
+      space: 'normal',
+      transparent: 'normal',
+      focus: 'off',
+    };
+    for (const name of Object.keys(visualOff)) {
+      dialog.querySelectorAll<HTMLInputElement>(`input[name="${name}"]`).forEach((input) => {
+        input.addEventListener('change', () => {
+          if (input.checked) saveVisual(name, input.value, visualOff[name]);
+        });
+      });
+    }
+
+    perf?.querySelector('[data-perf-quiet]')?.addEventListener('click', () => saveMotion('quiet'));
+    perf?.querySelector('[data-perf-keep]')?.addEventListener('click', () => {
+      try {
+        localStorage.setItem(ASKED_KEY, '1');
+      } catch {
+        /* private mode */
+      }
+      perf.close();
+    });
+
+    if (!perf || motionValue() !== 'full' || document.hidden) return;
+    try {
+      if (localStorage.getItem(ASKED_KEY) === '1') return;
+    } catch {
+      return;
+    }
+    window.setTimeout(() => {
+      if (document.hidden || motionValue() !== 'full' || perf.open) return;
+      sampleFps(1200).then((fps) => {
+        if (fps >= 30 || perf.open || document.hidden) return;
+        perf.showModal();
+      });
+    }, 2200);
+  }
+
+  document.addEventListener('astro:page-load', initSettings);
+</script>

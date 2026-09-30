@@ -1,0 +1,17 @@
+---
+import ProjectPage from '@/components/ProjectPage.astro';
+import { getProjectStaticPaths } from '@/lib/projects';
+import type { CollectionEntry } from 'astro:content';
+
+export async function getStaticPaths() {
+  return getProjectStaticPaths();
+}
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+  next: CollectionEntry<'projects'>;
+}
+const { project, next } = Astro.props;
+---
+
+<ProjectPage project={project} next={next} />

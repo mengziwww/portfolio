@@ -1,0 +1,18 @@
+---
+import Base from '@/layouts/Base.astro';
+import HomeContent from '@/components/home/HomeContent.astro';
+import Loader from '@/components/Loader.astro';
+import NotesMode from '@/components/NotesMode.astro';
+import { ui } from '@/i18n/ui';
+---
+
+<Base
+  path="/notes"
+  title="Notes, Menghan LI"
+  description={ui.en['meta.description']}
+  noindex
+>
+  <NotesMode />
+  <Loader />
+  <HomeContent />
+</Base>

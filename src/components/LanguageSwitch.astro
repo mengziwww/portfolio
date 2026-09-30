@@ -1,0 +1,102 @@
+---
+const languages = { en: 'EN', fr: 'FR', zh: '中文' } as const;
+interface Props {
+  class?: string;
+}
+const { class: className } = Astro.props;
+---
+
+<nav class:list={['lang-switch', className]} aria-label="Language" data-lang-switch>
+  {Object.entries(languages).map(([code, label]) => (
+    <button type="button" data-lang-option={code} aria-pressed={code === 'en' ? 'true' : 'false'}>
+      {label}
+    </button>
+  ))}
+</nav>
+
+<style>
+  .lang-switch {
+    display: flex;
+    gap: 0.7em;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.04em;
+  }
+
+  .lang-switch button {
+    color: var(--bone-faint);
+    transition: color var(--dur-fast);
+    white-space: nowrap;
+  }
+
+  .lang-switch button:hover {
+    color: var(--bone);
+  }
+
+  .lang-switch button[aria-pressed='true'] {
+    color: var(--gold);
+  }
+</style>
+
+<script>
+  const KEY = 'menghan-lang';
+  const VALID = ['en', 'fr', 'zh'];
+
+  function applyLang(lang: string) {
+    // state lives only on the standard `lang` attribute — see global.css
+    // for why it must never also be set as data-lang on <html>
+    document.documentElement.setAttribute('lang', lang);
+    document.querySelectorAll('[data-lang-switch]').forEach((nav) => {
+      nav.querySelectorAll('[data-lang-option]').forEach((btn) => {
+        btn.setAttribute('aria-pressed', String(btn.getAttribute('data-lang-option') === lang));
+      });
+    });
+  }
+
+  function initSwitch() {
+    document.querySelectorAll<HTMLButtonElement>('[data-lang-option]').forEach((btn) => {
+      if (btn.dataset.langInit === '1') return;
+      btn.dataset.langInit = '1';
+      btn.addEventListener('click', () => {
+        const lang = btn.dataset.langOption ?? 'en';
+        if (lang === document.documentElement.getAttribute('lang')) return;
+        try {
+          localStorage.setItem(KEY, lang);
+        } catch {
+          /* private browsing */
+        }
+        applyLang(lang);
+        // a small reveal on the text that just became visible — the same
+        // rise-and-fade language already used for the site's headings
+        // (see reveal-text.ts), not a fade of the whole page. A full-page
+        // opacity dip (dimming the nav, the images, the background too)
+        // read as a slide-transition effect, not a language switch.
+        //
+        // Animates the *parent* of each [data-lang] span, not the span
+        // itself: transform has no effect on inline (non-replaced)
+        // elements, and forcing display:inline-block on the span to work
+        // around that would break normal word-wrap on longer paragraph
+        // text. The parent (a <p>, <h1>, <li>, ...) is block-level and
+        // already contains only the one now-visible-language span.
+        if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          const seen = new Set<Element>();
+          document.querySelectorAll<HTMLElement>(`[data-lang="${lang}"], [data-lang-block="${lang}"]`).forEach((el) => {
+            const target = el.parentElement ?? el;
+            if (seen.has(target)) return;
+            seen.add(target);
+            target.classList.remove('lang-pop-in');
+            void (target as HTMLElement).offsetWidth;
+            target.classList.add('lang-pop-in');
+          });
+        }
+      });
+    });
+
+    // sync buttons to whatever the blocking head script already applied —
+    // state lives only on the standard `lang` attribute, never data-lang
+    const current = document.documentElement.getAttribute('lang');
+    if (current && VALID.includes(current)) applyLang(current);
+  }
+
+  document.addEventListener('astro:page-load', initSwitch);
+</script>

@@ -1,0 +1,42 @@
+title: Emma
+year: 2026
+category: personal
+template: sketchbook
+order: 7
+size: wide
+accentFrom: "#8C3A32"
+accentTo: "#1E3324"
+roles:
+  en: [Personal piece]
+  fr: [Travail personnel]
+  zh: [个人作品]
+subtitle:
+  en: a personal drawing
+  fr: un dessin personnel
+  zh: 一幅个人画
+description:
+  en: A project I am still working on. I plan to finish it this year. A woman resting in the flowers.
+  fr: Un projet sur lequel je travaille encore. Je compte le finir cette année. Une femme qui se repose dans les fleurs.
+  zh: 我还在做的项目，打算今年完成。一个女人在花里休息。
+cover: sleeping-flowers.png
+coverAlt:
+  en: A woman with dark curling hair lies among red flowers, eyes closed
+  fr: Une femme aux cheveux bruns bouclés repose parmi des fleurs rouges, les yeux clos
+  zh: 一个深色卷发的女人躺在红花之间，闭着眼
+gallery:
+  - file: frame.png
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: characters.png
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+  - file: sheet.png
+    alt:
+      en: Placeholder. I'll describe this image later.
+      fr: Texte provisoire. Je décrirai cette image plus tard.
+      zh: 说明先空着，之后再写。
+video: /videos/emma/emma.mp4
