@@ -18,7 +18,7 @@ interface Props {
   eager?: boolean;
 }
 const { project, index, eager = false } = Astro.props;
-const { title, subtitle, year, category, cover, coverAlt, accentFrom, accentTo, size, posterCredit, posterGenre } = project.data;
+const { title, subtitle, year, category, cover, coverAlt, accentFrom, accentTo, size, posterCredit, posterGenre, release } = project.data;
 const img = getProjectImage(project.id, cover);
 const categoryLabel = trAll(`category.${category}` as const);
 const glow = vividOf(accentFrom, accentTo);
@@ -52,6 +52,12 @@ const tilt = (((seed % 7) - 3) * 0.6).toFixed(2);
     </div>
 
     <span class="poster-badge eyebrow">{String(year)}</span>
+    {release && (
+      <span class="poster-release">
+        <I18nText en="out now" fr="c'est sorti" zh="正式上线" />
+        <time datetime={release.date}>{release.date.split('-').reverse().join('.')}</time>
+      </span>
+    )}
 
     <div class="poster-copy">
       <p class="poster-credit eyebrow">
@@ -177,6 +183,46 @@ const tilt = (((seed % 7) - 3) * 0.6).toFixed(2);
     padding: 0.3em 0.6em;
     border: 1px solid rgb(255 255 255 / 15%);
     border-radius: 999px;
+  }
+
+  .poster-release {
+    position: absolute;
+    top: 0.9rem;
+    left: 0.9rem;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.7em;
+    padding: 0.5em 0.95em;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--void);
+    background: var(--gold);
+    border-radius: 2px;
+    transform: rotate(-3deg);
+    animation: poster-release-pulse 2.6s ease-out infinite;
+  }
+
+  :lang(zh) .poster-release {
+    text-transform: none;
+  }
+
+  .poster-release time {
+    font-weight: 700;
+    padding-left: 0.7em;
+    border-left: 1px solid rgb(0 0 0 / 30%);
+  }
+
+  @keyframes poster-release-pulse {
+    0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--gold) 55%, transparent); }
+    70%,
+    100% { box-shadow: 0 0 0 0.8rem transparent; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .poster-release { animation: none; }
   }
 
   .poster-copy {

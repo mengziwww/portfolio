@@ -1,11 +1,9 @@
 ---
-// This is the one project on the site that isn't finished — a graduate
-// film still being built, in the middle of its own process. Every other
-// stage presents a completed world; this one is honest about being a
-// work in progress, so instead of a polished gallery it reads like a
-// production board: sketches pinned up in the order they were made,
-// warm and sunlit (a road-trip film, a field of sunflowers in its own
-// key art), building up through three real reels of the actual footage.
+// A graduate film shown through its own process: instead of a polished
+// gallery it reads like a production board, sketches pinned up in the
+// order they were made, warm and sunlit (a road-trip film, a field of
+// sunflowers in its own key art), building up through real reels of the
+// footage. Once the film is out, the finished film itself comes first.
 import { Image } from 'astro:assets';
 import type { CollectionEntry } from 'astro:content';
 import { getProjectImage, responsiveWidths } from '@/lib/images';
@@ -22,7 +20,9 @@ interface Props {
   next: CollectionEntry<'projects'>;
 }
 const { project, next } = Astro.props;
-const { title, subtitle, description, year, roles, category, client, cover, coverAlt, gallery, accentFrom, accentTo, videos, links } = project.data;
+const { title, subtitle, description, year, roles, category, client, cover, coverAlt, gallery, accentFrom, accentTo, videos, links, release } = project.data;
+const releaseDate = release?.date.split('-').reverse().join('.');
+const youtubeUrl = release && `https://www.youtube.com/watch?v=${release.youtube}`;
 const glow = vividOf(accentFrom, accentTo);
 const coverImg = getProjectImage(project.id, cover);
 const categoryLabel = trAll(`category.${category}` as const);
@@ -79,6 +79,12 @@ const pollen = Array.from({ length: 26 }, (_, i) => ({
       transition:name={`project-cover-${project.id}`}
     />
     <div class="pr-hero-copy">
+      {release && (
+        <p class="pr-release">
+          <span><I18nText en="out now" fr="c'est sorti" zh="正式上线" /></span>
+          <time class="pr-release-date" datetime={release.date}>{releaseDate}</time>
+        </p>
+      )}
       <p class="hero-eyebrow eyebrow">
         <I18nText {...categoryLabel} /> · {year}{client ? (
           <>
@@ -93,6 +99,12 @@ const pollen = Array.from({ length: 26 }, (_, i) => ({
       <p class="pr-hero-desc">
         <I18nText en={description.en} fr={description.fr} zh={description.zh} />
       </p>
+      {youtubeUrl && (
+        <a class="pr-cta" href={youtubeUrl} target="_blank" rel="noopener noreferrer" data-cursor-hover>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor" /></svg>
+          <I18nText en="watch the film on YouTube" fr="voir le film sur YouTube" zh="在 YouTube 上看成片" />
+        </a>
+      )}
       <ProjectIntro links={links} />
       <ul class="hero-roles">
         {roles.en.map((_, i) => (
@@ -109,6 +121,31 @@ const pollen = Array.from({ length: 26 }, (_, i) => ({
       <ScrollCue />
     </div>
   </header>
+
+  {release && (
+    <section class="pr-film">
+      <h2 class="pr-chapter-title">
+        <I18nText en="the film" fr="le film" zh="成片" />
+      </h2>
+      <div class="pr-film-frame" data-yt-embed={release.youtube} data-yt-title={title}>
+        <button type="button" class="pr-film-play" data-yt-play data-cursor-hover>
+          <Image
+            src={coverImg}
+            alt=""
+            widths={responsiveWidths(coverImg, [900, 1400, 2000])}
+            sizes="(max-width: 1000px) 92vw, 62rem"
+            loading="lazy"
+          />
+          <span class="pr-film-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor" /></svg>
+          </span>
+          <span class="pr-film-label">
+            <I18nText en="play the film" fr="lancer le film" zh="播放成片" />
+          </span>
+        </button>
+      </div>
+    </section>
+  )}
 
   {chapters.map((chapter, ci) => (
     <section class="pr-chapter" style={`--chapter-tint:${ci % 2 === 0 ? accentFrom : accentTo};`}>
@@ -162,6 +199,26 @@ const pollen = Array.from({ length: 26 }, (_, i) => ({
 
   <ProjectFooter project={project} next={next} />
 </article>
+
+<script>
+  // YouTube is only contacted once the visitor asks for the film.
+  document.addEventListener('astro:page-load', () => {
+    document.querySelectorAll<HTMLElement>('[data-yt-embed]').forEach((frame) => {
+      frame.querySelector('[data-yt-play]')?.addEventListener(
+        'click',
+        () => {
+          const iframe = document.createElement('iframe');
+          iframe.src = `https://www.youtube-nocookie.com/embed/${frame.dataset.ytEmbed}?autoplay=1&rel=0`;
+          iframe.title = frame.dataset.ytTitle ?? '';
+          iframe.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+          iframe.allowFullscreen = true;
+          frame.replaceChildren(iframe);
+        },
+        { once: true }
+      );
+    });
+  });
+</script>
 
 <style>
   .process {
@@ -256,10 +313,82 @@ const pollen = Array.from({ length: 26 }, (_, i) => ({
     margin-top: var(--space-2);
   }
 
+  .pr-release {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8em;
+    margin-bottom: var(--space-4);
+    padding: 0.6em 1.2em;
+    font-family: var(--font-mono);
+    font-size: var(--text-base);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--void);
+    background: var(--gold);
+    border-radius: 2px;
+    transform: rotate(-3deg);
+    transform-origin: left center;
+    animation: release-pulse 2.6s ease-out infinite;
+  }
+
+  :lang(zh) .pr-release {
+    text-transform: none;
+    letter-spacing: 0.06em;
+  }
+
+  .pr-release-date {
+    font-weight: 700;
+    padding-left: 0.8em;
+    border-left: 1px solid rgb(0 0 0 / 30%);
+  }
+
+  @keyframes release-pulse {
+    0% {
+      box-shadow: 0 0.6rem 1.4rem -0.5rem rgb(0 0 0 / 55%), 0 0 0 0 color-mix(in srgb, var(--gold) 55%, transparent);
+    }
+    70%,
+    100% {
+      box-shadow: 0 0.6rem 1.4rem -0.5rem rgb(0 0 0 / 55%), 0 0 0 1rem transparent;
+    }
+  }
+
+  .pr-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6em;
+    margin-top: var(--space-4);
+    padding: 0.85em 1.5em;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--void);
+    background: var(--bone);
+    border-radius: 999px;
+    box-shadow: 0 0.8rem 1.6rem -0.6rem rgb(0 0 0 / 60%);
+    transition: background 0.3s, transform 0.3s var(--ease-out-expo);
+  }
+
+  :lang(zh) .pr-cta {
+    text-transform: none;
+  }
+
+  .pr-cta svg {
+    width: 1.1em;
+    height: 1.1em;
+  }
+
+  .pr-cta:hover,
+  .pr-cta:focus-visible {
+    background: var(--gold);
+    transform: translateY(-2px);
+  }
+
   .pr-hero-desc {
     font-size: var(--text-sm);
     color: var(--bone-faint);
-    max-width: 48ch;
+    max-width: 56ch;
     margin-top: var(--space-3);
     line-height: 1.6;
   }
@@ -308,6 +437,99 @@ const pollen = Array.from({ length: 26 }, (_, i) => ({
 
   @media (max-width: 700px) {
     .pr-hero-credit { display: none; }
+  }
+
+  .pr-film {
+    position: relative;
+    z-index: 1;
+    padding: var(--space-5) var(--edge) var(--space-6);
+    border-top: 1px solid var(--void-line);
+  }
+
+  .pr-film .pr-chapter-title {
+    max-width: 62rem;
+    margin-inline: auto;
+  }
+
+  .pr-film-frame {
+    position: relative;
+    max-width: 62rem;
+    margin: 0 auto;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: 3px;
+    background: #000;
+    box-shadow: 0 2rem 4rem -1.5rem rgb(0 0 0 / 75%), 0 0 0 1px color-mix(in srgb, var(--gold) 35%, transparent);
+  }
+
+  .pr-film-frame :global(iframe),
+  .pr-film-play {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  .pr-film-play {
+    padding: 0;
+    background: none;
+    cursor: pointer;
+    color: var(--void);
+  }
+
+  .pr-film-play :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.7);
+    transition: filter 0.5s, transform 1.2s var(--ease-out-expo);
+  }
+
+  .pr-film-play:hover :global(img),
+  .pr-film-play:focus-visible :global(img) {
+    filter: brightness(0.85);
+    transform: scale(1.02);
+  }
+
+  .pr-film-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: grid;
+    place-items: center;
+    width: 5.5rem;
+    height: 5.5rem;
+    border-radius: 50%;
+    background: var(--gold);
+    transform: translate(-50%, -50%);
+    animation: release-pulse 2.6s ease-out infinite;
+  }
+
+  .pr-film-icon svg {
+    width: 2.4rem;
+    height: 2.4rem;
+    margin-left: 0.3rem;
+  }
+
+  .pr-film-label {
+    position: absolute;
+    left: 50%;
+    top: calc(50% + 3.9rem);
+    transform: translateX(-50%);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--bone);
+    text-shadow: 0 1px 3px rgb(0 0 0 / 80%);
+    white-space: nowrap;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pr-release,
+    .pr-film-icon { animation: none; }
+    .pr-film-play :global(img) { transition: none; }
   }
 
   .pr-chapter {

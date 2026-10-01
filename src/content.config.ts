@@ -68,6 +68,13 @@ const projects = defineCollection({
         })
       )
       .optional(),
+    // a film that is out: stamped on its poster and page, embedded on the page
+    release: z
+      .object({
+        date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        youtube: z.string(), // video id
+      })
+      .optional(),
   }),
 });
 
