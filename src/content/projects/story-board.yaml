@@ -15,31 +15,36 @@ posterGenre:
   fr: Gobelins 2026, CRFA
   zh: 高布兰 2026，CRFA
 roles:
-  en: [Concept, Character Design, Storyboard, Animation, Compositing]
-  fr: [Concept, Character Design, Storyboard, Animation, Compositing]
-  zh: [概念设计, 角色设计, 分镜, 动画, 合成]
+  en: [Character Design, Lead Animation, Layout, Compositing, Storyboard, Concept]
+  fr: [Character Design, Lead Animation, Layout, Compositing, Storyboard, Concept]
+  zh: [角色设计, 主要动画, Layout, 合成, 分镜, 概念设计]
 subtitle:
-  en: out since September 30, 2026
-  fr: sorti le 30 septembre 2026
-  zh: 2026 年 9 月 30 日上线
+  en: our Gobelins graduate film
+  fr: notre film de fin d'études aux Gobelins
+  zh: 我们在高布兰的毕业短片
 description:
   en: >-
     Sophie heads out to cheer her brother Benoit up. He's been in a bad
-    place. I did the concept, the characters, the animation and the
-    compositing. The film is out on YouTube and other platforms.
+    place. I was the character designer: Sophie, Benoit, Thomas and the
+    others, plus the free-flowing lasso designs. In production I did
+    layout posing, then became one of the lead animators. I like small
+    gestures and subtle expressions, they bring the characters to life
+    and push the comedy as far as it goes. In post-production I did the
+    compositing, and at the very start I also tried the storyboard.
   fr: >-
     Sophie prend la route pour rendre le sourire à son frère Benoit.
-    Il va mal. J'ai fait le concept, les personnages, l'animation et le
-    compositing. Le film est sorti sur YouTube et d'autres plateformes.
-  zh: >-
-    苏菲上路，想让哥哥博努瓦重新高兴起来。他最近很不好。概念、角色、动画
-    和合成是我做的。片子已经在 YouTube 和其他平台上线了。
-links:
-  - href: https://www.youtube.com/watch?v=i3q_h7ywypE
-    label:
-      en: watch the film
-      fr: voir le film
-      zh: 看成片
+    Il va mal. J'étais la character designer du film : Sophie, Benoit,
+    Thomas et les autres, plus les designs « lasso » et leur animation
+    libre. En production, j'ai fait des poses de layout, puis je suis
+    devenue l'une des animatrices principales. J'aime jouer avec les
+    petits gestes et les expressions subtiles, ça donne vie aux
+    personnages et ça pousse leur côté comique au maximum. En
+    post-production j'ai fait le compositing, et tout au début j'ai
+    aussi essayé le storyboard.
+  zh: 苏菲上路，想让哥哥博努瓦重新高兴起来。他最近很不好。我是这部片子的角色设计：苏菲、博努瓦、托马和其他角色，还有自由流动的「套索」设计。制作阶段我先做 layout 姿态，后来成为主要动画师之一。我喜欢用细小的动作和微妙的表情去表演，让角色活起来，把他们的喜剧感推到最大。后期我做了合成，片子刚开始制作的时候，我也试着画了分镜。
+release:
+  date: '2026-09-30'
+  youtube: i3q_h7ywypE
 cover: style-frame2.png
 coverAlt:
   en: Benoit and Sophie.
