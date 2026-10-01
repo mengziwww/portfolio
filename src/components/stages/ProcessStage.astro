@@ -101,9 +101,6 @@ const pollen = Array.from({ length: 26 }, (_, i) => ({
           </li>
         ))}
       </ul>
-      <p class="pr-wip-badge">
-        <I18nText en="still taking shape" fr="encore en chantier" zh="仍在创作中" />
-      </p>
     </div>
     <figure class="pr-hero-credit">
       <figcaption><I18nText en={coverAlt.en} fr={coverAlt.fr} zh={coverAlt.zh} /></figcaption>
@@ -285,25 +282,6 @@ const pollen = Array.from({ length: 26 }, (_, i) => ({
     padding: 0.4em 0.85em;
     border-radius: 999px;
     color: var(--bone);
-  }
-
-  .pr-wip-badge {
-    display: inline-block;
-    margin-top: var(--space-4);
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--void);
-    background: var(--gold);
-    padding: 0.5em 1.1em;
-    border-radius: 2px;
-    transform: rotate(-2deg);
-    box-shadow: 0 0.5rem 1rem -0.4rem rgb(0 0 0 / 50%);
-  }
-
-  :lang(zh) .pr-wip-badge {
-    text-transform: none;
   }
 
   .pr-hero-credit {
