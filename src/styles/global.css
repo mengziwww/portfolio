@@ -532,10 +532,15 @@ html[lang='zh'] [data-lang-block='zh'] {
 /* ---------------------------------------------------------------------- */
 /* Reveal text — words/characters rise out of a mask on load/scroll       */
 /* ---------------------------------------------------------------------- */
+/* Tight display line-heights make the mask shorter than the glyphs, which
+   cut descenders (g, j, y). The padding gives them room, the negative
+   margin keeps the line box unchanged. */
 .reveal-mask {
   display: inline-block;
   overflow: hidden;
   vertical-align: top;
+  padding-bottom: 0.2em;
+  margin-bottom: -0.2em;
 }
 
 .reveal-word-group {
@@ -546,8 +551,13 @@ html[lang='zh'] [data-lang-block='zh'] {
 .reveal-word,
 .reveal-char {
   display: inline-block;
-  transform: translateY(110%);
+  transform: translateY(135%);
   transition: transform 0.9s var(--ease-out-quint);
+}
+
+.is-instant .reveal-word,
+.is-instant .reveal-char {
+  transition: none;
 }
 
 .is-revealed .reveal-word,

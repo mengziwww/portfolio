@@ -20,21 +20,21 @@ subtitle:
   zh: 从2023年做到现在的世界
 description:
   en: >-
-    This project has always lived in my mind. It is about a civilization
-    fading, and another one rising. It could be a seven minute film, or
+    This project has always lived in my mind. It is about the world being
+    reloaded, one version replacing the last, and it could be a seven minute film,
     a long comic, or a series. A little girl becomes the last person in
     the world, and she is about to die. She thinks she is not afraid of
-    death. Then a being who calls himself a messenger appears in front
-    of her. He tells her a new world is about to be born.
+    death, but then a being who calls himself a messenger appears in
+    front of her. He tells her a new world is about to be born.
   fr: >-
-    Ce projet a toujours vécu dans ma tête. Il parle d'une civilisation
-    qui s'éteint, et d'une autre qui se lève. Ça peut être un film de
-    sept minutes, une longue bande dessinée, ou une série. Une petite
+    Ce projet a toujours vécu dans ma tête. Il parle du monde qui se
+    recharge, d'une version qui remplace la précédente, et ça peut être un film de
+    sept minutes, une longue bande dessinée ou une série. Une petite
     fille devient la dernière personne au monde, et elle va mourir.
-    Elle croit qu'elle n'a pas peur de la mort. Puis un être qui se dit
+    Elle croit qu'elle n'a pas peur de la mort, mais un être qui se dit
     messager apparaît devant elle. Il lui dit qu'un nouveau monde va naître.
   zh: >-
-    这个项目一直在我心里。这个故事关于文明的消散与崛起，可以是一个七分钟的短片，也可以是长长连载的漫画或剧集。一个小女孩成为了世界上的最后一个人，她即将死去。她以为她不害怕死亡，可在她面前出现了一名自称为使者的人形生物。使者告诉她，新的世界就要诞生了。
+    这个项目一直在我心里。这个故事关于世界的重新载入、版本更迭，可以是一个七分钟的短片，也可以是长长连载的漫画或剧集。一个小女孩成为了世界上的最后一个人，她即将死去。她以为她不害怕死亡，可在她面前出现了一名自称为使者的人形生物。使者告诉她，新的世界就要诞生了。
 cover: garden-child.png
 coverAlt:
   en: A small orange-haired figure stands in tall grass at night, fireflies and star-flowers glowing around her
@@ -71,11 +71,6 @@ gallery:
       en: A form the new world is taking
       fr: Une forme que prend le monde d'après
       zh: 新世界正在长成的样子
-  - file: extra-20.jpg
-    alt:
-      en: Placeholder. I'll describe this image later.
-      fr: Texte provisoire. Je décrirai cette image plus tard.
-      zh: 说明先空着，之后再写。
   - file: extra-21.png
     alt:
       en: Placeholder. I'll describe this image later.
@@ -92,40 +87,59 @@ gallery:
       fr: Texte provisoire. Je décrirai cette image plus tard.
       zh: 说明先空着，之后再写。
   - file: extra-50.jpg
-    alt:
-      en: Placeholder. I'll describe this image later.
-      fr: Texte provisoire. Je décrirai cette image plus tard.
-      zh: 说明先空着，之后再写。
+    alt: &w07
+      en: So the messenger takes her to see the end of the world.
+      fr: Alors le messager l'emmène voir le bout du monde.
+      zh: 于是她带着她去看世界尽头。
+    caption: *w07
   - file: extra-51.jpg
-    alt:
-      en: Placeholder. I'll describe this image later.
-      fr: Texte provisoire. Je décrirai cette image plus tard.
-      zh: 说明先空着，之后再写。
+    alt: &w08
+      en: The souls of the old world walk with them.
+      fr: Les âmes de l'ancien monde marchent avec eux.
+      zh: 旧世界的灵魂与他们同行。
+    caption: *w08
   - file: extra-52.jpg
-    alt:
-      en: Placeholder. I'll describe this image later.
-      fr: Texte provisoire. Je décrirai cette image plus tard.
-      zh: 说明先空着，之后再写。
+    alt: &w09
+      en: Her memory flashes back to her old home, a reserve for humans. On the other side of one wall, the land the war used up, nothing left but desert and ruins.
+      fr: Sa mémoire revient à son ancienne maison, une réserve pour les humains. De l'autre côté d'un seul mur, la terre usée par la guerre, où il ne reste que le désert et les ruines.
+      zh: 女孩的记忆闪回她曾经作为人类保护区的家，一墙之隔便是被战争消耗殆尽的土地，只剩下了荒漠和废墟。
+    caption: *w09
   - file: extra-53.png
-    alt:
-      en: Placeholder. I'll describe this image later.
-      fr: Texte provisoire. Je décrirai cette image plus tard.
-      zh: 说明先空着，之后再写。
-  - file: extra-54.png
-    alt:
-      en: Placeholder. I'll describe this image later.
-      fr: Texte provisoire. Je décrirai cette image plus tard.
-      zh: 说明先空着，之后再写。
-  - file: extra-56.png
-    alt:
-      en: Placeholder. I'll describe this image later.
-      fr: Texte provisoire. Je décrirai cette image plus tard.
-      zh: 说明先空着，之后再写。
+    alt: &w10
+      en: Every physical structure of the new world is made again.
+      fr: Toute la structure physique du nouveau monde est refaçonnée.
+      zh: 新世界一切的物理结构都被重新塑造。
+    caption: *w10
   - file: extra-57.png
-    alt:
-      en: Placeholder. I'll describe this image later.
-      fr: Texte provisoire. Je décrirai cette image plus tard.
-      zh: 说明先空着，之后再写。
+    alt: &w13
+      en: Curious, she explores the new world. Trees grow down into the ground, and the stars and the moon show up under her feet.
+      fr: Curieuse, elle explore le nouveau monde. Les arbres poussent vers le sol, et les étoiles et la lune apparaissent sous ses pieds.
+      zh: 女孩好奇地探索这个新世界，树向地下长，而星星和月亮居然出现在了脚下。
+    caption: *w13
+  - file: extra-56.png
+    alt: &w12
+      en: They reach a place where the souls suddenly fly past them, all toward one spot. She wants to keep them, and runs after them.
+      fr: Ils arrivent à un endroit où les âmes les dépassent soudain et s'envolent toutes vers un même point. Elle veut les retenir, et leur court après.
+      zh: 他们来到了一处地方，灵魂突然越过了他们往一处飞去，女孩想要留住他们，向前追赶。
+    caption: *w12
+  - file: door.jpg
+    alt: &w14
+      en: The girl comes to the door.
+      fr: La fille arrive devant la porte.
+      zh: 女孩来到了门前。
+    caption: *w14
+  - file: extra-54.png
+    alt: &w11
+      en: In the door she sees the old world as it once was. The souls turn into birds and fly back to where they belong.
+      fr: Dans la porte, elle voit l'ancien monde tel qu'il était. Les âmes deviennent des oiseaux et retournent là où est leur place.
+      zh: 女孩看见了门中那个曾经的旧世界，灵魂们变成了飞鸟回归属于他们的怀抱。
+    caption: *w11
+  - file: fading.jpg
+    alt: &w15
+      en: Watched by the stars, she slowly fades away, and the dust flies back to the earth and the sky.
+      fr: Sous le regard des étoiles, elle s'efface peu à peu, et la poussière retourne à la terre et au ciel.
+      zh: 女孩在星空的注视下渐渐消散，尘埃飞回了大地和天空。
+    caption: *w15
   - file: board-01.jpg
     alt:
       en: Placeholder. I'll describe this image later.

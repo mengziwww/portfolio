@@ -3,7 +3,7 @@ dist/
 .astro/
 
 # deps
-node_modules/
+node_modules
 
 # env
 .env
@@ -22,3 +22,8 @@ private/
 
 # files removed from the site, recovered from git history (local only)
 archive/
+
+menghan-notes*.json
+
+# local notes for coding agents
+AGENTS.md
