@@ -169,6 +169,15 @@ const { path, title, description, ogImage, bodyClass, noindex = false } = Astro.
     initLenis();
     initReveals();
     syncScrollbarColor();
+    // after every other page-load listener, so Loader.astro still sees the
+    // first page of the visit as unentered
+    window.setTimeout(() => {
+      try {
+        sessionStorage.setItem('menghan-entered', '1');
+      } catch {
+        /* private mode */
+      }
+    }, 0);
     requestAnimationFrame(() => requestAnimationFrame(() => ScrollTrigger.refresh()));
   });
 </script>

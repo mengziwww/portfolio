@@ -54,10 +54,14 @@ const mangaItems = stills
   .sort((a, b) => a.file.localeCompare(b.file, undefined, { numeric: true }));
 const trackItems = stills.filter((item) => !studyFiles.has(item.file) && !item.file.startsWith('board-'));
 
-const slides = trackItems.map((item, i) => ({
-  item,
-  frag: (i < fragments.length ? fragments[i] : null) as (typeof fragments)[number] | null,
-}));
+const slides = trackItems.map((item, i) => {
+  const img = getProjectImage(project.id, item.file);
+  return {
+    item,
+    portrait: img.height > img.width,
+    frag: (item.caption ?? (i < fragments.length ? fragments[i] : null)) as (typeof fragments)[number] | null,
+  };
+});
 ---
 
 <article class="atmosphere" style={`--mood-a:${accentFrom}; --mood-b:${accentTo}; --mood-glow:${glow};`} data-atmosphere data-reveal-root>
@@ -111,7 +115,7 @@ const slides = trackItems.map((item, i) => ({
   <div class="eotw-viewer" data-eotw-viewer>
     <div class="eotw-frame" data-order-group="world">
       {slides.map((s, i) => (
-        <figure class="eotw-slide" data-slide data-index={i} data-artwork data-note-id={`${project.id}:${s.item.file}`}>
+        <figure class:list={['eotw-slide', { 'is-portrait': s.portrait }]} data-slide data-index={i} data-artwork data-note-id={`${project.id}:${s.item.file}`}>
           <Image
             src={getProjectImage(project.id, s.item.file)}
             alt={s.item.alt.en}
@@ -399,6 +403,10 @@ const slides = trackItems.map((item, i) => ({
     height: 100%;
     object-fit: cover;
     transform: scale(1);
+  }
+
+  .eotw-slide.is-portrait :global(img) {
+    object-fit: contain;
   }
 
   .eotw-slide.is-active :global(img) {

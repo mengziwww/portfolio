@@ -2,17 +2,73 @@
 // A small gear. It opens display and accessibility options.
 // If this device cannot keep a steady frame rate, a short prompt offers
 // to quiet the motion. The choice is remembered on this browser.
+type Option = { value: string; en: string; fr: string; zh: string };
+type Group = { name: string; en: string; fr: string; zh: string; options: Option[] };
+
+const groups: Group[] = [
+  {
+    name: 'motion', en: 'Motion', fr: 'Mouvement', zh: '动态',
+    options: [
+      { value: 'full', en: 'Normal', fr: 'Normal', zh: '正常' },
+      { value: 'quiet', en: 'Reduced', fr: 'Réduit', zh: '减少' },
+      { value: 'still', en: 'Off', fr: 'Aucun', zh: '关闭' },
+    ],
+  },
+  {
+    name: 'text', en: 'Text size', fr: 'Taille du texte', zh: '文字大小',
+    options: [
+      { value: 'md', en: 'Normal', fr: 'Normale', zh: '正常' },
+      { value: 'lg', en: 'Large', fr: 'Grande', zh: '大' },
+      { value: 'xl', en: 'Larger', fr: 'Plus grande', zh: '更大' },
+    ],
+  },
+  {
+    name: 'contrast', en: 'Contrast', fr: 'Contraste', zh: '对比度',
+    options: [
+      { value: 'off', en: 'Normal', fr: 'Normal', zh: '正常' },
+      { value: 'high', en: 'High', fr: 'Élevé', zh: '高' },
+    ],
+  },
+  {
+    name: 'space', en: 'Spacing', fr: 'Espacement', zh: '间距',
+    options: [
+      { value: 'normal', en: 'Normal', fr: 'Normal', zh: '正常' },
+      { value: 'relaxed', en: 'Relaxed', fr: 'Aéré', zh: '宽松' },
+    ],
+  },
+  {
+    name: 'transparent', en: 'Transparency', fr: 'Transparence', zh: '透明',
+    options: [
+      { value: 'normal', en: 'Normal', fr: 'Normale', zh: '正常' },
+      { value: 'solid', en: 'Solid panels', fr: 'Panneaux opaques', zh: '不透明' },
+    ],
+  },
+  {
+    name: 'focus', en: 'Focus', fr: 'Focus', zh: '焦点',
+    options: [
+      { value: 'off', en: 'Normal', fr: 'Normal', zh: '正常' },
+      { value: 'strong', en: 'Always visible', fr: 'Toujours visible', zh: '始终可见' },
+    ],
+  },
+  {
+    name: 'cursor', en: 'Pointer', fr: 'Pointeur', zh: '指针',
+    options: [
+      { value: 'custom', en: 'Site cursor', fr: 'Curseur du site', zh: '网站光标' },
+      { value: 'system', en: 'System cursor', fr: 'Curseur du système', zh: '系统光标' },
+    ],
+  },
+];
 ---
-<button type="button" class="gear" data-settings-open aria-haspopup="dialog">
+<button type="button" class="gear" data-settings-open aria-haspopup="dialog" aria-expanded="false">
   <svg viewBox="0 0 24 24" aria-hidden="true">
-    <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.6" />
     <path
-      d="M12 3.2v2.1M12 18.7v2.1M4.8 6.5l1.6 1.4M17.6 16.1l1.6 1.4M3.2 12h2.1M18.7 12h2.1M4.8 17.5l1.6-1.4M17.6 7.9l1.6-1.4"
+      d="M10.10 5.16 L10.33 2.55 L13.67 2.55 L13.90 5.16 A7.1 7.1 0 0 1 15.50 5.82 L17.51 4.14 L19.86 6.49 L18.18 8.50 A7.1 7.1 0 0 1 18.84 10.10 L21.45 10.33 L21.45 13.67 L18.84 13.90 A7.1 7.1 0 0 1 18.18 15.50 L19.86 17.51 L17.51 19.86 L15.50 18.18 A7.1 7.1 0 0 1 13.90 18.84 L13.67 21.45 L10.33 21.45 L10.10 18.84 A7.1 7.1 0 0 1 8.50 18.18 L6.49 19.86 L4.14 17.51 L5.82 15.50 A7.1 7.1 0 0 1 5.16 13.90 L2.55 13.67 L2.55 10.33 L5.16 10.10 A7.1 7.1 0 0 1 5.82 8.50 L4.14 6.49 L6.49 4.14 L8.50 5.82 A7.1 7.1 0 0 1 10.10 5.16Z"
       fill="none"
       stroke="currentColor"
-      stroke-width="1.6"
-      stroke-linecap="round"
+      stroke-width="1.5"
+      stroke-linejoin="round"
     />
+    <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.5" />
   </svg>
   <span class="visually-hidden">
     <span data-lang="en">Display settings</span>
@@ -21,89 +77,55 @@
   </span>
 </button>
 
-<dialog class="settings" data-settings-dialog>
-  <form method="dialog">
+<dialog class="settings" data-settings-dialog aria-labelledby="settings-title" data-lenis-prevent>
+  <div class="settings-card">
     <header class="settings-head">
-      <p>
-        <span data-lang="en">Display</span>
-        <span data-lang="fr">Affichage</span>
-        <span data-lang="zh">显示</span>
-      </p>
-      <button type="submit" class="settings-close" aria-label="Close">×</button>
+      <div>
+        <h2 id="settings-title" class="settings-title">
+          <span data-lang="en">Display</span>
+          <span data-lang="fr">Affichage</span>
+          <span data-lang="zh">显示</span>
+        </h2>
+        <p class="settings-note">
+          <span data-lang="en">Saved in this browser.</span>
+          <span data-lang="fr">Enregistré dans ce navigateur.</span>
+          <span data-lang="zh">保存在这个浏览器里。</span>
+        </p>
+      </div>
+      <button type="button" class="settings-close" data-settings-close>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6.5 6.5l11 11M17.5 6.5l-11 11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+        </svg>
+        <span class="visually-hidden">
+          <span data-lang="en">Close</span>
+          <span data-lang="fr">Fermer</span>
+          <span data-lang="zh">关闭</span>
+        </span>
+      </button>
     </header>
 
-    <fieldset>
-      <legend>
-        <span data-lang="en">Motion</span>
-        <span data-lang="fr">Mouvement</span>
-        <span data-lang="zh">动态</span>
-      </legend>
-      <label><input type="radio" name="motion" value="full" /> <span data-lang="en">Normal</span><span data-lang="fr">Normal</span><span data-lang="zh">正常</span></label>
-      <label><input type="radio" name="motion" value="quiet" /> <span data-lang="en">Reduced</span><span data-lang="fr">Réduit</span><span data-lang="zh">减少</span></label>
-      <label><input type="radio" name="motion" value="still" /> <span data-lang="en">Off</span><span data-lang="fr">Aucun</span><span data-lang="zh">关闭</span></label>
-    </fieldset>
-
-    <fieldset>
-      <legend>
-        <span data-lang="en">Text size</span>
-        <span data-lang="fr">Taille du texte</span>
-        <span data-lang="zh">文字大小</span>
-      </legend>
-      <label><input type="radio" name="text" value="md" /> <span data-lang="en">Normal</span><span data-lang="fr">Normale</span><span data-lang="zh">正常</span></label>
-      <label><input type="radio" name="text" value="lg" /> <span data-lang="en">Large</span><span data-lang="fr">Grande</span><span data-lang="zh">大</span></label>
-      <label><input type="radio" name="text" value="xl" /> <span data-lang="en">Larger</span><span data-lang="fr">Plus grande</span><span data-lang="zh">更大</span></label>
-    </fieldset>
-
-    <fieldset>
-      <legend>
-        <span data-lang="en">Contrast</span>
-        <span data-lang="fr">Contraste</span>
-        <span data-lang="zh">对比度</span>
-      </legend>
-      <label><input type="radio" name="contrast" value="off" /> <span data-lang="en">Normal</span><span data-lang="fr">Normal</span><span data-lang="zh">正常</span></label>
-      <label><input type="radio" name="contrast" value="high" /> <span data-lang="en">High</span><span data-lang="fr">Élevé</span><span data-lang="zh">高</span></label>
-    </fieldset>
-
-    <fieldset>
-      <legend>
-        <span data-lang="en">Spacing</span>
-        <span data-lang="fr">Espacement</span>
-        <span data-lang="zh">间距</span>
-      </legend>
-      <label><input type="radio" name="space" value="normal" /> <span data-lang="en">Normal</span><span data-lang="fr">Normal</span><span data-lang="zh">正常</span></label>
-      <label><input type="radio" name="space" value="relaxed" /> <span data-lang="en">Relaxed</span><span data-lang="fr">Aéré</span><span data-lang="zh">宽松</span></label>
-    </fieldset>
-
-    <fieldset>
-      <legend>
-        <span data-lang="en">Transparency</span>
-        <span data-lang="fr">Transparence</span>
-        <span data-lang="zh">透明</span>
-      </legend>
-      <label><input type="radio" name="transparent" value="normal" /> <span data-lang="en">Normal</span><span data-lang="fr">Normale</span><span data-lang="zh">正常</span></label>
-      <label><input type="radio" name="transparent" value="solid" /> <span data-lang="en">Solid panels</span><span data-lang="fr">Panneaux opaques</span><span data-lang="zh">不透明</span></label>
-    </fieldset>
-
-    <fieldset>
-      <legend>
-        <span data-lang="en">Focus</span>
-        <span data-lang="fr">Focus</span>
-        <span data-lang="zh">焦点</span>
-      </legend>
-      <label><input type="radio" name="focus" value="off" /> <span data-lang="en">Normal</span><span data-lang="fr">Normal</span><span data-lang="zh">正常</span></label>
-      <label><input type="radio" name="focus" value="strong" /> <span data-lang="en">Always visible</span><span data-lang="fr">Toujours visible</span><span data-lang="zh">始终可见</span></label>
-    </fieldset>
-
-    <fieldset>
-      <legend>
-        <span data-lang="en">Pointer</span>
-        <span data-lang="fr">Pointeur</span>
-        <span data-lang="zh">指针</span>
-      </legend>
-      <label><input type="radio" name="cursor" value="custom" /> <span data-lang="en">Site cursor</span><span data-lang="fr">Curseur du site</span><span data-lang="zh">网站光标</span></label>
-      <label><input type="radio" name="cursor" value="system" /> <span data-lang="en">System cursor</span><span data-lang="fr">Curseur du système</span><span data-lang="zh">系统光标</span></label>
-    </fieldset>
-  </form>
+    <div class="settings-body">
+      {groups.map((group) => (
+        <fieldset class="settings-row">
+          <legend>
+            <span data-lang="en">{group.en}</span>
+            <span data-lang="fr">{group.fr}</span>
+            <span data-lang="zh">{group.zh}</span>
+          </legend>
+          <div class="seg">
+            {group.options.map((option) => (
+              <label>
+                <input type="radio" name={group.name} value={option.value} />
+                <span data-lang="en">{option.en}</span>
+                <span data-lang="fr">{option.fr}</span>
+                <span data-lang="zh">{option.zh}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      ))}
+    </div>
+  </div>
 </dialog>
 
 <dialog class="perf" data-perf-dialog>
@@ -132,13 +154,14 @@
     place-items: center;
     width: 1.7rem;
     height: 1.7rem;
-    color: var(--bone-faint);
+    color: var(--bone);
     background: transparent;
   }
 
   .gear svg {
-    width: 1.05rem;
-    height: 1.05rem;
+    width: 1.15rem;
+    height: 1.15rem;
+    transition: transform 0.6s var(--ease-out-expo);
   }
 
   .gear:hover,
@@ -146,61 +169,212 @@
     color: var(--gold);
   }
 
+  .gear:hover svg,
+  .gear[aria-expanded='true'] svg {
+    transform: rotate(45deg);
+  }
+
+  /* the global reset zeroes every margin, which is what centers a modal
+     dialog, so both dialogs put it back */
   .settings,
   .perf {
+    margin: auto;
     border: 1px solid var(--void-line);
-    background: var(--void);
+    border-radius: 14px;
+    background: var(--void-raised);
     color: var(--bone);
-    padding: var(--space-3);
-    max-width: min(22rem, calc(100vw - 2rem));
-    max-height: min(85vh, 40rem);
+    box-shadow: 0 2rem 5rem -1rem rgb(0 0 0 / 70%), 0 0 0 1px rgb(0 0 0 / 40%);
+  }
+
+  .settings {
+    width: min(34rem, calc(100vw - 2rem));
+    max-height: calc(100dvh - 2rem);
+    padding: 0;
     overflow: auto;
+    overscroll-behavior: contain;
+  }
+
+  .settings[open] {
+    animation: settings-in 0.38s var(--ease-out-expo);
+  }
+
+  .settings.is-closing {
+    animation: settings-out 0.18s ease-in forwards;
   }
 
   .settings::backdrop,
   .perf::backdrop {
-    background: rgb(0 0 0 / 45%);
+    background: rgb(6 5 6 / 55%);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+  }
+
+  .settings[open]::backdrop {
+    animation: backdrop-in 0.38s var(--ease-out-expo);
+  }
+
+  .settings.is-closing::backdrop {
+    animation: backdrop-out 0.18s ease-in forwards;
+  }
+
+  @keyframes settings-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.8rem) scale(0.97);
+    }
+  }
+
+  @keyframes settings-out {
+    to {
+      opacity: 0;
+      transform: translateY(0.4rem) scale(0.98);
+    }
+  }
+
+  @keyframes backdrop-in {
+    from { opacity: 0; }
+  }
+
+  @keyframes backdrop-out {
+    to { opacity: 0; }
+  }
+
+  .settings-card {
+    padding: var(--space-3) var(--space-3) var(--space-2);
   }
 
   .settings-head {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
-    margin-bottom: var(--space-3);
+    gap: var(--space-2);
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--void-line);
+  }
+
+  .settings-title {
+    font-size: var(--text-lg);
+    line-height: 1.1;
+  }
+
+  .settings-note {
+    margin-top: 0.35rem;
     font-family: var(--font-mono);
     font-size: var(--text-xs);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+    color: var(--bone-faint);
   }
 
   .settings-close {
-    color: var(--bone-soft);
-    font-size: 1.2rem;
-    line-height: 1;
-  }
-
-  .settings fieldset {
-    border: 0;
-    margin: 0 0 var(--space-3);
-    padding: 0;
     display: grid;
-    gap: 0.45rem;
+    place-items: center;
+    flex: none;
+    width: 2.2rem;
+    height: 2.2rem;
+    margin: -0.3rem -0.4rem 0 0;
+    border-radius: 50%;
+    color: var(--bone-soft);
+    transition: color var(--dur-fast), background-color var(--dur-fast);
   }
 
-  .settings legend {
+  .settings-close svg {
+    width: 1.15rem;
+    height: 1.15rem;
+  }
+
+  .settings-close:hover {
+    color: var(--bone);
+    background: var(--void-line);
+  }
+
+  .settings-row {
+    display: grid;
+    grid-template-columns: 8.5rem minmax(0, 1fr);
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0.85rem 0;
+    border: 0;
+    border-bottom: 1px solid var(--void-line);
+  }
+
+  .settings-row:last-child {
+    border-bottom: 0;
+  }
+
+  /* a floated legend stops being the fieldset's special legend box and
+     becomes an ordinary grid item */
+  .settings-row legend {
+    float: left;
+    padding: 0;
     font-family: var(--font-mono);
     font-size: var(--text-xs);
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 0.4rem;
+    color: var(--bone-soft);
   }
 
-  .settings label {
+  :lang(zh) .settings-row legend {
+    letter-spacing: 0.04em;
+  }
+
+  .seg {
     display: flex;
-    align-items: center;
-    gap: 0.55rem;
+    gap: 2px;
+    padding: 3px;
+    border: 1px solid var(--void-line);
+    border-radius: 999px;
+    background: var(--void);
+  }
+
+  .seg label {
+    position: relative;
+    flex: 1 1 0;
+    min-width: 0;
+    display: grid;
+    place-items: center;
+    padding: 0.42em 0.6em;
+    border-radius: 999px;
     font-size: var(--text-sm);
+    line-height: 1.2;
+    text-align: center;
+    color: var(--bone-soft);
+    cursor: pointer;
+    transition: color var(--dur-fast), background-color var(--dur-fast);
+  }
+
+  .seg label:hover {
+    color: var(--bone);
+    background: var(--void-line);
+  }
+
+  .seg input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .seg label:has(input:checked) {
+    background: var(--gold);
+    color: var(--void);
+  }
+
+  .seg label:has(input:focus-visible) {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 520px) {
+    .settings-row {
+      grid-template-columns: 1fr;
+      gap: 0.5rem;
+    }
+  }
+
+  .perf {
+    padding: var(--space-3);
+    max-width: min(22rem, calc(100vw - 2rem));
   }
 
   .perf p {
@@ -219,7 +393,8 @@
     letter-spacing: 0.06em;
     text-transform: uppercase;
     border: 1px solid var(--void-line);
-    padding: 0.55em 0.8em;
+    border-radius: 999px;
+    padding: 0.55em 0.9em;
     color: var(--bone);
   }
 
@@ -227,6 +402,18 @@
     background: var(--gold);
     color: var(--void);
     border-color: var(--gold);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .settings[open],
+    .settings[open]::backdrop,
+    .settings.is-closing,
+    .settings.is-closing::backdrop {
+      animation: none;
+    }
+    .gear svg {
+      transition: none;
+    }
   }
 </style>
 
@@ -322,12 +509,50 @@
     if (!openBtn || !dialog || openBtn.dataset.settingsBound === '1') return;
     openBtn.dataset.settingsBound = '1';
 
+    const lenis = () => (window as any).__lenis as { stop(): void; start(): void } | undefined;
+    const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let closing = 0;
+
+    function closeSettings() {
+      if (!dialog || !dialog.open || closing) return;
+      if (reduced()) {
+        dialog.close();
+        return;
+      }
+      dialog.classList.add('is-closing');
+      closing = window.setTimeout(() => {
+        closing = 0;
+        dialog.classList.remove('is-closing');
+        dialog.close();
+      }, 180);
+    }
+
     openBtn.addEventListener('click', () => {
       paint(dialog);
       dialog.showModal();
       openBtn.setAttribute('aria-expanded', 'true');
+      lenis()?.stop();
     });
-    dialog.addEventListener('close', () => openBtn.setAttribute('aria-expanded', 'false'));
+    dialog.addEventListener('close', () => {
+      openBtn.setAttribute('aria-expanded', 'false');
+      lenis()?.start();
+    });
+    dialog.addEventListener('cancel', (e) => {
+      e.preventDefault();
+      closeSettings();
+    });
+    dialog.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+      e.preventDefault();
+      closeSettings();
+    });
+    dialog.querySelector('[data-settings-close]')?.addEventListener('click', closeSettings);
+    // a click on the dialog element itself, not on anything inside the
+    // card, is a click on the backdrop around it
+    dialog.addEventListener('click', (e) => {
+      if (e.target === dialog) closeSettings();
+    });
+
     dialog.querySelectorAll<HTMLInputElement>('input[name="motion"]').forEach((input) => {
       input.addEventListener('change', () => {
         if (input.checked) saveMotion(input.value);

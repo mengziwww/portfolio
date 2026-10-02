@@ -1,9 +1,8 @@
 ---
 // A short entrance moment for the home page. Not the thin top progress
-// bar (LoadingBar.astro, which runs on every navigation). Each visit to
-// "/" plays it once, then it clears. Only included on index.astro, so
-// Astro's view-transition swap mounts a fresh copy (and re-fires
-// astro:page-load) every time the visitor comes back to "/".
+// bar (LoadingBar.astro, which runs on every navigation). It plays only
+// when "/" is the first page of a visit (one browser session); later
+// returns to "/" skip it.
 //
 // A plain spinner, spinning at a constant rate. It starts hidden so
 // nothing paints before the script decides to show it.
@@ -77,6 +76,20 @@
   function initLoader() {
     const root = document.querySelector<HTMLElement>('[data-loader-root]');
     if (!root) return;
+
+    // Only when the home page opens the visit. Coming back to it from
+    // another page, or reloading it, goes straight to the content.
+    let entered = false;
+    try {
+      entered = sessionStorage.getItem('menghan-entered') === '1';
+    } catch {
+      /* private mode */
+    }
+    if (entered) {
+      document.querySelector('.hero[data-reveal-root]')?.classList.add('is-instant');
+      root.remove();
+      return;
+    }
 
     root.hidden = false;
 

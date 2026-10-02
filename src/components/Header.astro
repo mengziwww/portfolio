@@ -37,6 +37,12 @@ import SiteSettings from './SiteSettings.astro';
     letter-spacing: 0.01em;
     text-decoration: none;
     color: var(--bone);
+    /* the padding is there from the start so the pill never shifts the text */
+    padding: 0.4em 0.95em;
+    margin-left: -0.95em;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    transition: background-color 0.4s var(--ease-out-expo), border-color 0.4s var(--ease-out-expo);
   }
 
   .header-right {
@@ -45,4 +51,95 @@ import SiteSettings from './SiteSettings.astro';
     gap: var(--space-3);
   }
 
+  /* ---- scrolled: the name keeps a quiet pill, the controls fold into a
+     narrow rail against the scrollbar ---- */
+  .site-header.is-scrolled .wordmark,
+  .site-header.is-scrolled .header-right {
+    background: color-mix(in srgb, var(--void) 62%, transparent);
+    border-color: var(--void-line);
+    -webkit-backdrop-filter: blur(12px) saturate(1.2);
+    backdrop-filter: blur(12px) saturate(1.2);
+  }
+
+  .site-header.is-scrolled .header-right {
+    position: fixed;
+    top: var(--space-2);
+    right: 0.3rem;
+    flex-direction: column;
+    gap: 0.55rem;
+    padding: 0.7rem 0.3rem;
+    border: 1px solid var(--void-line);
+    border-radius: 999px;
+    animation: rail-in 0.5s var(--ease-out-expo);
+  }
+
+  .site-header.was-scrolled .header-right {
+    animation: bar-in 0.5s var(--ease-out-expo);
+  }
+
+  .site-header.is-scrolled :global(.socials),
+  .site-header.is-scrolled :global(.lang-switch) {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.55rem;
+  }
+
+  .site-header.is-scrolled :global(.lang-switch) {
+    padding-block: 0.55rem;
+    border-block: 1px solid var(--void-line);
+    gap: 0.4rem;
+  }
+
+  .site-header.is-scrolled :global(.lang-switch button) {
+    font-size: 0.68rem;
+  }
+
+  :global(html[data-transparent='solid']) .site-header.is-scrolled .wordmark,
+  :global(html[data-transparent='solid']) .site-header.is-scrolled .header-right {
+    background: var(--void-raised);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  @keyframes rail-in {
+    from {
+      opacity: 0;
+      transform: translateX(0.6rem);
+    }
+  }
+
+  @keyframes bar-in {
+    from {
+      opacity: 0;
+      transform: translateY(-0.4rem);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .site-header.is-scrolled .header-right,
+    .site-header.was-scrolled .header-right {
+      animation: none;
+    }
+  }
 </style>
+
+<script>
+  const THRESHOLD = 60;
+  let bound = false;
+
+  function syncHeader() {
+    const header = document.querySelector<HTMLElement>('[data-site-header]');
+    if (!header) return;
+    const scrolled = window.scrollY > THRESHOLD;
+    if (header.classList.contains('is-scrolled') === scrolled) return;
+    header.classList.toggle('is-scrolled', scrolled);
+    header.classList.toggle('was-scrolled', !scrolled);
+  }
+
+  document.addEventListener('astro:page-load', () => {
+    syncHeader();
+    if (bound) return;
+    bound = true;
+    window.addEventListener('scroll', syncHeader, { passive: true });
+  });
+</script>
