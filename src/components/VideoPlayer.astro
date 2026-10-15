@@ -4,18 +4,67 @@
 // bar never shows, except as a last resort if playback is refused.
 import { withBase } from '@/lib/projects';
 
+// A skin dresses the same player in a project's world: temple (Bajiajiang),
+// road (Direction les champs), hok (Mulan), poppy (Emma), saber (Star Wars).
+type Skin = 'film' | 'temple' | 'road' | 'hok' | 'poppy' | 'saber';
 interface Props {
   src: string;
   poster?: string;
   preload?: 'metadata' | 'auto';
   class?: string;
+  skin?: Skin;
+  label?: string;
 }
-const { src, poster, preload = 'metadata', class: className } = Astro.props;
+const { src, poster, preload = 'metadata', class: className, skin = 'film', label } = Astro.props;
 const speeds = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
+const film = skin === 'film';
+const poppy =
+  '<g fill="#c0392b"><ellipse cx="20" cy="11" rx="9" ry="10"/><ellipse cx="29" cy="20" rx="10" ry="9"/><ellipse cx="20" cy="29" rx="9" ry="10"/><ellipse cx="11" cy="20" rx="10" ry="9"/></g>' +
+  '<g fill="#8e1f17" opacity="0.55"><ellipse cx="25" cy="14" rx="5" ry="6"/><ellipse cx="15" cy="26" rx="5" ry="6"/></g>' +
+  '<circle cx="20" cy="20" r="4.5" fill="#1a1410"/><g stroke="#1a1410" stroke-width="1.2"><path d="M20 13v-2M27 20h2M20 27v2M13 20h-2M25 15l1.5-1.5M15 25l-1.5 1.5M25 25l1.5 1.5M15 15l-1.5-1.5"/></g>';
 ---
 
-<div class:list={['film-frame', className]} data-video-player tabindex="-1">
-  <span class="sprockets" aria-hidden="true"></span>
+<div class:list={['film-frame', `skin-${skin}`, className]} data-video-player data-skin={skin} data-saber={skin === 'saber' ? 'light' : undefined} tabindex="-1">
+  {film && <span class="sprockets" aria-hidden="true"></span>}
+  {skin === 'temple' && (
+    <span class="vp-roof" aria-hidden="true">
+      <svg viewBox="0 0 400 40" preserveAspectRatio="none">
+        <path d="M0 30 Q40 30 60 14 L340 14 Q360 30 400 30 L400 40 L0 40 Z" fill="#2b1410" />
+        <path d="M0 30 Q40 30 60 14 L340 14 Q360 30 400 30" fill="none" stroke="#c9a24a" stroke-width="1.6" />
+        <path d="M60 14 L340 14" stroke="#c9a24a" stroke-width="3" />
+        <path d="M150 14 L200 2 L250 14" fill="#2b1410" stroke="#c9a24a" stroke-width="1.4" />
+      </svg>
+      <span class="vp-lantern is-l"></span>
+      <span class="vp-lantern is-r"></span>
+    </span>
+  )}
+  {skin === 'hok' && (
+    <>
+      <span class="vp-corner is-tl" aria-hidden="true"></span>
+      <span class="vp-corner is-tr" aria-hidden="true"></span>
+      <span class="vp-corner is-bl" aria-hidden="true"></span>
+      <span class="vp-corner is-br" aria-hidden="true"></span>
+    </>
+  )}
+  {skin === 'poppy' && (
+    <>
+      <svg class="vp-poppy is-a" viewBox="0 0 40 40" aria-hidden="true" set:html={poppy} />
+      <svg class="vp-poppy is-b" viewBox="0 0 40 40" aria-hidden="true" set:html={poppy} />
+    </>
+  )}
+  {skin === 'saber' && (
+    <div class="vp-nowplaying">
+      <span class="vp-np-eq" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="vp-np-text">
+        <span class="vp-np-kicker">now playing</span>
+        {label && <span class="vp-np-title">{label}</span>}
+      </span>
+      <button type="button" class="vp-side" data-vp-side aria-pressed="false">
+        <span class="vp-side-light">light side</span>
+        <span class="vp-side-dark">dark side</span>
+      </button>
+    </div>
+  )}
   <div class="film-gate">
     <video
       class="vp-video"
@@ -30,7 +79,14 @@ const speeds = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
       <span class="vp-spinner" aria-hidden="true"></span>
     </button>
   </div>
-  <span class="sprockets" aria-hidden="true"></span>
+  {film && <span class="sprockets" aria-hidden="true"></span>}
+  {skin === 'road' && (
+    <span class="vp-field" aria-hidden="true">
+      {Array.from({ length: 14 }, (_, i) => (
+        <span class="vp-sunflower" style={`--i:${i}; --h:${0.55 + ((i * 37) % 5) * 0.12}`}></span>
+      ))}
+    </span>
+  )}
   <div class="vp-controls" data-vp-controls>
     <button type="button" class="vp-btn" data-vp-play aria-label="Play">
       <svg class="icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor" /></svg>
@@ -52,7 +108,35 @@ const speeds = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
       <span class="vp-track"></span>
       <span class="vp-buffered" data-vp-buffered></span>
       <span class="vp-fill" data-vp-fill></span>
-      <span class="vp-knob" data-vp-knob></span>
+      <span class="vp-knob" data-vp-knob>
+        {skin === 'road' && (
+          <svg class="vp-scooter" viewBox="0 0 48 30" aria-hidden="true">
+            <circle cx="10" cy="24" r="5" fill="#1b2a33" stroke="#f6efe2" stroke-width="1.6" />
+            <circle cx="38" cy="24" r="5" fill="#1b2a33" stroke="#f6efe2" stroke-width="1.6" />
+            <path d="M8 22 L30 22 L36 12 L40 12" fill="none" stroke="#e07b39" stroke-width="3.2" stroke-linejoin="round" stroke-linecap="round" />
+            <path d="M14 21 Q14 15 22 15 L29 15 L27 21Z" fill="#e07b39" />
+            <circle cx="20" cy="5" r="3.2" fill="#f2c14e" />
+            <path d="M18 8 L22 15 L28 15" fill="none" stroke="#f6efe2" stroke-width="3" stroke-linecap="round" />
+            <circle cx="13" cy="7" r="3" fill="#3a2a1e" />
+            <path d="M12 10 L16 16" stroke="#9cc3d5" stroke-width="3" stroke-linecap="round" />
+            <circle cx="41" cy="13" r="1.6" fill="#fff6c8" />
+          </svg>
+        )}
+        {skin === 'temple' && <span class="vp-ember"></span>}
+        {skin === 'poppy' && <svg class="vp-bloom" viewBox="0 0 40 40" aria-hidden="true" set:html={poppy} />}
+        {skin === 'saber' && <span class="vp-tip"></span>}
+      </span>
+      {skin === 'saber' && (
+        <svg class="vp-hilt" viewBox="0 0 40 12" aria-hidden="true">
+          <rect x="0" y="2" width="40" height="8" rx="1.5" fill="#8b9199" />
+          <rect x="4" y="2" width="3" height="8" fill="#2a2d33" />
+          <rect x="10" y="2" width="3" height="8" fill="#2a2d33" />
+          <rect x="16" y="2" width="3" height="8" fill="#2a2d33" />
+          <rect x="24" y="0.5" width="6" height="11" rx="1" fill="#3a3e46" />
+          <rect x="34" y="1" width="6" height="10" rx="1" fill="#c9ced6" />
+          <rect x="26" y="3" width="2" height="2" fill="#ff4d4d" />
+        </svg>
+      )}
     </div>
 
     <div class="vp-speed">
@@ -106,6 +190,20 @@ const speeds = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
     max-width: min(30rem, 100%);
   }
 
+  .film-frame.is-portrait:not(.is-fs) .vp-controls {
+    flex-wrap: wrap;
+    row-gap: 0.2rem;
+  }
+
+  .film-frame.is-portrait:not(.is-fs) .vp-progress {
+    order: 5;
+    flex-basis: 100%;
+  }
+
+  .film-frame.is-portrait:not(.is-fs) .vp-time {
+    margin-right: auto;
+  }
+
   .vp-video {
     width: 100%;
     aspect-ratio: var(--vp-ratio, 16 / 9);
@@ -141,9 +239,19 @@ const speeds = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
     margin: 0;
     padding: 0.9rem 0 0.6rem;
     box-sizing: border-box;
-    display: grid;
-    grid-template-rows: auto minmax(0, 1fr) auto auto;
+    display: flex;
+    flex-direction: column;
     box-shadow: none;
+    clip-path: none;
+    border-radius: 0;
+  }
+
+  .film-frame.is-fs .film-gate {
+    flex: 1 1 auto;
+  }
+
+  .film-frame.is-fs :is(.vp-roof, .vp-poppy, .vp-corner) {
+    display: none;
   }
 
   .film-frame.is-fs::backdrop {
@@ -456,6 +564,607 @@ const speeds = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
     color: var(--vp-accent);
   }
 
+  /* ================= skins ================= */
+  .film-frame:not(.skin-film) .vp-knob:has(> *) {
+    width: auto;
+    height: auto;
+    margin-left: 0;
+    background: none;
+    box-shadow: none;
+    translate: -50% 0;
+  }
+
+  .film-frame:not(.skin-film) .vp-veil-icon {
+    width: 4.6rem;
+    height: 4.6rem;
+    padding: 1.1rem 0.9rem 1.1rem 1.3rem;
+    border-radius: 50%;
+  }
+
+  /* ---- temple: red lacquer shrine, the time burns down an incense stick ---- */
+  .skin-temple {
+    --vp-accent: #e9c46a;
+    margin-top: 2.4rem;
+    padding: 0.4rem 0 0.5rem;
+    background:
+      repeating-linear-gradient(90deg, rgb(0 0 0 / 0%) 0 22px, rgb(0 0 0 / 8%) 22px 23px),
+      linear-gradient(180deg, #6d1410, #45090a 70%, #2e0607);
+    border: 2px solid #c9a24a;
+    box-shadow: inset 0 0 0 5px #45090a, inset 0 0 0 6px rgb(233 196 106 / 45%), 0 2rem 5rem -1.5rem rgb(0 0 0 / 80%),
+      0 0 4rem 0.4rem rgb(214 104 40 / 22%);
+  }
+
+  .vp-roof {
+    position: absolute;
+    left: -5%;
+    right: -5%;
+    top: -2.3rem;
+    height: 2.4rem;
+    pointer-events: none;
+  }
+
+  .vp-roof svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    filter: drop-shadow(0 0.4rem 0.4rem rgb(0 0 0 / 50%));
+  }
+
+  .vp-lantern {
+    position: absolute;
+    top: 2.1rem;
+    width: 1.3rem;
+    height: 1.7rem;
+    border-radius: 45%;
+    background: radial-gradient(circle at 50% 40%, #ffcf7a, #d6352a 55%, #7d1410);
+    box-shadow: 0 0 1.4rem 0.3rem rgb(255 150 60 / 45%);
+    transform-origin: 50% -0.6rem;
+    animation: vp-sway 4.5s ease-in-out infinite;
+  }
+
+  .vp-lantern::before,
+  .vp-lantern::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    translate: -50% 0;
+    background: #c9a24a;
+  }
+
+  .vp-lantern::before {
+    top: -0.6rem;
+    width: 1px;
+    height: 0.6rem;
+  }
+
+  .vp-lantern::after {
+    bottom: -0.55rem;
+    width: 2px;
+    height: 0.55rem;
+  }
+
+  .vp-lantern.is-l { left: 9%; }
+  .vp-lantern.is-r { right: 9%; animation-delay: -2s; }
+
+  @keyframes vp-sway {
+    0%, 100% { rotate: -4deg; }
+    50% { rotate: 4deg; }
+  }
+
+  .skin-temple .film-gate {
+    margin: 0.9rem 1rem 0.5rem;
+    box-shadow: 0 0 0 1px #c9a24a, 0 0 0 4px #2e0607, 0 0 0 5px rgb(233 196 106 / 40%);
+  }
+
+  .skin-temple .vp-veil-icon {
+    color: #3a0806;
+    background: radial-gradient(circle at 40% 35%, #ffe3a0, #c9a24a 70%);
+    box-shadow: 0 0 0 3px #6d1410, 0 0 0 5px #c9a24a, 0 0.6rem 1.6rem rgb(0 0 0 / 60%);
+  }
+
+  .skin-temple .vp-btn,
+  .skin-temple .vp-time {
+    color: #f3dfb0;
+  }
+
+  .skin-temple .vp-track {
+    height: 4px;
+    background: linear-gradient(180deg, #b0532c, #7a2c14);
+  }
+
+  .skin-temple .vp-buffered {
+    display: none;
+  }
+
+  .skin-temple .vp-fill {
+    height: 3px;
+    background: repeating-linear-gradient(90deg, #a9a39a 0 6px, #8d877e 6px 9px);
+    opacity: 0.85;
+  }
+
+  .vp-ember {
+    position: relative;
+    display: block;
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fff3c4, #ff8a2a 45%, #c8321a);
+    box-shadow: 0 0 0.6rem 0.25rem rgb(255 120 40 / 70%);
+    animation: vp-ember 1.4s ease-in-out infinite;
+  }
+
+  .vp-ember::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 70%;
+    width: 0.5rem;
+    height: 1.6rem;
+    border-radius: 50% 50% 0 0;
+    background: linear-gradient(0deg, rgb(230 225 215 / 45%), transparent);
+    filter: blur(2px);
+    translate: -50% 0;
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+
+  .skin-temple.is-playing .vp-ember::after {
+    opacity: 1;
+    animation: vp-smoke 2.2s ease-in-out infinite;
+  }
+
+  @keyframes vp-ember {
+    50% { box-shadow: 0 0 0.9rem 0.35rem rgb(255 140 50 / 85%); }
+  }
+
+  @keyframes vp-smoke {
+    0%, 100% { transform: skewX(-12deg) scaleY(0.9); }
+    50% { transform: skewX(14deg) scaleY(1.1); }
+  }
+
+  /* ---- road: dusk over the sunflowers, a scooter rides the timeline ---- */
+  .skin-road {
+    --vp-accent: #f2c14e;
+    padding: 0.7rem 0 0.4rem;
+    border-radius: 6px;
+    background: linear-gradient(180deg, #1b2a33 0%, #2f3347 45%, #6b4a4a 78%, #c4703a 100%);
+    box-shadow: 0 2rem 5rem -1.5rem rgb(0 0 0 / 75%), 0 0 4rem 0.4rem rgb(242 193 78 / 16%), 0 0 0 1px rgb(246 239 226 / 18%);
+  }
+
+  .skin-road .film-gate {
+    margin: 0.2rem 0.8rem 0;
+    border-radius: 3px;
+    overflow: hidden;
+    box-shadow: 0 0 0 4px #f6efe2;
+  }
+
+  .vp-field {
+    position: relative;
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-end;
+    height: 1.5rem;
+    margin: -0.7rem 0.8rem 0;
+    pointer-events: none;
+  }
+
+  .vp-sunflower {
+    position: relative;
+    width: calc(1.3rem * var(--h));
+    height: calc(1.3rem * var(--h));
+    border-radius: 50%;
+    background: radial-gradient(circle, #5a3a1a 0 30%, #f2c14e 32% 62%, transparent 64%),
+      conic-gradient(from 10deg, #f2c14e 0 10%, #e3a72f 10% 20%, #f2c14e 20% 30%, #e3a72f 30% 40%, #f2c14e 40% 50%, #e3a72f 50% 60%, #f2c14e 60% 70%, #e3a72f 70% 80%, #f2c14e 80% 90%, #e3a72f 90%);
+    -webkit-mask: radial-gradient(circle, #000 66%, transparent 68%);
+    mask: radial-gradient(circle, #000 66%, transparent 68%);
+    animation: vp-nod 5s ease-in-out infinite;
+    animation-delay: calc(var(--i) * -0.4s);
+  }
+
+  @keyframes vp-nod {
+    50% { rotate: 14deg; translate: 0 1px; }
+  }
+
+  .skin-road .vp-controls {
+    margin-top: 0.3rem;
+    padding: 0.35rem 0.4rem;
+    border-radius: 999px;
+    background: rgb(27 42 51 / 70%);
+  }
+
+  .skin-road .vp-btn,
+  .skin-road .vp-time {
+    color: #f6efe2;
+  }
+
+  .skin-road .vp-veil-icon {
+    color: #1b2a33;
+    background: radial-gradient(circle, #f6efe2 0 54%, #f2c14e 55%);
+    box-shadow: 0 0 0 4px rgb(242 193 78 / 35%), 0 0.6rem 1.6rem rgb(0 0 0 / 50%);
+  }
+
+  .skin-road .vp-progress {
+    height: 2rem;
+  }
+
+  .skin-road .vp-track {
+    height: 8px;
+    background:
+      repeating-linear-gradient(90deg, rgb(246 239 226 / 75%) 0 8px, transparent 8px 18px) center / 100% 1px no-repeat,
+      #2a2a2e;
+    border-radius: 2px;
+  }
+
+  .skin-road .vp-buffered {
+    display: none;
+  }
+
+  .skin-road .vp-fill {
+    height: 8px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, rgb(242 193 78 / 20%), rgb(242 193 78 / 85%));
+    box-shadow: 0 0 0.8rem rgb(242 193 78 / 45%);
+  }
+
+  .vp-scooter {
+    display: block;
+    width: 2.4rem;
+    height: 1.5rem;
+    translate: 0 -0.55rem;
+    filter: drop-shadow(0 2px 2px rgb(0 0 0 / 50%));
+  }
+
+  .skin-road.is-playing .vp-scooter {
+    animation: vp-bump 0.5s ease-in-out infinite;
+  }
+
+  @keyframes vp-bump {
+    50% { transform: translateY(-1px) rotate(-1.5deg); }
+  }
+
+  /* ---- hok: gold-rimmed match replay, the timeline is a health bar ---- */
+  .skin-hok {
+    --vp-accent: #d8b46a;
+    padding: 0.5rem 0 0.3rem;
+    background: linear-gradient(180deg, #13203a, #0a1120);
+    border: 1px solid rgb(216 180 106 / 55%);
+    box-shadow: inset 0 0 0 3px #0a1120, inset 0 0 0 4px rgb(216 180 106 / 25%), 0 2rem 4rem -1.5rem rgb(0 0 0 / 80%);
+    clip-path: polygon(0.8rem 0, calc(100% - 0.8rem) 0, 100% 0.8rem, 100% calc(100% - 0.8rem), calc(100% - 0.8rem) 100%, 0.8rem 100%, 0 calc(100% - 0.8rem), 0 0.8rem);
+  }
+
+  .vp-corner {
+    position: absolute;
+    z-index: 2;
+    width: 0.6rem;
+    height: 0.6rem;
+    background: #d8b46a;
+    rotate: 45deg;
+  }
+
+  .vp-corner.is-tl { left: 0.9rem; top: 0.25rem; }
+  .vp-corner.is-tr { right: 0.9rem; top: 0.25rem; }
+  .vp-corner.is-bl { left: 0.9rem; bottom: 0.25rem; }
+  .vp-corner.is-br { right: 0.9rem; bottom: 0.25rem; }
+
+  .skin-hok .film-gate {
+    margin: 0.5rem 0.7rem;
+    box-shadow: 0 0 0 1px rgb(216 180 106 / 60%);
+  }
+
+  .skin-hok .vp-veil-icon {
+    color: #0a1120;
+    border-radius: 0;
+    clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%);
+    background: linear-gradient(160deg, #f5dc9c, #b98b3c);
+  }
+
+  .skin-hok .vp-btn,
+  .skin-hok .vp-time {
+    color: #f1e3c2;
+  }
+
+  .skin-hok .vp-track,
+  .skin-hok .vp-fill,
+  .skin-hok .vp-buffered {
+    height: 9px;
+    border-radius: 1px;
+  }
+
+  .skin-hok .vp-track {
+    background: #1b2438;
+    box-shadow: 0 0 0 1px #000, 0 0 0 2px rgb(216 180 106 / 50%);
+  }
+
+  .skin-hok .vp-fill {
+    background: linear-gradient(180deg, #ff7a6a, #c8323a 55%, #8f1d24);
+  }
+
+  .skin-hok .vp-progress::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 9px;
+    pointer-events: none;
+    background: repeating-linear-gradient(90deg, transparent 0 calc(10% - 1px), rgb(0 0 0 / 65%) calc(10% - 1px) 10%);
+  }
+
+  .skin-hok .vp-knob {
+    width: 0.8rem;
+    height: 0.8rem;
+    margin-left: -0.4rem;
+    border-radius: 0;
+    rotate: 45deg;
+    background: #f5dc9c;
+    box-shadow: 0 0 0.6rem rgb(245 220 156 / 80%);
+    z-index: 1;
+  }
+
+  /* ---- poppy: a red flower that opens as the film plays ---- */
+  .skin-poppy {
+    --vp-accent: #e0554a;
+    padding: 0.9rem 0 0.5rem;
+    border-radius: 1.4rem;
+    background: radial-gradient(ellipse at 30% 0%, #2c4a33, #12201a 70%);
+    box-shadow: 0 2rem 5rem -1.5rem rgb(0 0 0 / 80%), 0 0 0 1px rgb(192 57 43 / 30%), 0 0 3rem 0.2rem rgb(192 57 43 / 18%);
+  }
+
+  .skin-poppy.is-playing {
+    animation: vp-heart 2.4s ease-in-out infinite;
+  }
+
+  @keyframes vp-heart {
+    0%, 100% { box-shadow: 0 2rem 5rem -1.5rem rgb(0 0 0 / 80%), 0 0 0 1px rgb(192 57 43 / 30%), 0 0 3rem 0.2rem rgb(192 57 43 / 18%); }
+    12% { box-shadow: 0 2rem 5rem -1.5rem rgb(0 0 0 / 80%), 0 0 0 1px rgb(192 57 43 / 55%), 0 0 4rem 0.6rem rgb(192 57 43 / 34%); }
+    24% { box-shadow: 0 2rem 5rem -1.5rem rgb(0 0 0 / 80%), 0 0 0 1px rgb(192 57 43 / 35%), 0 0 3rem 0.2rem rgb(192 57 43 / 20%); }
+    36% { box-shadow: 0 2rem 5rem -1.5rem rgb(0 0 0 / 80%), 0 0 0 1px rgb(192 57 43 / 50%), 0 0 3.6rem 0.5rem rgb(192 57 43 / 30%); }
+  }
+
+  .vp-poppy {
+    position: absolute;
+    z-index: 2;
+    width: 3.2rem;
+    height: 3.2rem;
+    filter: drop-shadow(0 0.4rem 0.5rem rgb(0 0 0 / 50%));
+    pointer-events: none;
+  }
+
+  .vp-poppy.is-a { left: -1rem; top: -1.1rem; rotate: -18deg; }
+  .vp-poppy.is-b { right: -0.9rem; bottom: 2.6rem; width: 2.4rem; height: 2.4rem; rotate: 30deg; }
+
+  .skin-poppy .film-gate {
+    margin: 0 0.9rem 0.4rem;
+    border-radius: 0.9rem;
+    overflow: hidden;
+  }
+
+  .skin-poppy .film-gate::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    box-shadow: inset 0 0 3rem 0.6rem rgb(18 32 26 / 70%);
+  }
+
+  .skin-poppy .vp-veil {
+    z-index: 1;
+  }
+
+  .skin-poppy .vp-veil-icon {
+    color: #fbefe6;
+    background: radial-gradient(circle, rgb(192 57 43 / 90%) 0 60%, rgb(192 57 43 / 0%) 72%);
+  }
+
+  .skin-poppy .vp-btn,
+  .skin-poppy .vp-time {
+    color: #f1e4da;
+  }
+
+  .skin-poppy .vp-track {
+    height: 2px;
+    background: #4f6b4a;
+  }
+
+  .skin-poppy .vp-buffered {
+    height: 2px;
+    background: #6f8c66;
+  }
+
+  .skin-poppy .vp-fill {
+    height: 2px;
+    background: #c0392b;
+  }
+
+  .vp-bloom {
+    display: block;
+    width: 1.6rem;
+    height: 1.6rem;
+    scale: calc(0.55 + var(--vp-p, 0) * 0.6);
+    rotate: calc(var(--vp-p, 0) * 220deg);
+    filter: drop-shadow(0 0 0.35rem rgb(192 57 43 / 60%));
+    transition: scale 0.3s, rotate 0.3s;
+  }
+
+  /* ---- saber: a "now playing" card, the timeline is a lightsaber ---- */
+  .skin-saber {
+    --saber: #5ab8ff;
+    --vp-accent: var(--saber);
+    padding: 0.8rem 0 0.5rem;
+    border-radius: 12px;
+    background:
+      radial-gradient(1px 1px at 12% 22%, #fff9 50%, transparent),
+      radial-gradient(1px 1px at 38% 70%, #fff7 50%, transparent),
+      radial-gradient(1.5px 1.5px at 66% 30%, #fffa 50%, transparent),
+      radial-gradient(1px 1px at 84% 82%, #fff6 50%, transparent),
+      radial-gradient(1px 1px at 92% 12%, #fff8 50%, transparent),
+      radial-gradient(ellipse 80% 40% at 50% 120%, rgb(255 90 31 / 35%), transparent 70%),
+      #07080d;
+    box-shadow: 0 2rem 5rem -1.5rem rgb(0 0 0 / 85%), 0 0 0 1px rgb(255 255 255 / 8%);
+  }
+
+  .skin-saber[data-saber='dark'] {
+    --saber: #ff3b3b;
+  }
+
+  .vp-nowplaying {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin: 0 0.9rem 0.7rem;
+    font-family: var(--font-mono);
+  }
+
+  .vp-np-eq {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 0.9rem;
+  }
+
+  .vp-np-eq i {
+    width: 3px;
+    height: 30%;
+    background: var(--saber);
+    border-radius: 1px;
+  }
+
+  .skin-saber.is-playing .vp-np-eq i {
+    animation: vp-eq 0.9s ease-in-out infinite;
+  }
+
+  .skin-saber.is-playing .vp-np-eq i:nth-child(2) { animation-delay: -0.3s; }
+  .skin-saber.is-playing .vp-np-eq i:nth-child(3) { animation-delay: -0.6s; }
+
+  @keyframes vp-eq {
+    0%, 100% { height: 25%; }
+    50% { height: 100%; }
+  }
+
+  .vp-np-text {
+    display: grid;
+    line-height: 1.25;
+  }
+
+  .vp-np-kicker {
+    font-size: 0.62rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgb(255 255 255 / 55%);
+  }
+
+  .vp-np-title {
+    font-size: var(--text-sm);
+    color: #fff;
+  }
+
+  .vp-side {
+    margin-left: auto;
+    padding: 0.35em 0.9em;
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--saber);
+    border: 1px solid color-mix(in srgb, var(--saber) 60%, transparent);
+    border-radius: 999px;
+    box-shadow: 0 0 0.8rem color-mix(in srgb, var(--saber) 30%, transparent);
+    transition: color 0.3s, border-color 0.3s, box-shadow 0.3s;
+  }
+
+  .vp-side[aria-pressed='false'] .vp-side-dark,
+  .vp-side[aria-pressed='true'] .vp-side-light {
+    display: none;
+  }
+
+  .skin-saber .film-gate {
+    margin: 0 0.9rem 0.3rem;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .skin-saber .vp-veil-icon {
+    color: #07080d;
+    background: #fff;
+    box-shadow: 0 0 1.2rem 0.3rem color-mix(in srgb, var(--saber) 60%, transparent);
+  }
+
+  .skin-saber .vp-progress {
+    margin-left: 2.6rem;
+    flex-basis: calc(100% - 2.6rem) !important;
+  }
+
+  .vp-hilt {
+    position: absolute;
+    left: -2.6rem;
+    width: 2.5rem;
+    height: 0.75rem;
+    pointer-events: none;
+  }
+
+  .skin-saber .vp-track {
+    height: 3px;
+    background: rgb(255 255 255 / 12%);
+  }
+
+  .skin-saber .vp-buffered {
+    display: none;
+  }
+
+  .skin-saber .vp-fill {
+    height: 4px;
+    background: #fff;
+    box-shadow: 0 0 4px 1px var(--saber), 0 0 12px 3px var(--saber), 0 0 22px 5px color-mix(in srgb, var(--saber) 45%, transparent);
+    transition: box-shadow 0.3s;
+  }
+
+  .skin-saber.is-playing .vp-fill {
+    animation: vp-hum 0.12s steps(2) infinite;
+  }
+
+  @keyframes vp-hum {
+    50% { opacity: 0.88; }
+  }
+
+  .vp-tip {
+    display: block;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 0 6px 2px var(--saber);
+  }
+
+  .skin-saber .vp-btn:hover {
+    color: var(--saber);
+  }
+
+  @media (max-width: 700px) {
+    .skin-temple .film-gate,
+    .skin-road .film-gate,
+    .skin-poppy .film-gate,
+    .skin-saber .film-gate {
+      margin-inline: 0.5rem;
+    }
+    .vp-poppy.is-a { left: -0.6rem; width: 2.4rem; height: 2.4rem; }
+    .vp-poppy.is-b { display: none; }
+    .vp-field { margin-inline: 0.5rem; }
+    .vp-sunflower:nth-child(even) { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .vp-lantern,
+    .vp-ember,
+    .vp-ember::after,
+    .vp-sunflower,
+    .vp-scooter,
+    .skin-poppy.is-playing,
+    .skin-saber .vp-fill,
+    .vp-np-eq i {
+      animation: none !important;
+    }
+  }
+
   @media (hover: none) {
     .vp-volume-range { display: none; }
   }
@@ -705,6 +1414,7 @@ const speeds = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
         const pct = video.duration ? (video.currentTime / video.duration) * 100 : 0;
         fill.style.width = `${pct}%`;
         knob.style.left = `${pct}%`;
+        player.style.setProperty('--vp-p', String(pct / 100));
         progress.setAttribute('aria-valuenow', String(Math.round(pct)));
         timeEl.textContent = `${formatTime(video.currentTime)} / ${formatTime(video.duration)}`;
       };
@@ -759,6 +1469,13 @@ const speeds = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
         else return;
         e.preventDefault();
         wake();
+      }, on);
+
+      const side = q<HTMLButtonElement>('[data-vp-side]');
+      side?.addEventListener('click', () => {
+        const dark = player.dataset.saber !== 'dark';
+        player.dataset.saber = dark ? 'dark' : 'light';
+        side.setAttribute('aria-pressed', String(dark));
       }, on);
 
       // ---- playback plumbing ----

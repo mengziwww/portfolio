@@ -1,14 +1,9 @@
 ---
-// The sticky-stack version still read wrong: each beat covering the last
-// is a slide/cover transition, not a fade, and giving every beat its own
-// full-height sticky panel meant every image still felt close to
-// full-bleed. This rebuilds the mechanism for real: the images live in
-// one fixed, deliberately small "viewer" window centered on screen —
-// void space visible around it at all times — and scrolling through a
-// track of invisible spacer sections just tells that single window which
-// image to dissolve to. Word and picture still share a frame (kept,
-// since that part worked), but the transition between frames is now an
-// actual crossfade, not a cover.
+// The world's images live in one small viewer window with void space
+// around it, each one crossfading into the next with its line of story
+// underneath. It is turned by hand (arrows, dots, keys, swipe) or played
+// as a slideshow, so the page stays one screen long instead of a long
+// scroll track.
 import { Image } from 'astro:assets';
 import type { CollectionEntry } from 'astro:content';
 import { getProjectImage, responsiveWidths } from '@/lib/images';
@@ -123,14 +118,8 @@ const slides = trackItems.map((item, i) => {
   </div>
   <canvas class="drift" data-atmo-canvas aria-hidden="true"></canvas>
 
-  <div class="eotw-rail" data-eotw-rail aria-hidden="true">
-    {slides.map((_, i) => (
-      <span class="eotw-tick" data-tick data-index={i}></span>
-    ))}
-  </div>
-
-  <div class="eotw-viewer" data-eotw-viewer>
-    <div class="eotw-frame" data-order-group="world">
+  <section class="eotw-viewer" data-eotw-viewer aria-roledescription="carousel">
+    <div class="eotw-frame" data-order-group="world" data-lb-group>
       {slides.map((s, i) => (
         <figure class:list={['eotw-slide', { 'is-portrait': s.portrait }]} data-slide data-index={i} data-artwork data-note-id={`${project.id}:${s.item.file}`}>
           <span class="eotw-pic">
@@ -151,13 +140,25 @@ const slides = trackItems.map((item, i) => {
       ))}
       <span class="eotw-frame-border" aria-hidden="true"></span>
     </div>
-  </div>
-
-  <div class="eotw-track" data-eotw-track>
-    {slides.map((s, i) => (
-      <section class="eotw-slot" data-eotw-slot data-index={i} data-slot-for={`${project.id}:${s.item.file}`}></section>
-    ))}
-  </div>
+    <div class="eotw-nav">
+      <button type="button" class="eotw-step" data-eotw-step="-1" aria-label="Previous">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="1.8" /></svg>
+      </button>
+      <div class="eotw-dots" data-eotw-dots>
+        {slides.map((_, i) => (
+          <button type="button" class="eotw-tick" data-tick data-index={i} aria-label={String(i + 1)}></button>
+        ))}
+      </div>
+      <span class="eotw-count"><span data-eotw-count>01</span> / {String(slides.length).padStart(2, '0')}</span>
+      <button type="button" class="eotw-play" data-eotw-play aria-pressed="false">
+        <span class="eotw-play-off"><I18nText en="play the story" fr="lire l'histoire" zh="播放故事" /></span>
+        <span class="eotw-play-on"><I18nText en="pause" fr="pause" zh="暂停" /></span>
+      </button>
+      <button type="button" class="eotw-step" data-eotw-step="1" aria-label="Next">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.8" /></svg>
+      </button>
+    </div>
+  </section>
 
   {studyItems.length > 0 && (
     <section class="eotw-studies">
@@ -366,30 +367,89 @@ const slides = trackItems.map((item, i) => {
      gallery image dissolves through in turn, instead of each image
      taking a full sticky panel of its own ---- */
   .eotw-viewer {
-    position: fixed;
-    inset: 0;
+    position: relative;
     z-index: 2;
+    min-height: 100svh;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: clamp(1rem, 5vw, 3rem);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.6s;
+    gap: 0.6rem;
+    padding: 4.5rem clamp(1rem, 5vw, 3rem) 2rem;
+    scroll-margin-top: 0;
   }
 
-  .eotw-viewer.is-visible {
-    opacity: 1;
+  .eotw-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--bone-soft);
   }
 
-  :global(html[data-notes-annotate]) .eotw-viewer.is-visible {
-    pointer-events: auto;
+  .eotw-step {
+    display: grid;
+    place-items: center;
+    width: 2.6rem;
+    height: 2.6rem;
+    color: var(--bone);
+    border: 1px solid color-mix(in srgb, var(--bone) 25%, transparent);
+    border-radius: 50%;
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  .eotw-step svg {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+
+  .eotw-step:hover,
+  .eotw-step:focus-visible {
+    border-color: var(--mood-glow);
+    background: color-mix(in srgb, var(--mood-glow) 18%, transparent);
+  }
+
+  .eotw-dots {
+    display: flex;
+    gap: 0.45rem;
+  }
+
+  .eotw-count {
+    min-width: 4.5em;
+    text-align: center;
+  }
+
+  .eotw-play {
+    padding: 0.5em 1em;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--bone);
+    border: 1px solid color-mix(in srgb, var(--bone) 25%, transparent);
+    border-radius: 999px;
+  }
+
+  .eotw-play:hover,
+  .eotw-play:focus-visible {
+    border-color: var(--mood-glow);
+  }
+
+  .eotw-play[aria-pressed='false'] .eotw-play-on,
+  .eotw-play[aria-pressed='true'] .eotw-play-off {
+    display: none;
+  }
+
+  .eotw-play[aria-pressed='true'] {
+    border-color: var(--mood-glow);
+    background: color-mix(in srgb, var(--mood-glow) 22%, transparent);
   }
 
   /* the window and, under it, room for the line that goes with the
      picture: the words sit below the image now, never on top of it */
   .eotw-frame {
-    --fw: min(74vw, 54rem, (100svh - 13rem) * 1.6);
+    --fw: min(80vw, 58rem, (100svh - 15rem) * 1.6);
     --ph: calc(var(--fw) * 0.625);
     position: relative;
     width: var(--fw);
@@ -464,28 +524,10 @@ const slides = trackItems.map((item, i) => {
     text-wrap: balance;
   }
 
-  /* wayfinding rail — which fragment of the sequence is currently active */
-  .eotw-rail {
-    position: fixed;
-    right: 1.1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 3;
-    display: flex;
-    flex-direction: column;
-    gap: 0.55rem;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.4s;
-  }
-
-  .eotw-rail.is-visible {
-    opacity: 1;
-  }
-
   .eotw-tick {
-    width: 5px;
-    height: 5px;
+    width: 7px;
+    height: 7px;
+    padding: 0;
     border-radius: 50%;
     background: color-mix(in srgb, var(--bone) 35%, transparent);
     transition: background 0.3s, transform 0.3s;
@@ -497,24 +539,19 @@ const slides = trackItems.map((item, i) => {
   }
 
   @media (max-width: 700px) {
-    .eotw-rail {
-      display: none;
+    .eotw-viewer {
+      min-height: auto;
+      padding-top: 3rem;
     }
-  }
-
-  /* ---- the track: invisible scroll distance, nothing drawn here ---- */
-  .eotw-track {
-    position: relative;
-    z-index: 1;
-  }
-
-  .eotw-slot {
-    height: 62svh;
-  }
-
-  @media (max-width: 700px) {
-    .eotw-slot {
-      height: 58svh;
+    .eotw-nav {
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.6rem 0.8rem;
+    }
+    .eotw-dots {
+      order: 5;
+      flex-basis: 100%;
+      justify-content: center;
     }
     .eotw-frame {
       --fw: 90vw;
@@ -689,7 +726,6 @@ const slides = trackItems.map((item, i) => {
 </style>
 
 <script>
-  import { gsap } from 'gsap';
   import { ScrollTrigger } from 'gsap/ScrollTrigger';
   const ORDER_KEY = 'menghan-review-order';
 
@@ -724,11 +760,7 @@ const slides = trackItems.map((item, i) => {
 
       const world = root.querySelector('[data-order-group="world"]');
       const worldOrder = savedGroup('world');
-      if (world && worldOrder) {
-        applyGroup(world, 'data-note-id', worldOrder);
-        const track = root.querySelector('[data-eotw-track]');
-        if (track) applyGroup(track, 'data-slot-for', worldOrder);
-      }
+      if (world && worldOrder) applyGroup(world, 'data-note-id', worldOrder);
       const studies = root.querySelector('[data-order-group="studies"]');
       const studyOrder = savedGroup('studies');
       if (studies && studyOrder) applyGroup(studies, 'data-note-id', studyOrder);
@@ -815,56 +847,74 @@ const slides = trackItems.map((item, i) => {
         }
       }
 
-      // fixed-viewer crossfade: which slide is active is purely a function
-      // of which invisible slot in the track is nearest viewport-center
-      const track = root.querySelector<HTMLElement>('[data-eotw-track]');
+      // one window, turned by hand (buttons, dots, arrows, swipe) or played
+      // as a slideshow; the slide order follows the DOM, which notes mode
+      // may have reordered above
       const viewer = root.querySelector<HTMLElement>('[data-eotw-viewer]');
-      const rail = root.querySelector<HTMLElement>('[data-eotw-rail]');
-      const slots = Array.from(root.querySelectorAll<HTMLElement>('[data-eotw-slot]'));
-      const slides = Array.from(root.querySelectorAll<HTMLElement>('[data-slide]'));
-      const ticks = Array.from(root.querySelectorAll<HTMLElement>('[data-tick]'));
-      if (!track || !viewer || !slots.length) return;
-
-      gsap.registerPlugin(ScrollTrigger);
+      if (!viewer) return;
+      const slides = () => Array.from(viewer.querySelectorAll<HTMLElement>('[data-slide]'));
+      const ticks = Array.from(viewer.querySelectorAll<HTMLButtonElement>('[data-tick]'));
+      const count = viewer.querySelector<HTMLElement>('[data-eotw-count]');
+      const play = viewer.querySelector<HTMLButtonElement>('[data-eotw-play]');
+      let current = 0;
 
       function setActive(i: number) {
-        slides.forEach((s, si) => s.classList.toggle('is-active', si === i));
-        ticks.forEach((t, ti) => t.classList.toggle('is-active', ti === i));
+        const list = slides();
+        current = (i + list.length) % list.length;
+        list.forEach((s, si) => s.classList.toggle('is-active', si === current));
+        ticks.forEach((t, ti) => t.classList.toggle('is-active', ti === current));
+        if (count) count.textContent = String(current + 1).padStart(2, '0');
       }
       setActive(0);
 
-      ScrollTrigger.create({
-        trigger: track,
-        // 'top bottom' fired the instant the track's top pixel touched the
-        // viewport's bottom edge — while the hero above was still fully on
-        // screen, so the viewer popped in right on top of it. 'top top'
-        // waits until the hero has actually scrolled away and the track
-        // has taken over the viewport before the window appears.
-        start: 'top top',
-        // 'bottom top' (wait for the track's bottom to clear the viewport
-        // entirely) assumes there's at least one more viewport of scroll
-        // room after the track — the keepsake+footer that follows is
-        // shorter than that, so it could never be reached. 'bottom bottom'
-        // fires as soon as the track has fully passed by instead.
-        end: 'bottom bottom',
-        onToggle: (self) => {
-          viewer.classList.toggle('is-visible', self.isActive);
-          rail?.classList.toggle('is-visible', self.isActive);
-        },
-      });
+      const stopPlay = () => {
+        window.clearInterval(playTimer);
+        playTimer = 0;
+        play?.setAttribute('aria-pressed', 'false');
+      };
+      const userGo = (i: number) => {
+        stopPlay();
+        setActive(i);
+      };
 
-      slots.forEach((slot, i) => {
-        ScrollTrigger.create({
-          trigger: slot,
-          start: 'top 55%',
-          end: 'bottom 45%',
-          onToggle: (self) => {
-            if (self.isActive) setActive(i);
-          },
-        });
+      viewer.querySelectorAll<HTMLButtonElement>('[data-eotw-step]').forEach((b) =>
+        b.addEventListener('click', () => userGo(current + Number(b.dataset.eotwStep))),
+      );
+      ticks.forEach((t, i) => t.addEventListener('click', () => userGo(i)));
+      play?.addEventListener('click', () => {
+        if (playTimer) return stopPlay();
+        play.setAttribute('aria-pressed', 'true');
+        setActive(current + 1);
+        playTimer = window.setInterval(() => setActive(current + 1), 6500);
       });
+      viewer.tabIndex = -1;
+      viewer.addEventListener('keydown', (e) => {
+        if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+        e.preventDefault();
+        userGo(current + (e.key === 'ArrowRight' ? 1 : -1));
+      });
+      let startX = 0;
+      let startY = 0;
+      viewer.addEventListener('pointerdown', (e) => {
+        startX = e.clientX;
+        startY = e.clientY;
+      });
+      let swiped = false;
+      viewer.addEventListener('pointerup', (e) => {
+        const dx = e.clientX - startX;
+        swiped = Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(e.clientY - startY) * 1.5;
+        if (swiped) userGo(current + (dx < 0 ? 1 : -1));
+      });
+      viewer.addEventListener('click', (e) => {
+        if (!swiped) return;
+        swiped = false;
+        e.stopPropagation();
+        e.preventDefault();
+      }, true);
     });
   }
+
+  let playTimer = 0;
 
   document.addEventListener('astro:page-load', () => {
     initAtmosphere();
@@ -872,6 +922,8 @@ const slides = trackItems.map((item, i) => {
   });
 
   document.addEventListener('astro:before-swap', () => {
+    window.clearInterval(playTimer);
+    playTimer = 0;
     ScrollTrigger.getAll().forEach((t) => t.kill());
   });
 </script>

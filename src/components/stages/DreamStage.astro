@@ -25,28 +25,27 @@ const clientLabel = trAll(category === 'commission' ? 'project.client' : 'projec
 const total = gallery.length;
 const pad = (n: number) => String(n).padStart(2, '0');
 
-// memories drift in two loose columns on either side of the screen
-const perSide = [Math.ceil(total / 2), Math.floor(total / 2)];
+// memories hover in two staggered columns on either side of the screen:
+// grid columns 1-2 on the left, 4-5 on the right, each fairy spanning two
+// half-rows so neighbours zigzag
 const memories = gallery.map((item, i) => {
   const side = i % 2;
   const k = Math.floor(i / 2);
-  const rows = Math.max(1, perSide[side] - 1);
   const seed = (i * 61 + 17) % 100;
-  const zig = (k % 2 === 0 ? 1 : -1) * (3 + (seed % 3));
-  const edge = 11 + zig;
+  const outer = k % 2 === 0;
   return {
     item,
     img: getProjectImage(project.id, item.file),
-    x: (side === 0 ? edge : 100 - edge).toFixed(2),
-    y: (9 + (k * 76) / rows + (side ? 5 : 0)).toFixed(2),
-    size: (0.85 + (seed % 4) * 0.1).toFixed(2),
+    col: side === 0 ? (outer ? 1 : 2) : outer ? 5 : 4,
+    row: k + 1 + side,
+    size: (0.88 + (seed % 4) * 0.08).toFixed(2),
     dur: 7 + (seed % 5) * 1.4,
     delay: -((seed % 9) * 0.9),
     hue: seed % 3,
   };
 });
 
-const motes = Array.from({ length: 26 }, (_, i) => {
+const motes = Array.from({ length: 18 }, (_, i) => {
   const seed = (i * 37 + 5) % 100;
   return {
     left: `${(i * 41) % 100}%`,
@@ -174,15 +173,14 @@ const ui = {
             <span class="sr-only"><I18nText {...ui.nextMem} /></span>
           </button>
         </div>
+        <p class="dm-hint"><I18nText {...ui.pick} /></p>
       </div>
-
-      <p class="dm-hint"><I18nText {...ui.pick} /></p>
 
       <ul class="dm-memories">
         {memories.map((m, i) => (
           <li
             class="dm-memory"
-            style={`--x:${m.x}%; --y:${m.y}%; --s:${m.size}; --dur:${m.dur}s; --delay:${m.delay}s;`}
+            style={`--col:${m.col}; --row:${m.row}; --s:${m.size}; --dur:${m.dur}s; --delay:${m.delay}s;`}
             data-hue={m.hue}
           >
             <button
@@ -238,14 +236,13 @@ const ui = {
   .mote {
     position: absolute;
     border-radius: 50%;
-    background: color-mix(in srgb, var(--mood-b) 60%, var(--bone) 40%);
-    filter: blur(1.5px);
+    background: radial-gradient(circle, color-mix(in srgb, var(--mood-b) 60%, var(--bone) 40%) 30%, transparent 70%);
     opacity: 0;
     animation: mote-float ease-in-out infinite;
   }
 
   .mote.is-warm {
-    background: color-mix(in srgb, var(--mood-a) 60%, var(--gold) 40%);
+    background: radial-gradient(circle, color-mix(in srgb, var(--mood-a) 60%, var(--gold) 40%) 30%, transparent 70%);
   }
 
   @keyframes mote-float {
@@ -332,7 +329,7 @@ const ui = {
     position: relative;
     z-index: 1;
     min-height: 100svh;
-    padding: var(--space-4) var(--edge) 0;
+    padding: var(--space-5) var(--edge) var(--space-6);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -345,11 +342,9 @@ const ui = {
     top: 12%;
     bottom: 0;
     pointer-events: none;
-    background: linear-gradient(0deg, color-mix(in srgb, #fff3d6 26%, transparent), transparent 80%);
+    background: linear-gradient(0deg, color-mix(in srgb, #fff3d6 14%, transparent), transparent 80%);
     clip-path: polygon(48.5% 100%, 51.5% 100%, 78% 0, 22% 0);
-    filter: blur(14px);
     opacity: 0.35;
-    mix-blend-mode: screen;
     animation: dm-beam 6s ease-in-out infinite;
   }
 
@@ -362,19 +357,21 @@ const ui = {
 
   .dm-stage {
     position: relative;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(4rem, 7rem)) auto repeat(2, minmax(4rem, 7rem));
+    grid-template-rows: repeat(8, 1fr);
+    justify-content: center;
+    align-items: center;
+    column-gap: clamp(0.8rem, 2.4vw, 2.6rem);
     width: 100%;
-    max-width: 92rem;
     margin-inline: auto;
-    height: min(86svh, 56rem);
-    min-height: 34rem;
   }
 
   .dm-screen-wrap {
-    position: absolute;
-    left: 50%;
-    top: 45%;
-    width: min(52vw, 54rem, (86svh - 13rem) * 1.6);
-    transform: translate(-50%, -50%);
+    position: relative;
+    grid-column: 3;
+    grid-row: 1 / -1;
+    width: min(46vw, 54rem, (100svh - 15rem) * 1.6);
     z-index: 2;
   }
 
@@ -540,35 +537,30 @@ const ui = {
   }
 
   .dm-hint {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0.4rem;
+    margin-top: 0.9rem;
     text-align: center;
     font-family: var(--font-mono);
     font-size: var(--text-xs);
     letter-spacing: 0.08em;
     color: var(--bone-soft);
-    z-index: 3;
   }
 
   /* ---- memory fairies ---- */
   .dm-memories {
+    display: contents;
     list-style: none;
-    margin: 0;
-    padding: 0;
   }
 
   .dm-memory {
-    position: absolute;
-    left: var(--x);
-    top: var(--y);
+    position: relative;
+    grid-column: var(--col);
+    grid-row: var(--row) / span 2;
+    justify-self: center;
     z-index: 3;
-    transform: translate(-50%, -50%);
   }
 
   .dm-orb {
-    --size: calc(clamp(3.6rem, 6.2vw, 6rem) * var(--s, 1));
+    --size: calc(clamp(3.4rem, 5vw, 5.6rem) * var(--s, 1));
     --halo: #ffe7a8;
     position: relative;
     display: block;
@@ -603,8 +595,15 @@ const ui = {
     overflow: hidden;
     box-shadow:
       0 0 0 2px color-mix(in srgb, var(--halo) 70%, transparent),
-      0 0 1.2rem 0.3rem color-mix(in srgb, var(--halo) 50%, transparent),
-      0 0 3rem 0.6rem color-mix(in srgb, var(--halo) 22%, transparent);
+      0 0 1.2rem 0.3rem color-mix(in srgb, var(--halo) 50%, transparent);
+  }
+
+  .dm-orb::before {
+    content: '';
+    position: absolute;
+    inset: -35%;
+    border-radius: 50%;
+    background: radial-gradient(circle, color-mix(in srgb, var(--halo) 38%, transparent) 35%, transparent 68%);
     animation: dm-pulse 3.2s ease-in-out var(--delay, 0s) infinite;
   }
 
@@ -619,12 +618,8 @@ const ui = {
   }
 
   @keyframes dm-pulse {
-    50% {
-      box-shadow:
-        0 0 0 2px color-mix(in srgb, var(--halo) 90%, transparent),
-        0 0 1.6rem 0.5rem color-mix(in srgb, var(--halo) 65%, transparent),
-        0 0 4rem 1rem color-mix(in srgb, var(--halo) 28%, transparent);
-    }
+    0%, 100% { opacity: 0.55; }
+    50% { opacity: 1; }
   }
 
   .dm-orb-pic :global(img) {
@@ -692,11 +687,13 @@ const ui = {
   }
 
   .dm-fly {
-    position: fixed;
+    position: absolute;
+    left: 0;
+    top: 0;
     z-index: 50;
-    overflow: hidden;
     pointer-events: none;
-    box-shadow: 0 0 3rem 1rem rgb(255 231 168 / 45%);
+    transform-origin: 50% 50%;
+    will-change: transform, clip-path;
   }
 
   .dm-fly img {
@@ -711,7 +708,7 @@ const ui = {
     display: block;
     width: 100%;
     height: clamp(3.5rem, 9vw, 7rem);
-    margin-top: -3rem;
+    margin-top: var(--space-4);
     fill: #07050c;
     z-index: 2;
     filter: drop-shadow(0 -1px 0 rgb(255 243 214 / 10%));
@@ -723,8 +720,47 @@ const ui = {
   }
 
   @media (max-width: 1100px) {
+    .dm-stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
     .dm-screen-wrap {
-      width: min(60vw, 46rem);
+      width: min(100%, 46rem);
+    }
+
+    .dm-memories {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1.8rem 1.4rem;
+      max-width: 46rem;
+      margin: 0;
+      padding: var(--space-4) 0.6rem 0;
+    }
+
+    .dm-orb {
+      --size: calc(4.2rem * var(--s, 1));
+    }
+
+    .dm-orb.is-watching {
+      opacity: 0.25;
+      scale: 0.8;
+    }
+  }
+
+  @media (max-width: 1100px), (pointer: coarse) {
+    .dm-wing,
+    .dm-flicker,
+    .mote:nth-child(n + 9) {
+      display: none;
+    }
+
+    .dm-orb,
+    .dm-orb::before,
+    .dm-beam {
+      animation: none;
     }
   }
 
@@ -759,60 +795,15 @@ const ui = {
     .dm-cinema {
       min-height: auto;
       padding-top: var(--space-5);
-    }
-
-    .dm-stage {
-      height: auto;
-      min-height: 0;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .dm-screen-wrap {
-      position: relative;
-      left: auto;
-      top: auto;
-      width: 100%;
-      transform: none;
-    }
-
-    .dm-hint {
-      position: static;
-      order: 2;
-      margin-top: var(--space-3);
-    }
-
-    .dm-memories {
-      order: 3;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 1.6rem 1.4rem;
-      padding: var(--space-3) 0.6rem var(--space-5);
-    }
-
-    .dm-memory {
-      position: relative;
-      left: auto;
-      top: auto;
-      transform: none;
+      padding-bottom: var(--space-5);
     }
 
     .dm-orb {
       --size: calc(3.4rem * var(--s, 1));
     }
 
-    .dm-orb.is-watching {
-      opacity: 0.25;
-      scale: 0.8;
-    }
-
     .dm-beam {
       display: none;
-    }
-
-    .dm-seats {
-      margin-top: 0;
     }
   }
 
@@ -820,7 +811,7 @@ const ui = {
     .mote,
     .dm-beam,
     .dm-orb,
-    .dm-orb-pic,
+    .dm-orb::before,
     .dm-wing,
     .dm-flicker,
     .dm-dot {
@@ -832,7 +823,9 @@ const ui = {
   }
 
   :global(html[data-motion='quiet']) .dm-orb,
+  :global(html[data-motion='quiet']) .dm-flicker,
   :global(html[data-motion='still']) .dm-orb,
+  :global(html[data-motion='still']) .dm-orb::before,
   :global(html[data-motion='still']) .dm-wing,
   :global(html[data-motion='still']) .dm-flicker,
   :global(html[data-motion='still']) .mote {
@@ -883,35 +876,49 @@ const ui = {
         show(target);
         return;
       }
+      // the ghost has the screen's final size from the start and is only
+      // ever scaled uniformly; a circular clip makes it look like the orb,
+      // then opens up to the full frame as it lands
       flying = true;
+      const base = root.getBoundingClientRect();
       const ghost = document.createElement('div');
       ghost.className = 'dm-fly';
       ghost.setAttribute('aria-hidden', 'true');
-      ghost.style.cssText = `left:${from.left}px;top:${from.top}px;width:${from.width}px;height:${from.height}px;border-radius:50%;`;
+      ghost.style.cssText = `width:${to.width}px;height:${to.height}px;`;
       const img = document.createElement('img');
       img.src = pic.currentSrc || pic.src;
       img.alt = '';
       ghost.append(img);
       root.append(ghost);
       orb.classList.add('is-watching');
-      const dx = to.left + to.width / 2 - (from.left + from.width / 2);
-      const dy = to.top + to.height / 2 - (from.top + from.height / 2);
-      const sx = to.width / from.width;
-      const sy = to.height / from.height;
-      const lift = Math.min(160, Math.abs(dx) * 0.3 + 60);
+      const s = from.width / to.height;
+      const x0 = from.left + from.width / 2 - base.left - to.width / 2;
+      const y0 = from.top + from.height / 2 - base.top - to.height / 2;
+      const x1 = to.left - base.left;
+      const y1 = to.top - base.top;
+      const lift = Math.min(140, Math.abs(x1 - x0) * 0.25 + 50);
+      const rStart = to.height / 2;
+      const rEnd = Math.hypot(to.width, to.height) / 2;
       const anim = ghost.animate(
         [
-          { transform: 'translate(0, 0) scale(1)', borderRadius: '50%', opacity: 1 },
-          { transform: `translate(${dx * 0.5}px, ${dy * 0.5 - lift}px) scale(${(1 + sx) / 3}, ${(1 + sy) / 3})`, borderRadius: '40%', opacity: 1, offset: 0.55 },
-          { transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`, borderRadius: '4%', opacity: 0.2 },
+          { transform: `translate(${x0}px, ${y0}px) scale(${s})`, clipPath: `circle(${rStart}px at 50% 50%)`, opacity: 1 },
+          {
+            transform: `translate(${(x0 + x1) / 2}px, ${(y0 + y1) / 2 - lift}px) scale(${(s + 1) / 2.6})`,
+            clipPath: `circle(${rStart}px at 50% 50%)`,
+            opacity: 1,
+            offset: 0.5,
+          },
+          { transform: `translate(${x1}px, ${y1}px) scale(1)`, clipPath: `circle(${rEnd}px at 50% 50%)`, opacity: 0 },
         ],
-        { duration: 900, easing: 'cubic-bezier(.45,.05,.3,1)' },
+        { duration: 950, easing: 'cubic-bezier(.45,.05,.3,1)' },
       );
-      anim.onfinish = () => {
+      const land = () => {
         ghost.remove();
         flying = false;
       };
-      window.setTimeout(() => show(target), 620);
+      anim.onfinish = land;
+      anim.oncancel = land;
+      window.setTimeout(() => show(target), 650);
     };
 
     const tick = () => {

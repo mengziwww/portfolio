@@ -375,6 +375,18 @@ html[data-motion='still'] .tunnel-rays {
   animation: none !important;
 }
 
+html[data-motion='still'],
+html[data-motion='still'] *,
+html[data-motion='still'] *::before,
+html[data-motion='still'] *::after {
+  animation-duration: 1ms !important;
+  animation-delay: 0s !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 1ms !important;
+  transition-delay: 0s !important;
+  scroll-behavior: auto !important;
+}
+
 html[data-text='lg'] {
   font-size: 112.5%;
 }
@@ -385,20 +397,27 @@ html[data-text='xl'] {
 
 html[data-contrast='high'] {
   --bone: #fff;
-  --bone-soft: rgb(255 255 255 / 94%);
-  --bone-faint: rgb(255 255 255 / 82%);
+  --bone-soft: #fff;
+  --bone-faint: rgb(255 255 255 / 88%);
   --void: #000;
-  --void-line: rgb(255 255 255 / 42%);
+  --void-raised: #111;
+  --void-line: rgb(255 255 255 / 55%);
+  --gold: #ffd866;
 }
 
-html[data-space='relaxed'] body {
-  line-height: 1.75;
-  letter-spacing: 0.01em;
+html[data-contrast='high'] body {
+  text-shadow: none;
 }
 
-html[data-transparent='solid'] .poster-badge,
-html[data-transparent='solid'] .poster-scrim,
-html[data-transparent='solid'] [class*='scrim'] {
+html[data-space='relaxed'] body,
+html[data-space='relaxed'] :is(p, li, dd, dt, figcaption, blockquote, label, legend) {
+  line-height: 1.85 !important;
+  letter-spacing: 0.02em !important;
+  word-spacing: 0.08em;
+}
+
+html[data-transparent='solid'] * {
+  -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
 }
 

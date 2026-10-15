@@ -113,7 +113,7 @@ groups.forEach((group) => {
 
   {video && (
     <figure class="sb-clip">
-      <VideoPlayer src={video} />
+      <VideoPlayer src={video} skin="poppy" />
       {videoNote && (
         <figcaption class="sb-clip-note">
           <I18nText en={videoNote.en} fr={videoNote.fr} zh={videoNote.zh} />
@@ -123,7 +123,7 @@ groups.forEach((group) => {
   )}
   {videos?.map((clip) => (
     <figure class="sb-clip">
-      <VideoPlayer src={`/videos/${project.id}/${clip.file}`} />
+      <VideoPlayer src={`/videos/${project.id}/${clip.file}`} skin="poppy" />
       <figcaption><I18nText en={clip.label.en} fr={clip.label.fr} zh={clip.label.zh} /></figcaption>
     </figure>
   ))}

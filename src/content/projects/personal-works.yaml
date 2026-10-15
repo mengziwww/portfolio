@@ -64,6 +64,7 @@ storyboards:
       en: Placeholder. I'll write a few words about this storyboard later.
       fr: Texte provisoire. J'écrirai quelques mots sur ce storyboard plus tard.
       zh: 说明先空着，之后再写这份分镜。
+    look: sand
     pages: [storyboard-1-01.jpg, storyboard-1-02.jpg, storyboard-1-03.jpg, storyboard-1-04.jpg, storyboard-1-05.jpg, storyboard-1-06.jpg, storyboard-1-07.jpg, storyboard-1-08.jpg, storyboard-1-09.jpg]
   - title:
       en: Untitled Storyboard Project II
@@ -73,6 +74,7 @@ storyboards:
       en: Placeholder. I'll write about this one later too.
       fr: Texte provisoire. J'écrirai sur celui-ci plus tard aussi.
       zh: 说明先空着，之后再写。
+    look: wall
     pages: [storyboard-2-01.jpg, storyboard-2-02.jpg, storyboard-2-03.jpg, storyboard-2-04.jpg, storyboard-2-05.jpg, storyboard-2-06.jpg, storyboard-2-07.jpg, storyboard-2-08.jpg, storyboard-2-09.jpg, storyboard-2-10.jpg, storyboard-2-11.jpg, storyboard-2-12.jpg, storyboard-2-13.jpg, storyboard-2-14.jpg, storyboard-2-15.jpg, storyboard-2-16.jpg, storyboard-2-17.jpg, storyboard-2-18.jpg, storyboard-2-19.jpg, storyboard-2-20.jpg, storyboard-2-21.jpg, storyboard-2-22.jpg]
   - title:
       en: Untitled Storyboard Project III
@@ -82,6 +84,7 @@ storyboards:
       en: Placeholder. A few words about this storyboard will go here.
       fr: Texte provisoire. Quelques mots sur ce storyboard viendront ici.
       zh: 这里之后会写几句关于这份分镜的话。
+    look: night
     pages: [storyboard-3-01.jpg, storyboard-3-02.jpg, storyboard-3-03.jpg, storyboard-3-04.jpg, storyboard-3-05.jpg, storyboard-3-06.jpg, storyboard-3-07.jpg, storyboard-3-08.jpg]
 cover: cover.png
 coverAlt:

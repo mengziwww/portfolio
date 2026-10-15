@@ -12,6 +12,8 @@ import Grain from '@/components/Grain.astro';
 import LoadingBar from '@/components/LoadingBar.astro';
 import Lightbox from '@/components/Lightbox.astro';
 import ArtworkGuard from '@/components/ArtworkGuard.astro';
+import A11yTip from '@/components/A11yTip.astro';
+import ContactNudge from '@/components/ContactNudge.astro';
 
 interface Props {
   path: string;
@@ -85,6 +87,8 @@ const { path, title, description, ogImage, bodyClass, noindex = false } = Astro.
     </main>
     <Footer />
     <Lightbox />
+    <A11yTip />
+    <ContactNudge />
   </body>
 </html>
 
@@ -100,6 +104,7 @@ const { path, title, description, ogImage, bodyClass, noindex = false } = Astro.
 
   function initLenis() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (document.documentElement.dataset.motion === 'still') return;
     if (window.matchMedia('(hover: none), (pointer: coarse)').matches) return;
     lenis?.destroy();
     lenis = new Lenis({ duration: 1.05, easing: (t) => 1 - Math.pow(1 - t, 3) });

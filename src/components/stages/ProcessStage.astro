@@ -66,6 +66,7 @@ const pollen = Array.from({ length: 26 }, (_, i) => ({
   </div>
 
   <header class="pr-hero">
+    <span class="pr-sun" aria-hidden="true"></span>
     <span class="pr-hero-scrim" aria-hidden="true"></span>
     <Image
       class="pr-hero-bg"
@@ -92,7 +93,10 @@ const pollen = Array.from({ length: 26 }, (_, i) => ({
           </>
         ) : null}
       </p>
-      <h1 class="pr-hero-title" transition:name={`project-title-${project.id}`} set:html={charReveal(title, 120, 22)} />
+      <div class="pr-sign">
+        <h1 class="pr-hero-title" transition:name={`project-title-${project.id}`} set:html={charReveal(title, 120, 22)} />
+        <svg class="pr-sign-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10h12V5l7 7-7 7v-5H3z" fill="currentColor" /></svg>
+      </div>
       <p class="pr-hero-subtitle">
         <I18nText en={subtitle.en} fr={subtitle.fr} zh={subtitle.zh} />
       </p>
@@ -191,16 +195,53 @@ const pollen = Array.from({ length: 26 }, (_, i) => ({
             <span class="pr-reel-num">{String(vi + 1).padStart(2, '0')}</span>
             <I18nText en={v.label.en} fr={v.label.fr} zh={v.label.zh} />
           </p>
-          <VideoPlayer src={`/videos/${project.id}/${v.file}`} />
+          <VideoPlayer src={`/videos/${project.id}/${v.file}`} skin="road" />
         </div>
       ))}
     </section>
   )}
 
+  <div class="pr-trip" data-pr-trip aria-hidden="true">
+    <span class="pr-trip-road"></span>
+    <span class="pr-trip-end"><I18nText en="the fields" fr="les champs" zh="田野" /></span>
+    <svg class="pr-trip-scooter" viewBox="0 0 48 30">
+      <circle cx="10" cy="24" r="5" fill="#1b2a33" stroke="#f6efe2" stroke-width="1.6" />
+      <circle cx="38" cy="24" r="5" fill="#1b2a33" stroke="#f6efe2" stroke-width="1.6" />
+      <path d="M8 22 L30 22 L36 12 L40 12" fill="none" stroke="#e07b39" stroke-width="3.2" stroke-linejoin="round" stroke-linecap="round" />
+      <path d="M14 21 Q14 15 22 15 L29 15 L27 21Z" fill="#e07b39" />
+      <circle cx="20" cy="5" r="3.2" fill="#f2c14e" />
+      <path d="M18 8 L22 15 L28 15" fill="none" stroke="#f6efe2" stroke-width="3" stroke-linecap="round" />
+      <circle cx="13" cy="7" r="3" fill="#3a2a1e" />
+      <path d="M12 10 L16 16" stroke="#9cc3d5" stroke-width="3" stroke-linecap="round" />
+      <circle cx="41" cy="13" r="1.6" fill="#fff6c8" />
+    </svg>
+  </div>
+
   <ProjectFooter project={project} next={next} />
 </article>
 
 <script>
+  let onTrip: (() => void) | undefined;
+  document.addEventListener('astro:page-load', () => {
+    const trip = document.querySelector<HTMLElement>('[data-pr-trip]');
+    if (onTrip) window.removeEventListener('scroll', onTrip);
+    onTrip = undefined;
+    if (!trip) return;
+    let frame = 0;
+    const paint = () => {
+      frame = 0;
+      const max = document.documentElement.scrollHeight - innerHeight;
+      const p = max > 0 ? Math.min(1, scrollY / max) : 0;
+      trip.style.setProperty('--trip', p.toFixed(4));
+      trip.classList.toggle('is-on', scrollY > innerHeight * 0.6);
+    };
+    onTrip = () => {
+      if (!frame) frame = requestAnimationFrame(paint);
+    };
+    paint();
+    window.addEventListener('scroll', onTrip, { passive: true });
+  });
+
   // YouTube is only contacted once the visitor asks for the film.
   document.addEventListener('astro:page-load', () => {
     document.querySelectorAll<HTMLElement>('[data-yt-embed]').forEach((frame) => {
@@ -307,11 +348,126 @@ const pollen = Array.from({ length: 26 }, (_, i) => ({
     margin-bottom: var(--space-2);
   }
 
+  /* the title is a French direction sign pointing to the fields */
+  .pr-sign {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    margin: 0.2rem 0 0.2rem -0.2rem;
+    padding: 0.32em 0.6em 0.36em 0.55em;
+    font-size: calc(var(--text-2xl) * 0.72);
+    color: #141414;
+    background: #f8f6ee;
+    border-radius: 0.18em;
+    box-shadow: inset 0 0 0 0.09em #f8f6ee, inset 0 0 0 0.14em #141414, 0 0.8rem 2rem -0.6rem rgb(0 0 0 / 60%);
+    rotate: -1.2deg;
+  }
+
   .pr-hero-title {
-    font-size: var(--text-2xl);
-    line-height: 0.96;
-    color: var(--bone);
-    text-shadow: 0 0.3rem 1.5rem rgb(0 0 0 / 45%);
+    font-family: var(--font-sans);
+    font-weight: 700;
+    font-size: 1em;
+    line-height: 1;
+    letter-spacing: -0.01em;
+    color: inherit;
+  }
+
+  .pr-sign-arrow {
+    flex: none;
+    width: 0.9em;
+    height: 0.9em;
+  }
+
+  .pr-sun {
+    position: absolute;
+    right: 8%;
+    top: 10%;
+    z-index: 1;
+    width: clamp(12rem, 30vw, 28rem);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    pointer-events: none;
+    background: radial-gradient(circle, rgb(255 226 150 / 55%), rgb(255 170 80 / 18%) 40%, transparent 70%);
+    mix-blend-mode: screen;
+    animation: pr-sun 9s ease-in-out infinite;
+  }
+
+  @keyframes pr-sun {
+    50% { scale: 1.08; opacity: 0.8; }
+  }
+
+  /* a scooter rides to the fields as the page scrolls */
+  .pr-trip {
+    position: fixed;
+    left: 50%;
+    bottom: 0.9rem;
+    z-index: 30;
+    width: min(26rem, 70vw);
+    height: 2.2rem;
+    translate: -50% 0;
+    padding-right: 5.5rem;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.5s;
+  }
+
+  .pr-trip.is-on {
+    opacity: 1;
+  }
+
+  .pr-trip-road {
+    position: absolute;
+    left: 0;
+    right: 5.5rem;
+    bottom: 0.35rem;
+    height: 5px;
+    border-radius: 3px;
+    background: repeating-linear-gradient(90deg, rgb(246 239 226 / 70%) 0 6px, transparent 6px 14px) center / 100% 1px no-repeat, rgb(27 42 51 / 88%);
+    box-shadow: 0 0 0 1px rgb(246 239 226 / 15%);
+  }
+
+  .pr-trip-end {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    padding: 0.2em 0.55em;
+    font-family: var(--font-sans);
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: #141414;
+    background: #f8f6ee;
+    border-radius: 3px;
+    box-shadow: inset 0 0 0 2px #f8f6ee, inset 0 0 0 3px #141414;
+  }
+
+  .pr-trip-scooter {
+    position: absolute;
+    bottom: 0.25rem;
+    left: calc(var(--trip, 0) * (100% - 5.5rem - 2.6rem));
+    width: 2.6rem;
+    height: 1.7rem;
+    filter: drop-shadow(0 2px 2px rgb(0 0 0 / 50%));
+    animation: pr-bump 0.45s ease-in-out infinite;
+  }
+
+  @keyframes pr-bump {
+    50% { transform: translateY(-1px) rotate(-1.5deg); }
+  }
+
+  @media (max-width: 700px) {
+    .pr-sign {
+      font-size: calc(var(--text-2xl) * 0.62);
+    }
+    .pr-trip {
+      bottom: 0.6rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pr-sun,
+    .pr-trip-scooter {
+      animation: none;
+    }
   }
 
   .pr-hero-subtitle {
@@ -549,16 +705,25 @@ const pollen = Array.from({ length: 26 }, (_, i) => ({
 
   .pr-chapter-title {
     display: flex;
+    width: fit-content;
     align-items: baseline;
     gap: 0.6em;
-    font-size: var(--text-xl);
     margin-bottom: var(--space-5);
+    padding: 0.3em 1.6em 0.34em 0.6em;
+    font-family: var(--font-sans);
+    font-weight: 700;
+    font-size: var(--text-lg);
+    color: #141414;
+    background: #f8f6ee;
+    border-radius: 0.2em;
+    box-shadow: inset 0 0 0 0.12em #f8f6ee, inset 0 0 0 0.19em #141414, 0 0.6rem 1.4rem -0.6rem rgb(0 0 0 / 55%);
+    clip-path: polygon(0 0, calc(100% - 0.9em) 0, 100% 50%, calc(100% - 0.9em) 100%, 0 100%);
   }
 
   .pr-chapter-index {
     font-family: var(--font-mono);
     font-size: var(--text-sm);
-    color: var(--sunflower);
+    color: #b5701d;
     letter-spacing: 0.05em;
   }
 

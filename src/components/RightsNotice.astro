@@ -36,9 +36,15 @@ import I18nText from './I18nText.astro';
 
 <style>
   .rights {
-    max-width: 40rem;
+    min-height: 82svh;
+    max-width: 44rem;
     margin: 0 auto;
-    padding: var(--space-6) var(--edge) var(--space-6);
+    padding: clamp(7rem, 16vh, 10rem) var(--edge) clamp(6rem, 16vh, 10rem);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
   }
 
   .rights h1 {
@@ -48,12 +54,33 @@ import I18nText from './I18nText.astro';
   }
 
   .rights p {
-    margin-top: var(--space-3);
+    margin: var(--space-3) auto 0;
+    font-size: var(--text-lg);
+    line-height: 1.55;
     color: var(--bone-soft);
-    max-width: 42ch;
+    max-width: 40ch;
+  }
+
+  .rights p:first-child {
+    margin-top: 0;
+    color: var(--bone);
   }
 
   .rights a {
+    display: inline-block;
+    margin-top: var(--space-2);
+    padding: 0.55em 1.3em;
+    border: 1px solid var(--gold);
+    border-radius: 999px;
     color: var(--gold);
+    font-size: var(--text-base);
+    text-decoration: none;
+    transition: background 0.25s, color 0.25s;
+  }
+
+  .rights a:hover,
+  .rights a:focus-visible {
+    background: var(--gold);
+    color: var(--void);
   }
 </style>

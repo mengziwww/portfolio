@@ -1,18 +1,8 @@
 ---
-// The lantern-string layout was worth keeping — but hanging all 4 images
-// as one flat, undifferentiated row on an empty gradient is why it read
-// as sad and empty. Two fixes, both about actually using what's already
-// true of this project: the gallery data already separates "Characters"
-// from "World" (with World's own three beats moving from a crowded,
-// lit street to a quieter corner to the crowd thinning as night
-// deepens) but the old template never read that field at all. This
-// rebuild groups by chapter for real — a featured single portrait for
-// Characters, a row for World — and gives the World row an actual
-// environment: a jagged temple-roof skyline silhouette, a crowd strip
-// that visibly disperses on scroll, drifting sky lanterns, occasional
-// firework bursts, and a sky that darkens from dusk to night as you
-// move through it. The street empties out because you're watching it
-// empty out, not because the page is undecorated.
+// A temple-fair night: red lanterns on a cord, sky lanterns, fireworks,
+// a crowd that thins out on scroll. Single-image chapters hang in a
+// lacquered shrine frame; the multi-image chapter is the gods' offering
+// table, one shrine display fed by a slow conveyor of offering plates.
 import { Image } from 'astro:assets';
 import type { CollectionEntry } from 'astro:content';
 import { getProjectImage, responsiveWidths } from '@/lib/images';
@@ -232,12 +222,6 @@ const roofline = rooflinePath();
     </div>
   </header>
 
-  <!-- third attempt at this gallery, on purpose a completely different
-       object from a hanging string of lanterns or a plaque wall: 月洞门
-       (moon gates), the round doorways cut into garden walls you walk
-       through one after another — here, one grand gate for the single
-       "Characters" portrait, then a path of smaller gates for "World",
-       each a little dimmer than the last as the night goes on. -->
   <div class="chapters">
     {chapterGroups.map((group) => (
       group.items.length === 1 ? (
@@ -270,34 +254,70 @@ const roofline = rooflinePath();
           ))}
         </section>
       ) : (
-        <section class="chapter chapter-path" data-night-row={group.label ? 'true' : undefined}>
+        <section class="chapter chapter-path" data-night-row={group.label ? 'true' : undefined} data-altar>
           {group.label && (
             <p class="chapter-banner"><I18nText en={group.label.en} fr={group.label.fr} zh={group.label.zh} /></p>
           )}
           {noteFor(group.label) && (
             <p class="chapter-note"><I18nText {...noteFor(group.label)!} /></p>
           )}
-          <div class="gate-path">
-            {group.items.map((item, idx) => (
-              <figure class="moon-gate" style={`--row-i:${idx}; --side:${idx % 2 === 0 ? -1 : 1};`} data-plaque data-artwork data-note-id={`${project.id}:${item.file}`}>
-                <span class="gate-lintel" aria-hidden="true"><i></i></span>
-                <div class="gate-frame">
-                  <span class="gate-ring" aria-hidden="true"></span>
-                  <div class="gate-opening">
+          <div class="altar">
+            <div class="altar-shrine">
+              <span class="altar-eave" aria-hidden="true"></span>
+              <div class="altar-stage" data-lb-group>
+                {group.items.map((item, idx) => (
+                  <figure class:list={['altar-shot', { 'is-on': idx === 0 }]} data-altar-shot={idx} data-artwork data-note-id={`${project.id}:${item.file}`}>
                     <Image
                       src={getProjectImage(project.id, item.file)}
                       alt={item.alt.en}
-                      widths={responsiveWidths(getProjectImage(project.id, item.file), [400, 640, 900])}
-                      sizes="(max-width: 700px) 62vw, 22vw"
-                      loading={idx < 2 ? 'eager' : 'lazy'}
+                      widths={responsiveWidths(getProjectImage(project.id, item.file), [640, 1000, 1400])}
+                      sizes="(max-width: 700px) 92vw, 60vw"
+                      loading={idx === 0 ? 'eager' : 'lazy'}
                     />
-                  </div>
+                  </figure>
+                ))}
+              </div>
+              <div class="altar-plaque" aria-live="polite">
+                <span class="altar-count"><span data-altar-count>01</span> / {String(group.items.length).padStart(2, '0')}</span>
+                {group.items.map((item, idx) => (
+                  <p class="altar-caption" data-altar-caption={idx} hidden={idx !== 0}>
+                    {item.caption && <I18nText en={item.caption.en} fr={item.caption.fr} zh={item.caption.zh} />}
+                  </p>
+                ))}
+              </div>
+            </div>
+
+            <div class="altar-table">
+              <p class="altar-hint">
+                <I18nText en="offerings drift by. Take one." fr="les offrandes défilent. Prends-en une." zh="供品慢慢流过，挑一盘吧。" />
+              </p>
+              <div class="belt" data-belt>
+                <div class="belt-track">
+                  {[0, 1, 2].map((copy) => (
+                    <ul class="belt-run" aria-hidden={copy > 0 ? 'true' : undefined}>
+                      {group.items.map((item, idx) => (
+                        <li class="belt-item" style={`--tilt:${((idx * 37) % 9) - 4}deg;`}>
+                          <button
+                            type="button"
+                            class:list={['plate', { 'is-taken': idx === 0 }]}
+                            data-plate={idx}
+                            tabindex={copy > 0 ? -1 : undefined}
+                            aria-label={item.alt.en}
+                          >
+                            <span class="plate-dish" aria-hidden="true"></span>
+                            <span class="plate-food">
+                              <Image src={getProjectImage(project.id, item.file)} alt="" widths={[200, 320]} sizes="9rem" loading="lazy" />
+                            </span>
+                            <span class="plate-num" aria-hidden="true">{String(idx + 1).padStart(2, '0')}</span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  ))}
                 </div>
-                {item.caption && (
-                  <figcaption><I18nText en={item.caption.en} fr={item.caption.fr} zh={item.caption.zh} /></figcaption>
-                )}
-              </figure>
-            ))}
+              </div>
+              <span class="altar-table-edge" aria-hidden="true"></span>
+            </div>
           </div>
         </section>
       )
@@ -659,9 +679,9 @@ const roofline = rooflinePath();
        centering and shoved the banner far to the right */
     display: inline-block;
     margin: 0 auto var(--space-5);
-    padding: 0.4em 1.3em;
+    padding: 0.5em 1.5em;
     font-family: var(--font-mono);
-    font-size: var(--text-xs);
+    font-size: var(--text-sm);
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--bone);
@@ -691,12 +711,6 @@ const roofline = rooflinePath();
     filter: saturate(1.05) brightness(0.96);
   }
 
-  /* ---- moon gates (月洞门): the round doorways cut into garden walls,
-     walked through one after another — a third, deliberately different
-     object from both the hanging-lantern string and the plaque wall
-     that came before it. One grand gate for the solo "Characters"
-     portrait; a path of smaller gates, each a little dimmer than the
-     last, for "World". ---- */
   .chapter-grand,
   .chapter-path {
     display: flex;
@@ -704,45 +718,30 @@ const roofline = rooflinePath();
     align-items: center;
   }
 
-  /* a path, not a row: with as few as three images for "World" a
-     wrapped horizontal row left visible empty space and read as sparse.
-     Walking through gates one after another reads truer stacked
-     vertically, each stepping slightly left or right of the last like an
-     actual garden path, joined by a single thread running down the
-     middle — and each gate can afford to be much bigger with only one
-     per line. */
-  .gate-path {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: clamp(2.5rem, 7vw, 5rem);
-  }
-
-  .gate-path::before {
-    content: '';
-    position: absolute;
-    top: 1rem;
-    bottom: 1rem;
-    left: 50%;
-    width: 1px;
-    background: linear-gradient(180deg, transparent, var(--void-line) 15%, var(--void-line) 85%, transparent);
-    z-index: -1;
-  }
-
   .moon-gate {
     position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: min(46rem, 88vw - 2 * clamp(1rem, 7vw, 4.5rem));
-    transform: translateX(calc(var(--side, 0) * clamp(1rem, 7vw, 4.5rem)));
-    filter: brightness(calc(1 - var(--row-i, 0) * 0.11));
-    transition: filter 0.4s;
+    width: min(46rem, 88vw);
   }
 
   .moon-gate.is-grand {
-    width: min(52rem, 92vw);
+    width: min(54rem, 92vw);
+  }
+
+  .moon-gate.is-grand .gate-opening,
+  .altar-stage {
+    padding: clamp(0.4rem, 1vw, 0.75rem);
+    background:
+      linear-gradient(135deg, #8c1d14, #5a0f0a 60%, #8c1d14);
+    border-radius: 4px;
+    box-shadow:
+      inset 0 0 0 2px #d9a441,
+      inset 0 0 0 5px #5a0f0a,
+      inset 0 0 0 6px color-mix(in srgb, #d9a441 60%, transparent),
+      0 2rem 4rem -1.5rem rgb(0 0 0 / 70%),
+      0 0 5rem -0.5rem rgb(255 140 60 / 30%);
   }
 
   .gate-lintel {
@@ -797,48 +796,274 @@ const roofline = rooflinePath();
     filter: none;
   }
 
-  .moon-gate:hover,
-  .moon-gate:focus-within {
-    filter: brightness(1);
-  }
-
-  .moon-gate figcaption {
-    margin: var(--space-2) auto 0;
-    padding: 0.45em 0.8em;
-    font-size: var(--text-sm);
-    line-height: 1.5;
-    color: var(--bone);
+  .moon-gate figcaption,
+  .altar-plaque {
+    margin: var(--space-3) auto 0;
+    padding: 0.8em 1.3em;
+    font-size: var(--text-lg);
+    line-height: 1.45;
+    color: #fff6e4;
     text-align: center;
-    max-width: 30ch;
-    background: rgb(10 8 8 / 55%);
-    border-radius: 3px;
-  }
-
-  .moon-gate.is-grand figcaption {
     max-width: 40ch;
+    background: linear-gradient(180deg, #2a140d, #1a0c08);
+    border: 1px solid color-mix(in srgb, #d9a441 55%, transparent);
+    border-radius: 3px;
+    box-shadow: 0 1rem 2rem -1rem rgb(0 0 0 / 70%);
   }
 
   .chapter-note {
-    max-width: 44ch;
+    max-width: 46ch;
     margin: calc(var(--space-4) * -1) auto var(--space-5);
+    padding: 0.7em 1.2em;
     text-align: center;
-    font-size: var(--text-base);
-    line-height: 1.6;
-    color: var(--bone-soft);
+    font-size: var(--text-lg);
+    line-height: 1.55;
+    color: #f6ecdc;
+    background: rgb(12 9 8 / 78%);
+    border-radius: 4px;
+  }
+
+  /* ---- the gods' offering table: one shrine display, fed by a slow
+     conveyor of offering plates (her own image of the scroll that
+     unrolls "like conveyor-belt sushi") ---- */
+  .altar {
+    width: min(64rem, 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .altar-shrine {
+    position: relative;
+    width: min(100%, (100svh - 16rem) * 1.6);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .altar-eave {
+    position: relative;
+    z-index: 1;
+    width: 108%;
+    height: 1.6rem;
+    margin-bottom: -0.4rem;
+    background: linear-gradient(180deg, #3b1c10, #1d0d07);
+    clip-path: polygon(0 100%, 3% 10%, 8% 40%, 92% 40%, 97% 10%, 100% 100%);
+  }
+
+  .altar-stage {
+    position: relative;
+    display: grid;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    cursor: zoom-in;
+  }
+
+  .altar-shot {
+    grid-area: 1 / 1;
+    margin: 0;
+    min-height: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.6s ease;
+    background: #0b0605;
+  }
+
+  .altar-shot.is-on {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .altar-shot :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+
+  .altar-plaque {
+    width: min(100%, 44rem);
+    max-width: none;
+  }
+
+  .altar-count {
+    display: block;
+    margin-bottom: 0.35em;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.14em;
+    color: #d9a441;
+  }
+
+  .altar-caption {
+    margin: 0;
+    animation: altar-in 0.45s ease both;
+  }
+
+  .altar-caption[hidden] {
+    display: none;
+  }
+
+  @keyframes altar-in {
+    from { opacity: 0; transform: translateY(0.3rem); }
+  }
+
+  .altar-table {
+    position: relative;
+    width: 100vw;
+    margin-top: var(--space-5);
+    padding: 1.4rem 0 0;
+    background: linear-gradient(180deg, transparent, rgb(60 26 14 / 55%) 30%, #3a1a0e 100%);
+  }
+
+  .altar-hint {
+    margin: 0 0 0.6rem;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    letter-spacing: 0.08em;
+    color: #f0d9a8;
+  }
+
+  .belt {
+    overflow: hidden;
+    padding: 1.2rem 0 1.6rem;
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+
+  .belt-track {
+    display: flex;
+    width: max-content;
+    animation: belt-run 60s linear infinite;
+  }
+
+  .belt:hover .belt-track,
+  .belt:focus-within .belt-track {
+    animation-play-state: paused;
+  }
+
+  @keyframes belt-run {
+    to { transform: translateX(calc(-100% / 3)); }
+  }
+
+  .belt-run {
+    display: flex;
+    gap: clamp(1.4rem, 3vw, 2.6rem);
+    padding: 0 clamp(0.7rem, 1.5vw, 1.3rem);
+    margin: 0;
+    list-style: none;
+  }
+
+  .plate {
+    --plate: clamp(6.5rem, 11vw, 10rem);
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: var(--plate);
+    height: var(--plate);
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    rotate: var(--tilt);
+    transition: translate 0.35s ease, rotate 0.35s ease;
+  }
+
+  .plate-dish {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle, #fbf4e6 54%, #d9a441 55% 58%, #fbf4e6 59% 66%, #b9302a 67% 70%, #fbf4e6 71%);
+    box-shadow: 0 0.8rem 1.2rem -0.4rem rgb(0 0 0 / 65%);
+  }
+
+  .plate-food {
+    position: relative;
+    width: 70%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    overflow: hidden;
+  }
+
+  .plate-food :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .plate-num {
+    position: absolute;
+    bottom: -1.4rem;
+    left: 50%;
+    translate: -50% 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: #f0d9a8;
+  }
+
+  .plate:hover,
+  .plate:focus-visible {
+    translate: 0 -0.6rem;
+    rotate: 0deg;
+    outline: none;
+  }
+
+  .plate:focus-visible .plate-dish {
+    outline: 2px solid var(--gold);
+    outline-offset: 3px;
+  }
+
+  .plate.is-taken .plate-food {
+    opacity: 0.25;
+  }
+
+  .altar-table-edge {
+    display: block;
+    height: 0.8rem;
+    background: linear-gradient(180deg, #7a3a1c, #2a1208);
+    box-shadow: inset 0 1px 0 rgb(255 200 140 / 25%);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .belt {
+      overflow-x: auto;
+    }
+    .belt-track {
+      animation: none;
+    }
+    .belt-run[aria-hidden] {
+      display: none;
+    }
+  }
+
+  :global(html[data-motion='still']) .belt {
+    overflow-x: auto;
+  }
+
+  :global(html[data-motion='still']) .belt-track {
+    animation: none;
+  }
+
+  :global(html[data-motion='still']) .belt-run[aria-hidden] {
+    display: none;
   }
 
   @media (max-width: 700px) {
     .moon-gate {
-      width: 72vw;
-      /* the left/right meander only reads as a path with room either
-         side — on a narrow viewport it just risks overflow */
-      transform: none;
+      width: 88vw;
     }
     .moon-gate.is-grand {
-      width: 82vw;
+      width: 92vw;
     }
-    .gate-path::before {
-      display: none;
+    .moon-gate figcaption,
+    .altar-plaque,
+    .chapter-note {
+      font-size: var(--text-base);
+    }
+    .plate {
+      --plate: 5.6rem;
     }
   }
 
@@ -863,8 +1088,24 @@ const roofline = rooflinePath();
       if (root.dataset.reelInit === '1') return;
       root.dataset.reelInit = '1';
 
+      const altar = root.querySelector<HTMLElement>('[data-altar]');
+      if (altar) {
+        const shots = Array.from(altar.querySelectorAll<HTMLElement>('[data-altar-shot]'));
+        const captions = Array.from(altar.querySelectorAll<HTMLElement>('[data-altar-caption]'));
+        const plates = Array.from(altar.querySelectorAll<HTMLButtonElement>('[data-plate]'));
+        const count = altar.querySelector<HTMLElement>('[data-altar-count]');
+        plates.forEach((plate) =>
+          plate.addEventListener('click', () => {
+            const i = Number(plate.dataset.plate);
+            shots.forEach((s, k) => s.classList.toggle('is-on', k === i));
+            captions.forEach((c, k) => (c.hidden = k !== i));
+            plates.forEach((p) => p.classList.toggle('is-taken', Number(p.dataset.plate) === i));
+            if (count) count.textContent = String(i + 1).padStart(2, '0');
+          }),
+        );
+      }
+
       const nightRow = root.querySelector<HTMLElement>('[data-night-row]');
-      const sky = root.querySelector<HTMLElement>('[data-sky]');
       const crowdFigures = Array.from(root.querySelectorAll<HTMLElement>('[data-crowd] [data-dropout]'));
 
       if (!nightRow || reduced) {
@@ -885,13 +1126,6 @@ const roofline = rooflinePath();
         },
         onUpdate: function () {
           const p = gsap.getProperty(root, '--night-progress') as number;
-          if (sky) {
-            sky.style.background = `
-              radial-gradient(ellipse 70% 40% at 20% 15%, color-mix(in srgb, var(--mood-a) ${22 - p * 0.15}%, transparent), transparent 70%),
-              radial-gradient(ellipse 70% 40% at 85% 55%, color-mix(in srgb, var(--mood-b) 14%, transparent), transparent 70%),
-              linear-gradient(180deg, color-mix(in srgb, var(--mood-a) ${16 - p * 0.13}%, var(--void)), var(--void) 55%)
-            `;
-          }
           crowdFigures.forEach((el) => {
             const dropout = Number(el.dataset.dropout ?? 100);
             el.style.opacity = p > dropout ? '0' : '0.8';

@@ -1,0 +1,193 @@
+---
+// Shown once per browser, a few seconds into the first visit: a small
+// note pointing at the gear, so people know the display can be changed.
+---
+
+<aside class="a11y-tip" data-a11y-tip role="status" hidden>
+  <p class="a11y-tip-text">
+    <span data-lang="en">Little tip: the ⚙ up here lets you calm the animations, enlarge the text or raise the contrast.</span>
+    <span data-lang="fr">Petit conseil : le ⚙ ici permet de calmer les animations, d'agrandir le texte ou d'augmenter le contraste.</span>
+    <span data-lang="zh">小提示：这里的 ⚙ 可以减弱动画、放大文字或提高对比度。</span>
+  </p>
+  <div class="a11y-tip-actions">
+    <button type="button" class="a11y-tip-open" data-a11y-open>
+      <span data-lang="en">Show me</span>
+      <span data-lang="fr">Voir</span>
+      <span data-lang="zh">看看</span>
+    </button>
+    <button type="button" class="a11y-tip-ok" data-a11y-ok>
+      <span data-lang="en">Got it</span>
+      <span data-lang="fr">Compris</span>
+      <span data-lang="zh">知道了</span>
+    </button>
+  </div>
+</aside>
+
+<style>
+  .a11y-tip {
+    position: fixed;
+    z-index: 420;
+    width: min(19rem, calc(100vw - 2rem));
+    padding: 0.9rem 1rem 0.8rem;
+    color: var(--bone);
+    background: var(--void-raised);
+    border: 1px solid color-mix(in srgb, var(--gold) 55%, transparent);
+    border-radius: 12px;
+    box-shadow: 0 1.2rem 3rem -1rem rgb(0 0 0 / 70%);
+    opacity: 0;
+    translate: 0 -0.4rem;
+    transition: opacity 0.35s ease, translate 0.45s var(--ease-out-expo);
+  }
+
+  .a11y-tip[hidden] {
+    display: none;
+  }
+
+  .a11y-tip.is-on {
+    opacity: 1;
+    translate: 0 0;
+  }
+
+  .a11y-tip::before {
+    content: '';
+    position: absolute;
+    width: 0.7rem;
+    height: 0.7rem;
+    background: var(--void-raised);
+    border: 1px solid color-mix(in srgb, var(--gold) 55%, transparent);
+    border-width: 1px 0 0 1px;
+  }
+
+  .a11y-tip.is-below::before {
+    top: -0.4rem;
+    right: var(--arrow, 1rem);
+    rotate: 45deg;
+  }
+
+  .a11y-tip.is-beside::before {
+    top: var(--arrow, 1rem);
+    right: -0.4rem;
+    rotate: 135deg;
+  }
+
+  .a11y-tip-text {
+    margin: 0;
+    font-size: var(--text-sm);
+    line-height: 1.5;
+  }
+
+  .a11y-tip-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 0.7rem;
+  }
+
+  .a11y-tip-actions button {
+    padding: 0.45em 0.95em;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-radius: 999px;
+    border: 1px solid var(--void-line);
+    color: var(--bone-soft);
+  }
+
+  .a11y-tip-actions .a11y-tip-open {
+    color: var(--void);
+    background: var(--gold);
+    border-color: var(--gold);
+  }
+
+  .a11y-tip-actions button:hover,
+  .a11y-tip-actions button:focus-visible {
+    border-color: var(--gold);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .a11y-tip {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  const SEEN_KEY = 'menghan-a11y-tip';
+  let showTimer = 0;
+  let hideTimer = 0;
+  let onScroll: (() => void) | undefined;
+
+  function seen(): boolean {
+    try {
+      return localStorage.getItem(SEEN_KEY) === '1';
+    } catch {
+      return true;
+    }
+  }
+
+  function place(tip: HTMLElement) {
+    const gear = document.querySelector<HTMLElement>('[data-settings-open]');
+    if (!gear) return false;
+    const r = gear.getBoundingClientRect();
+    if (!r.width) return false;
+    const beside = r.top > 80;
+    tip.classList.toggle('is-beside', beside);
+    tip.classList.toggle('is-below', !beside);
+    if (beside) {
+      tip.style.top = `${Math.max(12, r.top - 10)}px`;
+      tip.style.right = `${innerWidth - r.left + 14}px`;
+      tip.style.setProperty('--arrow', `${Math.min(r.height / 2 + 4, 40)}px`);
+    } else {
+      tip.style.top = `${r.bottom + 14}px`;
+      tip.style.right = `${Math.max(12, innerWidth - r.right - 6)}px`;
+      tip.style.setProperty('--arrow', `${Math.max(10, r.width / 2)}px`);
+    }
+    return true;
+  }
+
+  function hide(tip: HTMLElement) {
+    window.clearTimeout(hideTimer);
+    tip.classList.remove('is-on');
+    if (onScroll) window.removeEventListener('scroll', onScroll);
+    onScroll = undefined;
+    window.setTimeout(() => (tip.hidden = true), 400);
+  }
+
+  function initTip() {
+    window.clearTimeout(showTimer);
+    if (seen()) return;
+    const tip = document.querySelector<HTMLElement>('[data-a11y-tip]');
+    if (!tip) return;
+    showTimer = window.setTimeout(() => {
+      if (seen() || document.querySelector('dialog[open]') || document.hidden) return;
+      tip.hidden = false;
+      if (!place(tip)) {
+        tip.hidden = true;
+        return;
+      }
+      try {
+        localStorage.setItem(SEEN_KEY, '1');
+      } catch {
+        /* private mode */
+      }
+      requestAnimationFrame(() => tip.classList.add('is-on'));
+      onScroll = () => place(tip);
+      window.addEventListener('scroll', onScroll, { passive: true });
+      hideTimer = window.setTimeout(() => hide(tip), 14000);
+      tip.querySelector('[data-a11y-ok]')?.addEventListener('click', () => hide(tip));
+      tip.querySelector('[data-a11y-open]')?.addEventListener('click', () => {
+        hide(tip);
+        document.querySelector<HTMLButtonElement>('[data-settings-open]')?.click();
+      });
+    }, 3000);
+  }
+
+  document.addEventListener('astro:page-load', initTip);
+  document.addEventListener('astro:before-swap', () => {
+    window.clearTimeout(showTimer);
+    window.clearTimeout(hideTimer);
+    if (onScroll) window.removeEventListener('scroll', onScroll);
+    onScroll = undefined;
+  });
+</script>

@@ -123,7 +123,7 @@ const fanDrop = (i: number, n: number) => (Math.abs(i - (n - 1) / 2) ** 2 * 0.5)
   {videos?.map((clip) => (
     <section class="pw-motion" id="pile-motion">
       <div class="pw-motion-player">
-        <VideoPlayer src={`/videos/${project.id}/${clip.file}`} />
+        <VideoPlayer src={`/videos/${project.id}/${clip.file}`} skin="saber" label="Anakin · Mustafar" />
       </div>
       <div class="pw-motion-copy">
         <p class="pw-kicker eyebrow"><I18nText en="in motion" fr="en mouvement" zh="动画" /></p>
@@ -159,7 +159,7 @@ const fanDrop = (i: number, n: number) => (Math.abs(i - (n - 1) / 2) ** 2 * 0.5)
             return (
               <figure
                 class="pw-piece"
-                style={`--tilt:${tilt(i)}deg; --fan:${fanAngle(i, group.items.length)}deg; --drop:${fanDrop(i, group.items.length)}rem; --i:${i};`}
+                style={`--tilt:${tilt(i)}deg; --fan:${fanAngle(i, group.items.length)}deg; --drop:${fanDrop(i, group.items.length)}rem; --i:${i}; --off:${(group.items.length - 1) / 2 - i};`}
                 data-artwork
                 data-note-id={`${project.id}:${item.file}`}
                 data-pw-piece
@@ -171,6 +171,13 @@ const fanDrop = (i: number, n: number) => (Math.abs(i - (n - 1) / 2) ** 2 * 0.5)
                   ) : (
                     <Image src={img} alt={item.alt.en} widths={responsiveWidths(img, [360, 560, 900])} sizes="(max-width: 700px) 80vw, 24rem" loading="lazy" />
                   )}
+                  {group.display === 'hand' && (
+                    <>
+                      <span class="pw-pip is-top" aria-hidden="true">{String(i + 1).padStart(2, '0')}<i>✦</i></span>
+                      <span class="pw-pip is-bottom" aria-hidden="true">{String(i + 1).padStart(2, '0')}<i>✦</i></span>
+                      <span class="pw-back" aria-hidden="true"><i>✦</i></span>
+                    </>
+                  )}
                 </span>
                 <figcaption>
                   <I18nText en={text.en} fr={text.fr} zh={text.zh} />
@@ -180,9 +187,14 @@ const fanDrop = (i: number, n: number) => (Math.abs(i - (n - 1) / 2) ** 2 * 0.5)
           })}
         </div>
         {group.display === 'hand' && (
-          <p class="pw-hand-caption" aria-live="polite" data-pw-hand-caption>
-            <I18nText en="Hover a card to read it." fr="Survole une carte pour la lire." zh="把鼠标移到卡牌上看说明。" />
-          </p>
+          <div class="pw-hand-foot">
+            <p class="pw-hand-caption" aria-live="polite" data-pw-hand-caption>
+              <I18nText en="Hover a card to read it." fr="Survole une carte pour la lire." zh="把鼠标移到卡牌上看说明。" />
+            </p>
+            <button type="button" class="pw-deal" data-pw-deal>
+              <I18nText en="deal again" fr="redistribuer" zh="重新发牌" />
+            </button>
+          </div>
         )}
       </section>
     ))}
@@ -194,14 +206,21 @@ const fanDrop = (i: number, n: number) => (Math.abs(i - (n - 1) / 2) ** 2 * 0.5)
         <h2 class="pw-pile-title"><I18nText en="Storyboards" fr="Storyboards" zh="分镜" /></h2>
         <p class="pw-pile-note">
           <I18nText
-            en="Three storyboards. Open a page to read it full size, then turn the pages with the arrows."
-            fr="Trois storyboards. Ouvre une page pour la lire en grand, puis tourne les pages avec les flèches."
-            zh="三份分镜。点开一页看大图，用左右箭头翻页。"
+            en="Three storyboards. Turn the pages, or open one to read it full size."
+            fr="Trois storyboards. Tourne les pages, ou ouvre-en une pour la lire en grand."
+            zh="三份分镜。可以翻页，也可以点开一页看大图。"
           />
         </p>
       </header>
       {storyboards.map((board, bi) => (
-        <div class="pw-board">
+        <div class={`pw-board look-${board.look}`}>
+          {board.look === 'sand' && (
+            <>
+              <span class="pw-sun" aria-hidden="true"></span>
+              <span class="pw-grains" aria-hidden="true"></span>
+            </>
+          )}
+          {board.look === 'night' && <span class="pw-stars" aria-hidden="true"></span>}
           <div class="pw-board-info">
             <p class="pw-board-num">{roman[bi] ?? bi + 1}</p>
             <h3 class="pw-board-title"><I18nText en={board.title.en} fr={board.title.fr} zh={board.title.zh} /></h3>
@@ -210,24 +229,49 @@ const fanDrop = (i: number, n: number) => (Math.abs(i - (n - 1) / 2) ** 2 * 0.5)
               <I18nText en={`${board.pages.length} pages`} fr={`${board.pages.length} pages`} zh={`${board.pages.length} 页`} />
             </p>
             <button type="button" class="pw-board-read" data-pw-read data-cursor-hover>
-              <I18nText en="read from page 1" fr="lire depuis la page 1" zh="从第一页开始看" />
+              <I18nText en="open full size" fr="ouvrir en grand" zh="打开大图" />
             </button>
           </div>
-          <div class="pw-sheets" data-lb-group data-pw-sheets>
-            {sheets[bi].map((sheet, si) => (
-              <figure class="pw-sheet" data-artwork data-note-id={`${project.id}:${sheet.file}`}>
-                <Image
-                  src={sheet.src}
-                  alt={`${board.title.en}, page ${si + 1}`}
-                  data-full={sheet.full}
-                  widths={[280, 440]}
-                  sizes="15rem"
-                  loading="lazy"
-                />
-                <figcaption>{String(si + 1).padStart(2, '0')}</figcaption>
-              </figure>
-            ))}
-          </div>
+          {board.look === 'wall' ? (
+            <div class="pw-wall" data-lb-group data-pw-sheets>
+              {sheets[bi].map((sheet, si) => (
+                <figure class="pw-sheet" style={`--tilt:${tilt(si)}deg;`} data-artwork data-note-id={`${project.id}:${sheet.file}`}>
+                  <span class="pw-pin" aria-hidden="true"></span>
+                  <Image
+                    src={sheet.src}
+                    alt={`${board.title.en}, page ${si + 1}`}
+                    data-full={sheet.full}
+                    widths={[280, 440]}
+                    sizes="(max-width: 700px) 40vw, 11rem"
+                    loading="lazy"
+                  />
+                  <figcaption>{String(si + 1).padStart(2, '0')}</figcaption>
+                </figure>
+              ))}
+            </div>
+          ) : (
+            <div class="pw-reader" data-pw-reader tabindex="0">
+              <div class="pw-reader-stage" data-lb-group data-pw-sheets>
+                {sheets[bi].map((sheet, si) => (
+                  <figure class:list={['pw-sheet', { 'is-on': si === 0 }]} data-pw-page={si} data-artwork data-note-id={`${project.id}:${sheet.file}`}>
+                    <Image
+                      src={sheet.src}
+                      alt={`${board.title.en}, page ${si + 1}`}
+                      data-full={sheet.full}
+                      widths={[480, 800, 1200]}
+                      sizes={board.look === 'night' ? '(max-width: 700px) 92vw, 52rem' : '(max-width: 700px) 86vw, 30rem'}
+                      loading={si < 2 ? 'eager' : 'lazy'}
+                    />
+                  </figure>
+                ))}
+              </div>
+              <div class="pw-reader-nav">
+                <button type="button" class="pw-turn" data-pw-turn="-1" aria-label="Previous page">‹</button>
+                <span class="pw-reader-count"><span data-pw-count>01</span> / {String(board.pages.length).padStart(2, '0')}</span>
+                <button type="button" class="pw-turn" data-pw-turn="1" aria-label="Next page">›</button>
+              </div>
+            </div>
+          )}
         </div>
       ))}
     </section>
@@ -511,47 +555,131 @@ const fanDrop = (i: number, n: number) => (Math.abs(i - (n - 1) / 2) ** 2 * 0.5)
     text-align: left;
   }
 
+  /* a felt card table; the cards wait face down in one pile at the
+     centre (.is-waiting, set by the script) and are dealt into a fan */
   .is-hand .pw-pile-body {
+    --card-w: clamp(11rem, 19vw, 18.5rem);
+    --card-m: clamp(-3.4rem, -2.6vw, -1.4rem);
     flex-wrap: nowrap;
     justify-content: center;
     gap: 0;
-    padding: var(--space-3) 0 var(--space-4);
+    padding: clamp(2.4rem, 5vw, 4rem) clamp(1rem, 3vw, 3rem) clamp(3rem, 6vw, 5rem);
+    border-radius: 14rem / 5rem;
+    background:
+      radial-gradient(ellipse 60% 55% at 50% 40%, rgb(255 255 255 / 9%), transparent 70%),
+      repeating-linear-gradient(45deg, rgb(0 0 0 / 5%) 0 2px, transparent 2px 4px),
+      #1f4a36;
+    box-shadow:
+      inset 0 0 0 0.55rem #4a2a17,
+      inset 0 0 0 0.7rem #b98a4a,
+      inset 0 0 0 1.2rem #3a2112,
+      inset 0 0 4rem 1.4rem rgb(0 0 0 / 55%),
+      0 2rem 4rem -1.5rem rgb(0 0 0 / 70%);
+    perspective: 1600px;
   }
 
   .is-hand .pw-piece {
     flex: none;
-    width: clamp(9rem, 15vw, 14rem);
-    margin-inline: clamp(-3rem, -2.6vw, -1.2rem);
+    width: var(--card-w);
+    margin-inline: var(--card-m);
     transform-origin: 50% 120%;
     transform: rotate(var(--fan)) translateY(var(--drop));
-    transition: transform 0.5s var(--ease-out-expo);
+    transition: transform 0.7s var(--ease-out-expo);
+    transition-delay: calc(var(--i) * 0.11s);
     outline: none;
+  }
+
+  .is-hand.is-waiting .pw-piece {
+    transform: translateX(calc(var(--off) * (var(--card-w) + 2 * var(--card-m)))) translateY(-1rem) rotate(calc(var(--off) * 1.5deg));
+    transition-delay: 0s;
   }
 
   .is-hand .pw-piece:hover,
   .is-hand .pw-piece:focus-visible {
     z-index: 5;
-    transform: rotate(0deg) translateY(-1.6rem) scale(1.08);
+    transform: rotate(0deg) translateY(-2.2rem) scale(1.12);
+    transition-delay: 0s;
   }
 
   .is-hand .pw-frame {
+    position: relative;
     aspect-ratio: 5 / 7;
-    padding: 0.45rem;
-    border-radius: 0.6rem;
-    background: linear-gradient(160deg, #2a2420, #120f0d);
+    padding: 0.5rem;
+    overflow: visible;
+    border-radius: 0.7rem;
+    background: linear-gradient(160deg, #f7efe2, #e6d9c3);
     box-shadow:
-      inset 0 0 0 1px color-mix(in srgb, var(--gold) 70%, transparent),
-      inset 0 0 0 4px #120f0d,
-      inset 0 0 0 5px color-mix(in srgb, var(--gold) 35%, transparent),
+      inset 0 0 0 1px #b98a4a,
+      inset 0 0 0 5px #f7efe2,
+      inset 0 0 0 6px color-mix(in srgb, #b98a4a 70%, transparent),
       0 1.4rem 2.4rem -1rem rgb(0 0 0 / 70%);
+    transform-style: preserve-3d;
+    transition: transform 0.8s var(--ease-out-expo);
+    transition-delay: calc(var(--i) * 0.11s + 0.25s);
+  }
+
+  .is-hand.is-waiting .pw-frame {
+    transform: rotateY(180deg);
+    transition-delay: 0s;
   }
 
   .is-hand .pw-frame :global(img) {
     width: 100%;
     height: 100%;
-    border-radius: 0.35rem;
+    border-radius: 0.4rem;
     object-fit: contain;
-    background: #efe6d8;
+    background: #fbf6ee;
+    backface-visibility: hidden;
+  }
+
+  .pw-pip {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: var(--font-display);
+    font-size: var(--text-sm);
+    line-height: 1;
+    color: #8c1d14;
+    backface-visibility: hidden;
+    pointer-events: none;
+  }
+
+  .pw-pip i {
+    font-style: normal;
+    font-size: 0.8em;
+    color: #b98a4a;
+  }
+
+  .pw-pip.is-top {
+    top: 0.85rem;
+    left: 0.85rem;
+  }
+
+  .pw-pip.is-bottom {
+    right: 0.85rem;
+    bottom: 0.85rem;
+    rotate: 180deg;
+  }
+
+  .pw-back {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    border-radius: 0.7rem;
+    background:
+      radial-gradient(circle at 50% 50%, transparent 22%, rgb(0 0 0 / 25%) 23% 24%, transparent 25%),
+      repeating-linear-gradient(45deg, #6e1610 0 6px, #861c14 6px 12px);
+    box-shadow: inset 0 0 0 0.45rem #f7efe2, inset 0 0 0 0.55rem #b98a4a;
+    transform: rotateY(180deg) translateZ(1px);
+    backface-visibility: hidden;
+  }
+
+  .pw-back i {
+    font-style: normal;
+    font-size: clamp(2rem, 4vw, 3.4rem);
+    color: #e9c27a;
   }
 
   .is-hand .pw-piece:focus-visible .pw-frame {
@@ -559,6 +687,33 @@ const fanDrop = (i: number, n: number) => (Math.abs(i - (n - 1) / 2) ** 2 * 0.5)
       inset 0 0 0 2px var(--gold),
       0 0 0 3px var(--gold),
       0 1.4rem 2.4rem -1rem rgb(0 0 0 / 70%);
+  }
+
+  .pw-hand-foot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.6rem 1.4rem;
+    margin-top: var(--space-2);
+  }
+
+  .pw-deal {
+    padding: 0.55em 1.2em;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    border-radius: 999px;
+    transition: background 0.25s, color 0.25s;
+  }
+
+  .pw-deal:hover,
+  .pw-deal:focus-visible {
+    background: var(--gold);
+    color: var(--void);
   }
 
   .is-hand figcaption {
@@ -571,7 +726,7 @@ const fanDrop = (i: number, n: number) => (Math.abs(i - (n - 1) / 2) ** 2 * 0.5)
 
   .pw-hand-caption {
     min-height: 2.6em;
-    margin-top: var(--space-2);
+    margin: 0;
     font-family: 'Caveat Variable', cursive;
     font-size: clamp(1.2rem, 1rem + 0.6vw, 1.6rem);
     color: var(--bone);
@@ -712,10 +867,10 @@ const fanDrop = (i: number, n: number) => (Math.abs(i - (n - 1) / 2) ** 2 * 0.5)
   /* ---- Anakin: the moving piece gets a stage of its own ---- */
   .pw-motion {
     display: grid;
-    grid-template-columns: minmax(0, 24rem) minmax(0, 28rem);
+    grid-template-columns: minmax(0, 26rem) minmax(0, 18rem);
     justify-content: center;
-    align-items: center;
-    gap: clamp(2rem, 5vw, 4.5rem);
+    align-items: end;
+    gap: clamp(1.5rem, 4vw, 3rem);
     padding: var(--space-4) var(--edge) var(--space-5);
     scroll-margin-top: 5rem;
   }
@@ -725,7 +880,11 @@ const fanDrop = (i: number, n: number) => (Math.abs(i - (n - 1) / 2) ** 2 * 0.5)
   }
 
   .pw-motion .pw-pile-title {
-    font-size: var(--text-2xl);
+    font-size: var(--text-lg);
+  }
+
+  .pw-motion .pw-pile-note {
+    font-size: var(--text-sm);
   }
 
   /* ---- storyboards ---- */
@@ -743,9 +902,6 @@ const fanDrop = (i: number, n: number) => (Math.abs(i - (n - 1) / 2) ** 2 * 0.5)
     display: grid;
     grid-template-columns: minmax(14rem, 19rem) minmax(0, 1fr);
     gap: clamp(1.5rem, 3vw, 3rem);
-    align-items: start;
-    padding-block: var(--space-4);
-    border-top: 1px dashed color-mix(in srgb, var(--bone) 18%, transparent);
   }
 
   .pw-board-num {
@@ -791,41 +947,304 @@ const fanDrop = (i: number, n: number) => (Math.abs(i - (n - 1) / 2) ** 2 * 0.5)
     color: var(--void);
   }
 
-  .pw-sheets {
-    display: flex;
-    gap: 1rem;
-    overflow-x: auto;
-    padding: 0.4rem 0.2rem 1rem;
-    scroll-snap-type: x proximity;
-    scrollbar-width: thin;
-    scrollbar-color: var(--gold) transparent;
+  .pw-board {
+    position: relative;
+    overflow: hidden;
+    margin-top: var(--space-4);
+    padding: clamp(1.5rem, 4vw, 3.5rem);
+    border-radius: 6px;
+    align-items: center;
+  }
+
+  .pw-board-info {
+    position: relative;
+    z-index: 1;
   }
 
   .pw-sheet {
-    flex: none;
     margin: 0;
-    scroll-snap-align: start;
   }
 
   .pw-sheet :global(img) {
     display: block;
-    height: clamp(14rem, 22vw, 20rem);
-    width: auto;
-    background: #fff;
-    box-shadow: 0 0.8rem 1.6rem -0.8rem rgb(0 0 0 / 70%);
-    transition: transform 0.4s var(--ease-out-expo);
     cursor: zoom-in;
   }
 
-  .pw-sheet:hover :global(img) {
-    transform: translateY(-0.3rem);
+  /* reader: one page at a time, turned with the arrows */
+  .pw-reader {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.9rem;
+    outline: none;
   }
 
-  .pw-sheet figcaption {
-    margin-top: 0.4rem;
+  .pw-reader-stage {
+    display: grid;
+    width: 100%;
+    justify-items: center;
+  }
+
+  .pw-reader .pw-sheet {
+    grid-area: 1 / 1;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease, transform 0.6s var(--ease-out-expo);
+  }
+
+  .pw-reader .pw-sheet.is-on {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .pw-reader-nav {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+  }
+
+  .pw-turn {
+    width: 2.6rem;
+    height: 2.6rem;
+    font-size: 1.4rem;
+    line-height: 1;
+    border-radius: 50%;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  /* I. sand: a desert page, a low sun, grains blowing across; a turned
+     page is carried off by the wind */
+  .look-sand {
+    background:
+      radial-gradient(ellipse 80% 50% at 50% 115%, #d9a25b, transparent 70%),
+      linear-gradient(180deg, #f4dcb0, #e7b877 60%, #c98a4a);
+    color: #3a2412;
+  }
+
+  .look-sand .pw-board-num,
+  .look-sand .pw-board-title,
+  .look-sand .pw-pile-note,
+  .look-sand .pw-board-meta {
+    color: #3a2412;
+  }
+
+  .look-sand .pw-board-read,
+  .look-sand .pw-turn {
+    color: #3a2412;
+    border: 1px solid #3a2412;
+  }
+
+  .look-sand .pw-board-read:hover,
+  .look-sand .pw-board-read:focus-visible,
+  .look-sand .pw-turn:hover,
+  .look-sand .pw-turn:focus-visible {
+    background: #3a2412;
+    color: #f4dcb0;
+  }
+
+  .pw-sun {
+    position: absolute;
+    top: 9%;
+    right: 8%;
+    width: clamp(4rem, 9vw, 8rem);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle, #ffb13b 55%, rgb(255 177 59 / 0%) 72%);
+  }
+
+  .pw-grains {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle, rgb(120 70 30 / 45%) 1px, transparent 1.6px) 0 0 / 37px 29px,
+      radial-gradient(circle, rgb(255 240 210 / 60%) 1px, transparent 1.6px) 11px 7px / 53px 41px;
+    animation: grains-blow 9s linear infinite;
+    pointer-events: none;
+  }
+
+  @keyframes grains-blow {
+    to { background-position: -370px 58px, -530px 82px; }
+  }
+
+  .look-sand .pw-sheet :global(img) {
+    height: min(72svh, 44rem);
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+    background: #fff;
+    box-shadow: 0 1.6rem 3rem -1.2rem rgb(80 40 10 / 60%);
+  }
+
+  .look-sand .pw-sheet.is-gone {
+    transform: translate(-40%, -8%) rotate(-14deg);
+  }
+
+  .look-sand .pw-sheet.is-on {
+    transform: none;
+  }
+
+  /* II. wall: the pages pinned up on a studio board, the way a
+     storyboard is reviewed */
+  .look-wall {
+    background:
+      radial-gradient(circle, rgb(0 0 0 / 14%) 1px, transparent 1.5px) 0 0 / 7px 7px,
+      radial-gradient(circle, rgb(255 255 255 / 10%) 1px, transparent 1.5px) 3px 4px / 9px 9px,
+      #a9794a;
+    box-shadow: inset 0 0 0 0.8rem #5b3b22, inset 0 0 3rem rgb(0 0 0 / 35%);
+  }
+
+  .look-wall .pw-board-info {
+    align-self: start;
+    padding: 1.2rem 1.3rem 1.4rem;
+    background: #fbf6ec;
+    color: #2a2420;
+    rotate: -1.5deg;
+    box-shadow: 0 1rem 2rem -1rem rgb(0 0 0 / 55%);
+  }
+
+  .look-wall .pw-board-title,
+  .look-wall .pw-pile-note,
+  .look-wall .pw-board-meta {
+    color: #2a2420;
+  }
+
+  .look-wall .pw-board-num {
+    color: #8c1d14;
+  }
+
+  .look-wall .pw-board-read {
+    color: #2a2420;
+    border-color: #2a2420;
+  }
+
+  .look-wall .pw-board-read:hover,
+  .look-wall .pw-board-read:focus-visible {
+    background: #2a2420;
+    color: #fbf6ec;
+  }
+
+  .pw-wall {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(clamp(7.5rem, 10vw, 10rem), 1fr));
+    gap: clamp(1rem, 2vw, 1.8rem) clamp(0.8rem, 1.6vw, 1.4rem);
+    padding-top: 0.6rem;
+  }
+
+  .pw-wall .pw-sheet {
+    position: relative;
+    rotate: var(--tilt);
+    transition: rotate 0.35s var(--ease-out-expo), scale 0.35s var(--ease-out-expo);
+  }
+
+  .pw-wall .pw-sheet:hover {
+    z-index: 2;
+    rotate: 0deg;
+    scale: 1.06;
+  }
+
+  .pw-wall .pw-sheet :global(img) {
+    width: 100%;
+    height: auto;
+    background: #fff;
+    box-shadow: 0 0.7rem 1.2rem -0.6rem rgb(0 0 0 / 60%);
+  }
+
+  .pw-pin {
+    position: absolute;
+    top: -0.35rem;
+    left: 50%;
+    z-index: 1;
+    width: 0.8rem;
+    height: 0.8rem;
+    translate: -50% 0;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #ff8a7a, #c0291c 60%, #6e120b);
+    box-shadow: 0 2px 3px rgb(0 0 0 / 45%);
+  }
+
+  .pw-wall .pw-sheet:nth-child(3n + 2) .pw-pin {
+    width: 2.6rem;
+    height: 0.9rem;
+    border-radius: 1px;
+    background: rgb(240 232 200 / 78%);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 20%);
+    rotate: -6deg;
+  }
+
+  .pw-wall figcaption {
+    margin-top: 0.3rem;
     font-family: var(--font-mono);
     font-size: var(--text-xs);
-    color: var(--bone-faint);
+    color: #2a1a0e;
+  }
+
+  /* III. night: wide spreads in a dark room, the deer's glow behind */
+  .look-night {
+    background:
+      radial-gradient(ellipse 45% 50% at 72% 60%, rgb(120 90 255 / 28%), transparent 70%),
+      radial-gradient(ellipse 30% 30% at 80% 40%, rgb(255 255 255 / 10%), transparent 70%),
+      linear-gradient(180deg, #0b0a2a, #160c32 70%, #2a0f2a);
+  }
+
+  .pw-stars {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle, #fff 1px, transparent 1.5px) 0 0 / 97px 83px,
+      radial-gradient(circle, rgb(190 170 255 / 80%) 1px, transparent 1.5px) 41px 29px / 131px 109px;
+    opacity: 0.6;
+    animation: stars-twinkle 4s ease-in-out infinite alternate;
+    pointer-events: none;
+  }
+
+  @keyframes stars-twinkle {
+    to { opacity: 0.25; }
+  }
+
+  .look-night .pw-board-num,
+  .look-night .pw-board-meta {
+    color: #c9b8ff;
+  }
+
+  .look-night .pw-board-read,
+  .look-night .pw-turn {
+    color: #e8e0ff;
+    border: 1px solid #c9b8ff;
+  }
+
+  .look-night .pw-board-read:hover,
+  .look-night .pw-board-read:focus-visible,
+  .look-night .pw-turn:hover,
+  .look-night .pw-turn:focus-visible {
+    background: #c9b8ff;
+    color: #0b0a2a;
+  }
+
+  .look-night .pw-sheet :global(img) {
+    width: auto;
+    max-width: 100%;
+    max-height: 70svh;
+    height: auto;
+    object-fit: contain;
+    background: #fff;
+    box-shadow: 0 0 0 1px rgb(201 184 255 / 40%), 0 0 4rem -0.5rem rgb(140 110 255 / 55%);
+  }
+
+  .look-night .pw-sheet {
+    transform: scale(0.97);
+  }
+
+  .look-night .pw-sheet.is-on {
+    transform: none;
   }
 
   /* ---- smaller screens ---- */
@@ -839,6 +1258,10 @@ const fanDrop = (i: number, n: number) => (Math.abs(i - (n - 1) / 2) ** 2 * 0.5)
 
     .pw-board {
       grid-template-columns: 1fr;
+    }
+
+    .is-hand .pw-pile-body {
+      --card-w: 20vw;
     }
   }
 
@@ -892,8 +1315,14 @@ const fanDrop = (i: number, n: number) => (Math.abs(i - (n - 1) / 2) ** 2 * 0.5)
       scroll-snap-align: center;
     }
 
-    .is-hand .pw-piece {
-      width: 56vw;
+    .is-hand .pw-pile-body {
+      padding: 1.8rem 1.2rem 2.2rem;
+      border-radius: 1.5rem;
+    }
+
+    .is-hand .pw-piece,
+    .is-hand.is-waiting .pw-piece {
+      width: 62vw;
       margin-inline: 0;
       transform: none;
       scroll-snap-align: center;
@@ -902,6 +1331,11 @@ const fanDrop = (i: number, n: number) => (Math.abs(i - (n - 1) / 2) ** 2 * 0.5)
     .is-hand .pw-piece:hover,
     .is-hand .pw-piece:focus-visible {
       transform: none;
+    }
+
+    .look-sand .pw-sheet :global(img) {
+      width: 100%;
+      height: auto;
     }
 
     .is-hand figcaption {
@@ -947,6 +1381,16 @@ const fanDrop = (i: number, n: number) => (Math.abs(i - (n - 1) / 2) ** 2 * 0.5)
     .pw-sheet :global(img) {
       transition: none;
     }
+    .pw-grains,
+    .pw-stars {
+      animation: none;
+    }
+  }
+
+  :global(html[data-motion='still']) .pw-grains,
+  :global(html[data-motion='still']) .pw-stars,
+  :global(html[data-motion='quiet']) .pw-grains {
+    animation: none;
   }
 </style>
 
@@ -969,7 +1413,56 @@ const fanDrop = (i: number, n: number) => (Math.abs(i - (n - 1) / 2) ** 2 * 0.5)
 
     root.querySelectorAll<HTMLButtonElement>('[data-pw-read]').forEach((button) => {
       button.addEventListener('click', () => {
-        button.closest('.pw-board')?.querySelector<HTMLImageElement>('[data-pw-sheets] img')?.click();
+        const board = button.closest('.pw-board');
+        const img = board?.querySelector<HTMLImageElement>('.pw-sheet.is-on img') ?? board?.querySelector<HTMLImageElement>('[data-pw-sheets] img');
+        img?.click();
+      });
+    });
+
+    root.querySelectorAll<HTMLElement>('[data-pw-reader]').forEach((reader) => {
+      const pages = Array.from(reader.querySelectorAll<HTMLElement>('[data-pw-page]'));
+      const count = reader.querySelector<HTMLElement>('[data-pw-count]');
+      let current = 0;
+      const turn = (dir: number) => {
+        const next = (current + dir + pages.length) % pages.length;
+        pages[current].classList.remove('is-on');
+        if (dir > 0) pages[current].classList.add('is-gone');
+        pages[next].classList.remove('is-gone');
+        pages[next].classList.add('is-on');
+        current = next;
+        if (count) count.textContent = String(current + 1).padStart(2, '0');
+        if (current === 0) pages.forEach((p) => p.classList.remove('is-gone'));
+      };
+      reader.querySelectorAll<HTMLButtonElement>('[data-pw-turn]').forEach((b) =>
+        b.addEventListener('click', () => turn(Number(b.dataset.pwTurn))),
+      );
+      reader.addEventListener('keydown', (e) => {
+        if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+        e.preventDefault();
+        turn(e.key === 'ArrowRight' ? 1 : -1);
+      });
+    });
+
+    const motion = document.documentElement.dataset.motion;
+    const calm = motion === 'still' || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    root.querySelectorAll<HTMLElement>('.is-hand').forEach((pile) => {
+      const deal = () => pile.classList.remove('is-waiting');
+      if (!calm) {
+        pile.classList.add('is-waiting');
+        dealObserver = new IntersectionObserver(
+          ([entry]) => {
+            if (!entry.isIntersecting) return;
+            deal();
+            dealObserver?.disconnect();
+          },
+          { threshold: 0.35 },
+        );
+        dealObserver.observe(pile);
+      }
+      pile.querySelector<HTMLButtonElement>('[data-pw-deal]')?.addEventListener('click', () => {
+        if (calm) return;
+        pile.classList.add('is-waiting');
+        window.setTimeout(deal, 650);
       });
     });
 
@@ -997,5 +1490,11 @@ const fanDrop = (i: number, n: number) => (Math.abs(i - (n - 1) / 2) ** 2 * 0.5)
     });
   }
 
+  let dealObserver: IntersectionObserver | undefined;
+
   document.addEventListener('astro:page-load', initCollection);
+  document.addEventListener('astro:before-swap', () => {
+    dealObserver?.disconnect();
+    dealObserver = undefined;
+  });
 </script>

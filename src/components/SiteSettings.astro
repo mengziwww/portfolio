@@ -2,12 +2,18 @@
 // A small gear. It opens display and accessibility options.
 // If this device cannot keep a steady frame rate, a short prompt offers
 // to quiet the motion. The choice is remembered on this browser.
-type Option = { value: string; en: string; fr: string; zh: string };
-type Group = { name: string; en: string; fr: string; zh: string; options: Option[] };
+type Text = { en: string; fr: string; zh: string };
+type Option = Text & { value: string };
+type Group = Text & { name: string; hint: Text; options: Option[] };
 
 const groups: Group[] = [
   {
     name: 'motion', en: 'Motion', fr: 'Mouvement', zh: '动态',
+    hint: {
+      en: 'Reduced hides the drifting backgrounds. Off stops every animation and the smooth scrolling. The page reloads.',
+      fr: 'Réduit retire les fonds qui bougent. Aucun arrête toutes les animations et le défilement fluide. La page se recharge.',
+      zh: '减少：去掉会飘动的背景。关闭：停止所有动画和平滑滚动。页面会刷新。',
+    },
     options: [
       { value: 'full', en: 'Normal', fr: 'Normal', zh: '正常' },
       { value: 'quiet', en: 'Reduced', fr: 'Réduit', zh: '减少' },
@@ -16,6 +22,7 @@ const groups: Group[] = [
   },
   {
     name: 'text', en: 'Text size', fr: 'Taille du texte', zh: '文字大小',
+    hint: { en: 'Makes all the text on the site bigger.', fr: 'Agrandit tout le texte du site.', zh: '放大网站上所有的文字。' },
     options: [
       { value: 'md', en: 'Normal', fr: 'Normale', zh: '正常' },
       { value: 'lg', en: 'Large', fr: 'Grande', zh: '大' },
@@ -24,6 +31,11 @@ const groups: Group[] = [
   },
   {
     name: 'contrast', en: 'Contrast', fr: 'Contraste', zh: '对比度',
+    hint: {
+      en: 'White text and brighter lines on a pure black background.',
+      fr: 'Du texte blanc et des traits plus clairs sur un fond noir pur.',
+      zh: '纯黑背景，白色文字，线条更亮。',
+    },
     options: [
       { value: 'off', en: 'Normal', fr: 'Normal', zh: '正常' },
       { value: 'high', en: 'High', fr: 'Élevé', zh: '高' },
@@ -31,6 +43,11 @@ const groups: Group[] = [
   },
   {
     name: 'space', en: 'Spacing', fr: 'Espacement', zh: '间距',
+    hint: {
+      en: 'More room between lines, letters and words.',
+      fr: "Plus d'espace entre les lignes, les lettres et les mots.",
+      zh: '行距、字距和词距更大。',
+    },
     options: [
       { value: 'normal', en: 'Normal', fr: 'Normal', zh: '正常' },
       { value: 'relaxed', en: 'Relaxed', fr: 'Aéré', zh: '宽松' },
@@ -38,6 +55,11 @@ const groups: Group[] = [
   },
   {
     name: 'transparent', en: 'Transparency', fr: 'Transparence', zh: '透明',
+    hint: {
+      en: 'Text panels get a solid background instead of a see-through one.',
+      fr: "Les panneaux de texte ont un fond plein au lieu d'un fond transparent.",
+      zh: '文字面板改用实色背景，不再透明。',
+    },
     options: [
       { value: 'normal', en: 'Normal', fr: 'Normale', zh: '正常' },
       { value: 'solid', en: 'Solid panels', fr: 'Panneaux opaques', zh: '不透明' },
@@ -45,6 +67,11 @@ const groups: Group[] = [
   },
   {
     name: 'focus', en: 'Focus', fr: 'Focus', zh: '焦点',
+    hint: {
+      en: 'A bright yellow outline shows where the keyboard is.',
+      fr: 'Un contour jaune vif montre où se trouve le clavier.',
+      zh: '用明亮的黄色边框标出键盘选中的位置。',
+    },
     options: [
       { value: 'off', en: 'Normal', fr: 'Normal', zh: '正常' },
       { value: 'strong', en: 'Always visible', fr: 'Toujours visible', zh: '始终可见' },
@@ -52,6 +79,11 @@ const groups: Group[] = [
   },
   {
     name: 'cursor', en: 'Pointer', fr: 'Pointeur', zh: '指针',
+    hint: {
+      en: "Your computer's own pointer instead of the drawn one. The page reloads.",
+      fr: 'Le pointeur de ton ordinateur au lieu de celui du site. La page se recharge.',
+      zh: '用电脑自己的指针，不用网站画的那个。页面会刷新。',
+    },
     options: [
       { value: 'custom', en: 'Site cursor', fr: 'Curseur du site', zh: '网站光标' },
       { value: 'system', en: 'System cursor', fr: 'Curseur du système', zh: '系统光标' },
@@ -122,9 +154,21 @@ const groups: Group[] = [
               </label>
             ))}
           </div>
+          <p class="settings-hint">
+            <span data-lang="en">{group.hint.en}</span>
+            <span data-lang="fr">{group.hint.fr}</span>
+            <span data-lang="zh">{group.hint.zh}</span>
+          </p>
         </fieldset>
       ))}
     </div>
+    <footer class="settings-foot">
+      <button type="button" class="settings-reset" data-settings-reset>
+        <span data-lang="en">Reset everything</span>
+        <span data-lang="fr">Tout remettre par défaut</span>
+        <span data-lang="zh">全部恢复默认</span>
+      </button>
+    </footer>
   </div>
 </dialog>
 
@@ -301,6 +345,39 @@ const groups: Group[] = [
     border-bottom: 0;
   }
 
+  .settings-hint {
+    grid-column: 1 / -1;
+    margin: -0.15rem 0 0;
+    font-size: var(--text-xs);
+    line-height: 1.5;
+    color: var(--bone-faint);
+  }
+
+  .settings-foot {
+    display: flex;
+    justify-content: flex-end;
+    padding: var(--space-2) 0 var(--space-1);
+    border-top: 1px solid var(--void-line);
+  }
+
+  .settings-reset {
+    padding: 0.5em 1.1em;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--bone-soft);
+    border: 1px solid var(--void-line);
+    border-radius: 999px;
+    transition: color var(--dur-fast), border-color var(--dur-fast);
+  }
+
+  .settings-reset:hover,
+  .settings-reset:focus-visible {
+    color: var(--gold);
+    border-color: var(--gold);
+  }
+
   /* a floated legend stops being the fieldset's special legend box and
      becomes an ordinary grid item */
   .settings-row legend {
@@ -466,6 +543,48 @@ const groups: Group[] = [
     }
     if (value === off) delete document.documentElement.dataset[name];
     else document.documentElement.dataset[name] = value;
+    if (name === 'transparent') paintSolid();
+  }
+
+  // Solid panels: any element holding text on a see-through background
+  // gets that colour composited over the page's dark ground, made opaque.
+  // Elements holding pictures are left alone so overlays never cover art.
+  const GROUND = [9, 8, 10];
+  function parseColor(value: string): [number, number, number, number] | null {
+    const rgb = value.match(/^rgba\(([\d.]+), ([\d.]+), ([\d.]+), ([\d.]+)\)$/);
+    if (rgb) return [Number(rgb[1]), Number(rgb[2]), Number(rgb[3]), Number(rgb[4])];
+    const srgb = value.match(/^color\(srgb ([\d.e-]+) ([\d.e-]+) ([\d.e-]+) \/ ([\d.e-]+)\)$/);
+    if (srgb) return [Number(srgb[1]) * 255, Number(srgb[2]) * 255, Number(srgb[3]) * 255, Number(srgb[4])];
+    return null;
+  }
+  function paintSolid() {
+    const on = document.documentElement.dataset.transparent === 'solid';
+    document.querySelectorAll<HTMLElement>('[data-solid-prev]').forEach((el) => {
+      el.style.backgroundColor = el.dataset.solidPrev ?? '';
+      delete el.dataset.solidPrev;
+    });
+    if (!on) return;
+    document.querySelectorAll<HTMLElement>('main *, .site-header *, body > [class*="tip"], body > [class*="nudge"]').forEach((el) => {
+      const rgba = parseColor(getComputedStyle(el).backgroundColor);
+      if (!rgba) return;
+      const [r, g, b, a] = rgba;
+      if (a <= 0.02 || a >= 0.97) return;
+      if (!el.textContent?.trim() || el.querySelector('img, video, canvas, picture')) return;
+      const mix = [r, g, b].map((c, i) => Math.round(c * a + GROUND[i] * (1 - a)));
+      el.dataset.solidPrev = el.style.backgroundColor;
+      el.style.backgroundColor = `rgb(${mix.join(' ')})`;
+    });
+  }
+
+  function resetAll() {
+    try {
+      ['motion', 'cursor', 'text', 'contrast', 'space', 'transparent', 'focus', 'motion-asked'].forEach((k) =>
+        localStorage.removeItem(`menghan-${k}`),
+      );
+    } catch {
+      /* private mode */
+    }
+    location.reload();
   }
 
   function saveMotion(value: string) {
@@ -503,6 +622,7 @@ const groups: Group[] = [
   }
 
   function initSettings() {
+    if (document.documentElement.dataset.transparent === 'solid') window.setTimeout(paintSolid, 300);
     const openBtn = document.querySelector<HTMLButtonElement>('[data-settings-open]');
     const dialog = document.querySelector<HTMLDialogElement>('[data-settings-dialog]');
     const perf = document.querySelector<HTMLDialogElement>('[data-perf-dialog]');
@@ -547,6 +667,7 @@ const groups: Group[] = [
       closeSettings();
     });
     dialog.querySelector('[data-settings-close]')?.addEventListener('click', closeSettings);
+    dialog.querySelector('[data-settings-reset]')?.addEventListener('click', resetAll);
     // a click on the dialog element itself, not on anything inside the
     // card, is a click on the backdrop around it
     dialog.addEventListener('click', (e) => {

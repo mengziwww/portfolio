@@ -61,36 +61,36 @@ coverAlt:
 gallery:
   - file: concept-colorscript.png
     chapter:
-      en: Concept & color script
-      fr: Concept et color script
-      zh: 概念与色彩脚本
+      en: Color script
+      fr: Color script
+      zh: 色彩脚本
     alt:
       en: An eight-panel color script, lantern light, temple smoke, a guardian lion and a wall of fire
       fr: Un color script en huit plans, lumière de lanterne, fumée de temple, lion gardien et mur de flammes
       zh: 八格色彩脚本，灯笼光影、庙宇香烟、护法石狮与一面烈焰之墙
   - file: concept-character.png
     chapter:
-      en: Concept & color script
-      fr: Concept et color script
-      zh: 概念与色彩脚本
+      en: Characters
+      fr: Personnages
+      zh: 角色
     alt:
       en: Character sketches of a running, startled boy and a quiet girl holding a lotus
       fr: "Croquis de personnages : un garçon en fuite, surpris, et une fillette silencieuse tenant un lotus"
       zh: 人物速写：一个惊慌奔跑的男孩，以及一个安静地捧着莲花的女孩
   - file: concept-keypose.png
     chapter:
-      en: Concept & color script
-      fr: Concept et color script
-      zh: 概念与色彩脚本
+      en: Key poses
+      fr: Poses clés
+      zh: 关键动作
     alt:
       en: Key poses exploring the protagonist's walk and stance
       fr: Poses clés explorant la démarche et la posture du protagoniste
       zh: 探索主角走路姿态与站姿的关键动作稿
   - file: concept-styleframe.png
     chapter:
-      en: Concept & color script
-      fr: Concept et color script
-      zh: 概念与色彩脚本
+      en: Style frame
+      fr: Style frame
+      zh: 风格帧
     alt:
       en: A style frame rendered in the same warm lantern palette as the color script
       fr: Un style frame rendu dans la même palette chaleureuse de lanternes que le color script

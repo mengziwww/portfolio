@@ -107,6 +107,7 @@ const projects = defineCollection({
           title: localized,
           note: localized,
           pages: z.array(z.string()), // filenames in src/assets/projects/<id>/
+          look: z.enum(['sand', 'wall', 'night']).default('wall'),
         })
       )
       .optional(),
