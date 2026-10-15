@@ -11,13 +11,13 @@ roles:
   fr: [Travail personnel]
   zh: [个人作品]
 subtitle:
-  en: a personal drawing
-  fr: un dessin personnel
-  zh: 一幅个人画
+  en: a one-minute music video
+  fr: un clip d'une minute
+  zh: 一分钟的音乐MV
 description:
-  en: A project I am still working on. I plan to finish it this year. A woman resting in the flowers.
-  fr: Un projet sur lequel je travaille encore. Je compte le finir cette année. Une femme qui se repose dans les fleurs.
-  zh: 我还在做的项目，打算今年完成。一个女人在花里休息。
+  en: A personal project, made to test a new style. I am still working on it and plan to finish it this year.
+  fr: Un projet personnel, pour tester un nouveau style. J'y travaille encore et je compte le finir cette année.
+  zh: 一个个人项目，用来尝试新的风格。我还在做，打算今年完成。
 cover: sleeping-flowers.png
 coverAlt:
   en: A woman with dark curling hair lies among red flowers, eyes closed
@@ -52,6 +52,10 @@ gallery:
       fr: "Color key. Je l'ai changée en cours de route."
       zh: "色彩稿，制作过程中我有改动。"
 video: /videos/emma/emma.mp4
+videoNote:
+  en: "The idea came from the composer of the music, who told me the story of a girl whose trauma slowly led her into drug addiction. It was the first time I took on such a serious subject head-on. To me, young people in France are upright and sincere, and addiction is not always a choice. So I made this story."
+  fr: "L'idée vient du compositeur de la musique, qui m'a raconté l'histoire d'une fille que son traumatisme a peu à peu menée vers la drogue. C'était la première fois que j'abordais un sujet aussi grave de front. Pour moi, les jeunes en France sont droits et sincères, et l'addiction n'est pas toujours un choix. Alors j'ai raconté cette histoire."
+  zh: "这个故事来自一个被点燃的念头。音乐的作者跟我讲了一个女孩的故事：心理创伤让她一步步走向了药物成瘾。这是我第一次正面去碰这么严肃的题目。在我眼里，法国的年轻人正直又单纯，而成瘾并不总是自己选的。于是有了这个故事。"
 videos:
   - file: shot.mp4
     label:

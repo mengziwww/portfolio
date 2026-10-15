@@ -101,6 +101,20 @@ import SiteSettings from './SiteSettings.astro';
     backdrop-filter: none;
   }
 
+  @media (max-width: 480px) {
+    .wordmark {
+      white-space: nowrap;
+    }
+
+    .site-header:not(.is-scrolled) .header-right {
+      gap: var(--space-2);
+    }
+
+    .site-header:not(.is-scrolled) :global(.lang-switch) {
+      gap: 0.45rem;
+    }
+  }
+
   @keyframes rail-in {
     from {
       opacity: 0;

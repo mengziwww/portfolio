@@ -122,6 +122,11 @@ const streamLines = Array.from({ length: 16 }, (_, i) =>
     </div>
 
     <div class="af-hero-copy">
+      <span class="af-panel-tag" aria-hidden="true">FIELD REPORT · 042</span>
+      <span class="af-rivet is-tl" aria-hidden="true"></span>
+      <span class="af-rivet is-tr" aria-hidden="true"></span>
+      <span class="af-rivet is-bl" aria-hidden="true"></span>
+      <span class="af-rivet is-br" aria-hidden="true"></span>
       <p class="hero-eyebrow eyebrow">
         <I18nText {...categoryLabel} /> · {year}{client ? (
           <>
@@ -202,6 +207,22 @@ const streamLines = Array.from({ length: 16 }, (_, i) =>
       </figure>
     ))}
   </div>
+
+  <aside class="af-tip" role="status" hidden data-af-tip>
+    <span class="af-tip-tag">TIP</span>
+    <p class="af-tip-text">
+      <I18nText
+        en="Click an image to see it in its original colors."
+        fr="Clique une image pour la voir dans ses couleurs d'origine."
+        zh="点开图片，可以看到原来的颜色。"
+      />
+    </p>
+    <button type="button" class="af-tip-close" data-af-tip-close>
+      <span aria-hidden="true">×</span>
+      <span class="visually-hidden"><I18nText en="Close" fr="Fermer" zh="关闭" /></span>
+    </button>
+    <span class="af-tip-timer" aria-hidden="true"></span>
+  </aside>
 
   <ProjectFooter project={project} next={next} />
 </article>
@@ -519,9 +540,173 @@ const streamLines = Array.from({ length: 16 }, (_, i) =>
     width: clamp(12rem, 26vw, 28rem);
   }
 
+  /* a survivor's field panel, like the game's own HUD: worn dark metal,
+     a hazard stripe, rivets. Opaque enough that the grid and the color
+     drift behind it never cut through the words. */
   .af-hero-copy {
+    position: relative;
     flex: 1 1 24rem;
-    max-width: 30rem;
+    max-width: 33rem;
+    padding: 2rem clamp(1.2rem, 2.5vw, 2rem) 1.6rem;
+    background:
+      linear-gradient(180deg, rgb(255 236 200 / 4%), transparent 30%),
+      repeating-linear-gradient(115deg, rgb(255 255 255 / 1.5%) 0 2px, transparent 2px 7px),
+      rgb(17 16 13 / 93%);
+    border: 1px solid rgb(201 162 74 / 32%);
+    box-shadow: 0 1.8rem 4rem -1.5rem rgb(0 0 0 / 85%), inset 0 0 0 1px rgb(0 0 0 / 50%);
+    clip-path: polygon(0 0, calc(100% - 1.1rem) 0, 100% 1.1rem, 100% 100%, 1.1rem 100%, 0 calc(100% - 1.1rem));
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+
+  .af-hero-copy::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 1.1rem;
+    height: 0.4rem;
+    background: repeating-linear-gradient(-45deg, #d9a23a 0 0.55rem, #17140f 0.55rem 1.1rem);
+    opacity: 0.85;
+  }
+
+  .af-panel-tag {
+    position: absolute;
+    top: 0.8rem;
+    right: 1.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.14em;
+    color: rgb(217 162 58 / 70%);
+  }
+
+  .af-rivet {
+    position: absolute;
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #8a8070, #2a2620 70%);
+    box-shadow: 0 1px 1px rgb(0 0 0 / 60%);
+  }
+
+  .af-rivet.is-tl { top: 0.85rem; left: 0.6rem; }
+  .af-rivet.is-tr { top: 1.5rem; right: 0.6rem; }
+  .af-rivet.is-bl { bottom: 1.5rem; left: 0.6rem; }
+  .af-rivet.is-br { bottom: 0.6rem; right: 0.6rem; }
+
+  .af-hero-copy .hero-eyebrow,
+  .af-hero-copy .af-subtitle,
+  .af-hero-copy .meta-value {
+    background: none;
+    padding-inline: 0;
+  }
+
+  .af-hero-copy .af-subtitle {
+    color: var(--bone);
+  }
+
+  .af-hero-copy .af-title {
+    flex-wrap: nowrap;
+    gap: 0.18em;
+    font-size: calc(var(--text-2xl) * 0.82);
+  }
+
+  .af-hero-copy :global(.project-desc) {
+    color: color-mix(in srgb, var(--bone) 88%, transparent);
+    line-height: 1.65;
+  }
+
+  .af-hero-copy .af-meta {
+    padding-top: var(--space-3);
+    border-top: 1px dashed rgb(201 162 74 / 25%);
+  }
+
+  /* ---- the tip: a HUD notice that leaves by itself ---- */
+  .af-tip {
+    position: fixed;
+    right: clamp(0.8rem, 2.5vw, 2rem);
+    bottom: 3.2rem;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    max-width: min(24rem, calc(100vw - 1.6rem));
+    padding: 0.8rem 0.8rem 0.95rem 0.9rem;
+    overflow: hidden;
+    background: rgb(17 16 13 / 95%);
+    border: 1px solid rgb(217 162 58 / 50%);
+    border-left: 4px solid #d9a23a;
+    box-shadow: 0 1rem 2.5rem -0.8rem rgb(0 0 0 / 80%);
+    transform: translateY(0);
+    opacity: 1;
+    transition: opacity 0.45s, transform 0.45s var(--ease-out-expo);
+  }
+
+  .af-tip[hidden] {
+    display: none;
+  }
+
+  .af-tip.is-leaving {
+    opacity: 0;
+    transform: translateY(0.8rem);
+  }
+
+  .af-tip-tag {
+    flex: none;
+    padding: 0.2em 0.5em;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: #17140f;
+    background: #d9a23a;
+  }
+
+  .af-tip-text {
+    margin: 0;
+    font-size: var(--text-sm);
+    line-height: 1.45;
+    color: var(--bone);
+  }
+
+  .af-tip-close {
+    flex: none;
+    width: 1.9rem;
+    height: 1.9rem;
+    border: 1px solid rgb(217 162 58 / 40%);
+    border-radius: 50%;
+    background: none;
+    color: var(--bone);
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .af-tip-close:hover,
+  .af-tip-close:focus-visible {
+    background: #d9a23a;
+    color: #17140f;
+  }
+
+  .af-tip-timer {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: #d9a23a;
+    transform-origin: left;
+    animation: tip-timer var(--tip-ms, 9000ms) linear forwards;
+  }
+
+  .af-tip:hover .af-tip-timer,
+  .af-tip:focus-within .af-tip-timer {
+    animation-play-state: paused;
+  }
+
+  @keyframes tip-timer {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
   }
 
   .hero-eyebrow {
@@ -892,13 +1077,46 @@ const streamLines = Array.from({ length: 16 }, (_, i) =>
     });
   }
 
+  const TIP_KEY = 'menghan-tip-colors';
+  let tipDelay: number | undefined;
+
+  function initTip() {
+    const tip = document.querySelector<HTMLElement>('[data-af-tip]');
+    if (!tip || tip.dataset.tipInit === '1') return;
+    tip.dataset.tipInit = '1';
+    try {
+      if (sessionStorage.getItem(TIP_KEY)) return;
+    } catch {
+      /* private mode */
+    }
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const hide = () => {
+      if (tip.hidden || tip.classList.contains('is-leaving')) return;
+      try {
+        sessionStorage.setItem(TIP_KEY, '1');
+      } catch {
+        /* private mode */
+      }
+      tip.classList.add('is-leaving');
+      window.setTimeout(() => (tip.hidden = true), reduced ? 0 : 450);
+    };
+    tip.querySelector('[data-af-tip-close]')?.addEventListener('click', hide);
+    tip.querySelector('.af-tip-timer')?.addEventListener('animationend', hide);
+    tipDelay = window.setTimeout(() => {
+      tip.hidden = false;
+      if (reduced) window.setTimeout(hide, 12000);
+    }, 1800);
+  }
+
   document.addEventListener('astro:page-load', () => {
     initJourney();
+    initTip();
     requestAnimationFrame(() => ScrollTrigger.refresh());
   });
 
   document.addEventListener('astro:before-swap', () => {
     ScrollTrigger.getAll().forEach((t) => t.kill());
     if (timecodeInterval) window.clearInterval(timecodeInterval);
+    if (tipDelay) window.clearTimeout(tipDelay);
   });
 </script>

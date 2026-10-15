@@ -54,7 +54,7 @@ const { path, title, description, ogImage, bodyClass, noindex = false } = Astro.
       (function () {
         try {
           var lang = localStorage.getItem('menghan-lang');
-          if (lang === 'fr' || lang === 'zh') {
+          if (lang === 'fr' || lang === 'zh' || lang === 'zh-Hant') {
             // state lives only on `lang` — see global.css for why data-lang
             // must never also be set on <html> itself
             document.documentElement.setAttribute('lang', lang);
@@ -75,7 +75,6 @@ const { path, title, description, ogImage, bodyClass, noindex = false } = Astro.
     </script>
   </head>
   <body class={bodyClass}>
-    <a class="skip-link" href="#main">Skip to content<span data-lang="fr">Aller au contenu</span><span data-lang="zh">跳转到内容</span></a>
     <LoadingBar />
     <Grain />
     <Cursor />
@@ -160,10 +159,23 @@ const { path, title, description, ogImage, bodyClass, noindex = false } = Astro.
   // scrollbar tints to whatever project is actually open; falls back to
   // gold on the home page, which has no single project mood of its own.
   function syncScrollbarColor() {
-    const stage = document.querySelector<HTMLElement>('[data-dream], [data-reel], [data-journey], [data-impact], [data-sketchbook], [data-breakdown], [data-atmosphere], [data-process]');
+    const stage = document.querySelector<HTMLElement>('[data-dream], [data-reel], [data-journey], [data-impact], [data-sketchbook], [data-breakdown], [data-atmosphere], [data-process], [data-collection]');
     const glow = stage ? getComputedStyle(stage).getPropertyValue('--mood-glow').trim() : '';
     document.documentElement.style.setProperty('--page-scrollbar', glow || 'var(--gold)');
   }
+
+  // a link to another page always lands at its top: the old page's smooth
+  // scroll must not keep easing into the new one. Back/forward keeps the
+  // position the router restores.
+  let lastNavigation = 'push';
+  document.addEventListener('astro:before-swap', (event) => {
+    lastNavigation = event.navigationType;
+    lenis?.destroy();
+    lenis = undefined;
+  });
+  document.addEventListener('astro:after-swap', () => {
+    if (lastNavigation !== 'traverse' && !location.hash) window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  });
 
   document.addEventListener('astro:page-load', () => {
     initLenis();

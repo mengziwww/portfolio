@@ -29,7 +29,7 @@ interface Props {
   next: CollectionEntry<'projects'>;
 }
 const { project, next } = Astro.props;
-const { title, subtitle, description, year, roles, category, cover, coverAlt, gallery, accentFrom, accentTo, links, video, videos } = project.data;
+const { title, subtitle, description, year, roles, category, cover, coverAlt, gallery, accentFrom, accentTo, links, video, videoNote, videos } = project.data;
 const glow = vividOf(accentFrom, accentTo);
 const coverImg = getProjectImage(project.id, cover);
 const categoryLabel = trAll(`category.${category}` as const);
@@ -114,6 +114,11 @@ groups.forEach((group) => {
   {video && (
     <figure class="sb-clip">
       <VideoPlayer src={video} />
+      {videoNote && (
+        <figcaption class="sb-clip-note">
+          <I18nText en={videoNote.en} fr={videoNote.fr} zh={videoNote.zh} />
+        </figcaption>
+      )}
     </figure>
   )}
   {videos?.map((clip) => (
@@ -197,6 +202,33 @@ groups.forEach((group) => {
     font-family: var(--font-mono);
     font-size: var(--text-xs);
     color: var(--bone-soft);
+  }
+
+  .sb-clip .sb-clip-note {
+    position: relative;
+    max-width: 40rem;
+    margin: var(--space-3) auto 0;
+    padding: 1.1rem 1.3rem 1.2rem;
+    text-align: left;
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    line-height: 1.65;
+    color: #2a2420;
+    background: #f3ece0;
+    box-shadow: 0 1rem 2rem -1rem rgb(0 0 0 / 60%);
+    transform: rotate(-0.6deg);
+  }
+
+  .sb-clip-note::before {
+    content: '';
+    position: absolute;
+    top: -0.55rem;
+    left: 50%;
+    width: 4rem;
+    height: 1.1rem;
+    transform: translateX(-50%) rotate(3deg);
+    background: color-mix(in srgb, var(--bone) 55%, transparent);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 25%);
   }
 
   .sb-group-title {
@@ -460,9 +492,24 @@ groups.forEach((group) => {
     .sb-hero {
       flex-direction: column;
       text-align: center;
-      padding-top: var(--space-5);
+      min-height: auto;
+      padding-top: 6.5rem;
     }
 
+    .sb-hero-cover {
+      width: min(68vw, 17rem);
+    }
+
+    .sb-hero-copy {
+      flex: none;
+      width: 100%;
+    }
+
+    .sb-hero-copy :global(.project-desc) {
+      margin-inline: auto;
+    }
+
+    .sb-hero-copy :global(.project-links),
     .hero-roles {
       justify-content: center;
     }

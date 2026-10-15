@@ -1,18 +1,9 @@
 ---
-// Four attempts, two opposite failure modes: a small centered column
-// read as empty on a wide screen, so the last version went full-bleed —
-// and now that reads as too big, the hero eating the whole viewport and
-// the three gallery images blown up past what they can carry. Both
-// problems are really the same problem: a page that fills width by
-// making a FEW things huge, instead of by having enough things at a
-// reasonable size to make a dense composition. This is a fifth, genuinely
-// different UI moment from the MOBA world: not hero-select (attempt 3)
-// and not a cinematic splash (attempt 4) but a post-match VICTORY
-// screen — a rank emblem, small stat readouts, a modestly-sized splash
-// portrait, and the gallery as compact match-highlight thumbnails, all
-// composed into one screen sized to its content instead of forced to
-// fill the viewport. Black-and-red kept; nothing in it is allowed to be
-// the whole show.
+// Mulan's hero page, the way the game itself shows a hero: navy ink and
+// gold-beveled frames from the Honor of Kings client, Mulan's own red as
+// the accent. A modest splash with a row of "skins" under it (her frames
+// for the film), her roles as skill buttons, the in-game profile as a
+// scroll card, and the clips as replays. Nothing on it is huge.
 import { Image } from 'astro:assets';
 import type { CollectionEntry } from 'astro:content';
 import { getProjectImage, responsiveWidths } from '@/lib/images';
@@ -23,6 +14,7 @@ import { vividOf } from '@/lib/color';
 import VideoPlayer from '@/components/VideoPlayer.astro';
 import { charReveal } from '@/lib/reveal-text';
 import ProjectIntro from '@/components/ProjectIntro.astro';
+import ScrollCue from '@/components/ScrollCue.astro';
 interface Props {
   project: CollectionEntry<'projects'>;
   next: CollectionEntry<'projects'>;
@@ -30,36 +22,18 @@ interface Props {
 const { project, next } = Astro.props;
 const { title, subtitle, description, year, roles, client, cover, coverAlt, category, gallery, accentFrom, accentTo, links, videos } = project.data;
 const glow = vividOf(accentFrom, accentTo);
-const coverImg = getProjectImage(project.id, cover);
 const categoryLabel = trAll(`category.${category}` as const);
 const clientLabel = trAll('project.client');
 
-const embers = Array.from({ length: 22 }, (_, i) => ({
-  left: `${(i * 41 + 3) % 100}%`,
-  delay: `${(i % 10) * 1.05}s`,
-  dur: `${7 + (i % 6)}s`,
-}));
-
-const splatters = Array.from({ length: 7 }, (_, i) => {
-  const seed = (i * 59 + 11) % 100;
-  return {
-    left: `${(i * 37 + 8) % 96}%`,
-    top: `${(i * 53 + 4) % 90}%`,
-    size: 1.2 + (seed % 5) * 0.7,
-    rot: seed % 360,
-  };
-});
+const skins = [{ file: cover, alt: coverAlt }, ...gallery.map((g) => ({ file: g.file, alt: g.alt }))];
 
 // real hero-profile fields for Mulan as she exists in Honor of Kings
-// (wiki + official site gameplay/lore panels) — an in-universe info
-// card sitting beside her actual credits below, not a stand-in for them
+// (wiki + official site gameplay/lore panels)
 const heroInfo = [
   { label: { en: 'Class', fr: 'Classe', zh: '定位' }, value: { en: 'Fighter / Assassin', fr: 'Combattant / Assassin', zh: '战士 / 刺客' } },
-  { label: { en: 'Focus', fr: 'Rôle', zh: '主打' }, value: { en: 'Assassin Fighter', fr: 'Combattant-assassin', zh: '刺客战士' } },
   { label: { en: 'Specialty', fr: 'Spécialité', zh: '专精' }, value: { en: 'Gap-Close / Cleanup', fr: 'Engagement / Nettoyage', zh: '突进 / 收割' } },
   { label: { en: 'Lane', fr: 'Ligne', zh: '分路' }, value: { en: 'Clash Lane', fr: "Ligne d'affrontement", zh: '对抗路' } },
   { label: { en: 'Region', fr: 'Région', zh: '地区' }, value: { en: 'Central Plains', fr: 'Plaines Centrales', zh: '中原' } },
-  { label: { en: 'Skillset', fr: 'Compétences', zh: '技能类型' }, value: { en: 'Martial Arts', fr: 'Arts martiaux', zh: '武术' } },
 ];
 const heroQuote = {
   en: 'I’m a living legend around here!',
@@ -67,179 +41,130 @@ const heroQuote = {
   zh: '在这里，我就是活生生的传奇。',
 };
 
-function tornEdge(seed: number): string {
-  const points = ['0% 0%', '100% 0%', '100% 92%'];
-  const steps = 5;
-  for (let i = 0; i <= steps; i++) {
-    const x = 100 - (i / steps) * 100;
-    const jag = ((seed * (i + 1) * 37) % 100) / 100;
-    const y = 92 + jag * 8;
-    points.push(`${x}% ${y}%`);
-  }
-  points.push('0% 92%');
-  return `polygon(${points.join(', ')})`;
-}
-const highlights = gallery.map((item, i) => ({ item, clip: tornEdge(i * 13 + 7) }));
+// one skill button per thing she did on the film
+const skillGlyph: Record<string, string> = { Storyboard: '镜', Concept: '意', Animation: '动' };
+const skillKey = ['Q', 'W', 'E', 'R'];
 ---
 
 <article class="impact" style={`--mood-a:${accentFrom}; --mood-b:${accentTo}; --mood-glow:${glow};`} data-impact data-reveal-root>
-  <div class="mk-screen">
-    <div class="mk-embers" aria-hidden="true">
-      {embers.map((e) => (
-        <span class="ember" style={`left:${e.left}; animation-delay:${e.delay}; animation-duration:${e.dur};`}></span>
-      ))}
-    </div>
-    <div class="mk-splatters" aria-hidden="true">
-      {splatters.map((s) => (
-        <svg class="splatter" style={`left:${s.left}; top:${s.top}; width:${s.size}rem; height:${s.size}rem; transform:rotate(${s.rot}deg);`} viewBox="0 0 100 100">
-          <path d="M50 4 C68 4 82 18 88 36 C94 54 84 72 68 84 C52 96 28 94 14 78 C0 62 4 38 18 22 C28 10 40 4 50 4 Z" fill="currentColor" />
-        </svg>
-      ))}
-    </div>
+  <div class="hk-clouds" aria-hidden="true"></div>
 
-    <div class="mk-banner">
-      <span class="mk-rank" aria-hidden="true">
-        <svg viewBox="0 0 60 60"><polygon points="30,3 54,17 54,43 30,57 6,43 6,17" /><polygon class="mk-rank-star" points="30,18 34,27 44,28 36,35 38,45 30,40 22,45 24,35 16,28 26,27" /></svg>
-      </span>
-      <span class="mk-victory eyebrow">
-        <I18nText en="victory" fr="victoire" zh="胜利" />
-      </span>
-    </div>
+  <section class="hk-screen">
+    <div class="hk-splash-col">
+      <div class="hk-frame hk-splash" data-lb-group>
+        <span class="hk-corner is-tl" aria-hidden="true"></span>
+        <span class="hk-corner is-tr" aria-hidden="true"></span>
+        <span class="hk-corner is-bl" aria-hidden="true"></span>
+        <span class="hk-corner is-br" aria-hidden="true"></span>
+        {skins.map((skin, i) => {
+          const img = getProjectImage(project.id, skin.file);
+          return (
+            <figure class:list={['hk-skin', { 'is-active': i === 0 }]} data-hk-skin data-artwork data-note-id={`${project.id}:${skin.file}`}>
+              <Image
+                src={img}
+                alt={skin.alt.en}
+                widths={responsiveWidths(img, [480, 720, 1000])}
+                sizes="(max-width: 800px) 90vw, 34rem"
+                loading={i === 0 ? 'eager' : 'lazy'}
+                fetchpriority={i === 0 ? 'high' : undefined}
+                transition:name={i === 0 ? `project-cover-${project.id}` : undefined}
+              />
+            </figure>
+          );
+        })}
+        <span class="hk-splash-tag">
+          <span class="hk-splash-count" data-hk-count>01</span> / {String(skins.length).padStart(2, '0')}
+        </span>
+      </div>
 
-    <div class="mk-content">
-      <figure class="mk-splash">
-        <span class="mk-splash-frame" aria-hidden="true"></span>
-        <Image
-          src={coverImg}
-          alt={coverAlt.en}
-          widths={responsiveWidths(coverImg, [420, 640, 900])}
-          sizes="(max-width: 800px) 60vw, 20vw"
-          loading="eager"
-          fetchpriority="high"
-          transition:name={`project-cover-${project.id}`}
-        />
-      </figure>
-
-      <div class="mk-info">
-        <p class="hero-eyebrow eyebrow">
-          <I18nText {...categoryLabel} /> · {year}{client ? (
-            <>
-              {' · '}<I18nText {...clientLabel} /> {client}
-            </>
-          ) : null}
-        </p>
-        <h1 class="mk-title">
-          <span set:html={charReveal(title, 100, 18)} />
-        </h1>
-        <p class="mk-subtitle">
-          <I18nText en={subtitle.en} fr={subtitle.fr} zh={subtitle.zh} />
-        </p>
-        <ProjectIntro description={description} links={links} />
-
-        <div class="mk-credits">
-          <p class="mk-credits-label eyebrow">
-            <I18nText en="what I did" fr="ce que j'ai fait" zh="我做的部分" />
-          </p>
-          <ul class="mk-credit-tags">
-            {roles.en.map((_, i) => (
-              <li class="mk-credit-tag" style={`--i:${i}`}>
-                <I18nText en={roles.en[i]} fr={roles.fr[i]} zh={roles.zh[i]} />
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div class="mk-infobox">
-          <p class="mk-info-quote">
-            <span aria-hidden="true">“</span><I18nText {...heroQuote} /><span aria-hidden="true">”</span>
-          </p>
-          <dl class="mk-info-grid">
-            {heroInfo.map((f, i) => (
-              <div class="mk-info-row" style={`--i:${i}`}>
-                <dt><I18nText {...f.label} /></dt>
-                <dd><I18nText {...f.value} /></dd>
-              </div>
-            ))}
-          </dl>
+      <div class="hk-skins">
+        <p class="hk-label"><I18nText en="frames" fr="images" zh="装扮" /></p>
+        <div class="hk-skin-row" role="group" aria-label="Frames">
+          {skins.map((skin, i) => {
+            const img = getProjectImage(project.id, skin.file);
+            return (
+              <button type="button" class:list={['hk-thumb', { 'is-active': i === 0 }]} data-hk-thumb data-index={i} aria-pressed={i === 0 ? 'true' : 'false'}>
+                <Image src={img} alt="" widths={[160, 240]} sizes="5.5rem" loading="lazy" />
+                <span class="visually-hidden">{String(i + 1).padStart(2, '0')}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>
 
-    <div class="mk-highlights">
-      <p class="mk-highlights-label eyebrow">
-        <I18nText en="match highlights" fr="temps forts" zh="精彩集锦" />
+    <div class="hk-panel">
+      <p class="hero-eyebrow eyebrow">
+        <I18nText {...categoryLabel} /> · {year}{client ? (
+          <>
+            {' · '}<I18nText {...clientLabel} /> {client}
+          </>
+        ) : null}
       </p>
-      <div class="highlight-row">
-        {highlights.map(({ item }, i) => (
-          <div class="highlight-wrap" data-artwork data-note-id={`${project.id}:${item.file}`}>
-          <button type="button" class="highlight" data-mk-banner data-index={i}>
-            <Image
-              src={getProjectImage(project.id, item.file)}
-              alt={item.alt.en}
-              widths={responsiveWidths(getProjectImage(project.id, item.file), [800, 1200, 1600])}
-              sizes="(max-width: 800px) 92vw, 64rem"
-              loading={i === 0 ? 'eager' : 'lazy'}
-            />
-            <span class="highlight-scrim" aria-hidden="true"></span>
-            <span class="highlight-num">{String(i + 1).padStart(2, '0')}</span>
-          </button>
-          </div>
-        ))}
+      <p class="hk-epithet" lang="zh" data-zh>传说之刃 · 花木兰</p>
+      <h1 class="hk-title" transition:name={`project-title-${project.id}`} set:html={charReveal(title, 100, 18)} />
+      <p class="hk-subtitle">
+        <I18nText en={subtitle.en} fr={subtitle.fr} zh={subtitle.zh} />
+      </p>
+      <ProjectIntro description={description} links={links} />
+
+      <div class="hk-skills">
+        <p class="hk-label"><I18nText en="what I did" fr="ce que j'ai fait" zh="我做的部分" /></p>
+        <ul>
+          {roles.en.map((role, i) => (
+            <li class="hk-skill" style={`--i:${i}`}>
+              <span class="hk-skill-btn" aria-hidden="true">
+                <span class="hk-skill-glyph" lang="zh" data-zh>{skillGlyph[role] ?? role.charAt(0)}</span>
+                <span class="hk-skill-key">{skillKey[i] ?? ''}</span>
+              </span>
+              <span class="hk-skill-name"><I18nText en={roles.en[i]} fr={roles.fr[i]} zh={roles.zh[i]} /></span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div class="hk-frame hk-profile">
+        <p class="hk-quote">
+          <span aria-hidden="true">“</span><I18nText {...heroQuote} /><span aria-hidden="true">”</span>
+        </p>
+        <dl class="hk-info">
+          {heroInfo.map((f) => (
+            <div>
+              <dt><I18nText {...f.label} /></dt>
+              <dd><I18nText {...f.value} /></dd>
+            </div>
+          ))}
+        </dl>
       </div>
     </div>
-  </div>
 
-  <div class="mk-lightbox" data-mk-lightbox hidden role="dialog" aria-modal="true" aria-label="Gallery image">
-    <button type="button" class="mk-lightbox-close" data-mk-close aria-label="Close">
-      <svg viewBox="0 0 24 24"><path d="M5 5L19 19M19 5L5 19" stroke="currentColor" stroke-width="1.6" /></svg>
-    </button>
-    <div class="mk-lightbox-frame">
-      {gallery.map((item, i) => (
-        <div class="mk-lb-layers" data-mk-slide data-index={i} hidden={i !== 0}>
-          <Image
-            class="layer layer-r"
-            src={getProjectImage(project.id, item.file)}
-            alt=""
-            aria-hidden="true"
-            widths={responsiveWidths(getProjectImage(project.id, item.file), [640, 960, 1100])}
-            sizes="(max-width: 800px) 90vw, 50rem"
-            loading="lazy"
-          />
-          <Image
-            class="layer layer-b"
-            src={getProjectImage(project.id, item.file)}
-            alt=""
-            aria-hidden="true"
-            widths={responsiveWidths(getProjectImage(project.id, item.file), [640, 960, 1100])}
-            sizes="(max-width: 800px) 90vw, 50rem"
-            loading="lazy"
-          />
-          <Image
-            class="layer layer-main"
-            src={getProjectImage(project.id, item.file)}
-            alt={item.alt.en}
-            widths={responsiveWidths(getProjectImage(project.id, item.file), [640, 960, 1100])}
-            sizes="(max-width: 800px) 90vw, 50rem"
-            loading="lazy"
-          />
-        </div>
-      ))}
+    <div class="hk-cue">
+      <ScrollCue />
     </div>
-    <button type="button" class="mk-lightbox-nav mk-lightbox-prev" data-mk-prev aria-label="Previous">‹</button>
-    <button type="button" class="mk-lightbox-nav mk-lightbox-next" data-mk-next aria-label="Next">›</button>
-  </div>
+  </section>
 
   {videos && videos.length > 0 && (
-    <section class="mk-clips">
-      {videos.map((clip) => (
-        <figure class="mk-clip">
-          <VideoPlayer
-            src={`/videos/${project.id}/${clip.file}`}
-            poster={`/videos/${project.id}/${clip.file.replace(/\.mp4$/i, '-poster.jpg')}`}
-          />
-          <figcaption><I18nText en={clip.label.en} fr={clip.label.fr} zh={clip.label.zh} /></figcaption>
-        </figure>
-      ))}
+    <section class="hk-replays">
+      <h2 class="hk-replays-title">
+        <span class="hk-diamond" aria-hidden="true"></span>
+        <I18nText en="replays" fr="replays" zh="回放" />
+      </h2>
+      <div class="hk-replay-grid">
+        {videos.map((clip, i) => (
+          <figure class="hk-frame hk-replay">
+            <span class="hk-corner is-tl" aria-hidden="true"></span>
+            <span class="hk-corner is-br" aria-hidden="true"></span>
+            <figcaption>
+              <span class="hk-replay-num">{String(i + 1).padStart(2, '0')}</span>
+              <I18nText en={clip.label.en} fr={clip.label.fr} zh={clip.label.zh} />
+            </figcaption>
+            <VideoPlayer
+              src={`/videos/${project.id}/${clip.file}`}
+              poster={`/videos/${project.id}/${clip.file.replace(/\.mp4$/i, '-poster.jpg')}`}
+            />
+          </figure>
+        ))}
+      </div>
     </section>
   )}
 
@@ -247,524 +172,460 @@ const highlights = gallery.map((item, i) => ({ item, clip: tornEdge(i * 13 + 7) 
 </article>
 
 <style>
-  .mk-clips {
-    display: grid;
-    gap: var(--space-4);
-    max-width: 56rem;
-    margin: 0 auto;
-    padding: var(--space-4) var(--edge) var(--space-5);
-  }
-
-  .mk-clips figcaption {
-    margin-top: 0.4rem;
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    color: var(--bone-soft);
-  }
-
   .impact {
-    background: #0a0505;
-  }
-
-  /* the whole point: this is NOT min-height:100svh. It's sized to a
-     dense composition instead of forced to fill the viewport, which is
-     exactly what made the last two attempts feel too big. */
-  .mk-screen {
+    --ink: #0a1120;
+    --ink-2: #111b2e;
+    --hk-gold: #d8b46a;
+    --hk-gold-soft: rgb(216 180 106 / 38%);
+    --hk-red: #c8323a;
     position: relative;
-    padding: var(--space-6) var(--edge);
-    background:
-      radial-gradient(ellipse 70% 55% at 50% 20%, color-mix(in srgb, var(--mood-b) 22%, transparent), transparent 70%),
-      linear-gradient(180deg, #140505, #0a0505 60%);
     overflow: hidden;
+    background:
+      radial-gradient(ellipse 55% 45% at 28% 32%, rgb(200 50 58 / 16%), transparent 70%),
+      radial-gradient(ellipse 60% 50% at 85% 10%, rgb(216 180 106 / 9%), transparent 70%),
+      linear-gradient(180deg, var(--ink-2), var(--ink) 60%, #070c17);
   }
 
-  .mk-embers,
-  .mk-splatters {
+  /* 祥云, auspicious clouds, as a faint gold pattern behind everything */
+  .hk-clouds {
     position: absolute;
     inset: 0;
     z-index: 0;
     pointer-events: none;
+    opacity: 0.07;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='110' viewBox='0 0 160 110'%3E%3Cg fill='none' stroke='%23d8b46a' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M20 70c0-10 8-18 18-18s18 8 18 18c0-7 6-13 13-13s13 6 13 13M38 70c0-5 4-9 9-9s9 4 9 9M10 70h90'/%3E%3Cpath d='M95 30c0-8 6-14 14-14s14 6 14 14c0-5 4-10 10-10s10 5 10 10M109 30c0-4 3-7 7-7s7 3 7 7M88 30h66'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 220px auto;
   }
 
-  .ember {
+  /* ---- gold beveled frame, the game's panel chrome ---- */
+  .hk-frame {
+    position: relative;
+    border: 1px solid var(--hk-gold-soft);
+    outline: 1px solid rgb(216 180 106 / 16%);
+    outline-offset: 4px;
+    background: linear-gradient(180deg, rgb(17 27 46 / 88%), rgb(10 17 32 / 92%));
+    box-shadow: 0 1.6rem 3.5rem -1.5rem rgb(0 0 0 / 80%), inset 0 0 0 1px rgb(0 0 0 / 40%);
+  }
+
+  .hk-corner {
     position: absolute;
-    bottom: -1rem;
-    width: 3px;
-    height: 3px;
-    border-radius: 50%;
-    background: color-mix(in srgb, var(--mood-b) 55%, #ff7a3c);
-    box-shadow: 0 0 6px 1px color-mix(in srgb, var(--mood-b) 45%, #ff7a3c 35%);
-    animation: ember-rise linear infinite;
+    z-index: 3;
+    width: 0.7rem;
+    height: 0.7rem;
+    background: var(--hk-gold);
+    transform: rotate(45deg);
+    box-shadow: 0 0 0.6rem rgb(216 180 106 / 55%);
   }
 
-  @keyframes ember-rise {
-    0% { transform: translateY(0) translateX(0); opacity: 0; }
-    10% { opacity: 1; }
-    90% { opacity: 0.6; }
-    100% { transform: translateY(-90%) translateX(2rem); opacity: 0; }
+  .hk-corner.is-tl { top: -0.4rem; left: -0.4rem; }
+  .hk-corner.is-tr { top: -0.4rem; right: -0.4rem; }
+  .hk-corner.is-bl { bottom: -0.4rem; left: -0.4rem; }
+  .hk-corner.is-br { bottom: -0.4rem; right: -0.4rem; }
+
+  .hk-label {
+    display: flex;
+    align-items: center;
+    gap: 0.6em;
+    margin-bottom: 0.8rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--hk-gold);
   }
 
-  .splatter {
-    position: absolute;
-    color: rgb(0 0 0 / 32%);
-    mix-blend-mode: multiply;
+  .hk-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--hk-gold-soft), transparent);
   }
 
-  .mk-banner {
+  :lang(zh) .hk-label {
+    letter-spacing: 0.3em;
+  }
+
+  /* ---- the screen: splash + skins on the left, hero panel on the right ---- */
+  .hk-screen {
     position: relative;
     z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 34rem) minmax(0, 32rem);
+    justify-content: center;
+    align-items: center;
+    gap: clamp(2rem, 5vw, 4.5rem);
+    min-height: 100svh;
+    padding: 6.5rem var(--edge) var(--space-5);
+  }
+
+  .hk-cue {
+    position: absolute;
+    left: var(--edge);
+    bottom: var(--space-3);
+  }
+
+  .hk-splash {
+    aspect-ratio: 16 / 10;
+    padding: 0.45rem;
+  }
+
+  .hk-skin {
+    position: absolute;
+    inset: 0.45rem;
+    margin: 0;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .hk-skin.is-active {
+    opacity: 1;
+    pointer-events: auto;
+    animation: hk-wipe 0.7s var(--ease-out-expo) both;
+  }
+
+  @keyframes hk-wipe {
+    from { clip-path: inset(0 100% 0 0); filter: brightness(1.6); }
+    to { clip-path: inset(0 0 0 0); filter: brightness(1); }
+  }
+
+  .hk-skin :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    cursor: zoom-in;
+  }
+
+  .hk-splash-tag {
+    position: absolute;
+    z-index: 2;
+    right: 0.45rem;
+    bottom: 0.45rem;
+    padding: 0.3em 0.7em;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--bone);
+    background: linear-gradient(90deg, transparent, rgb(10 17 32 / 85%) 30%);
+  }
+
+  .hk-splash-count {
+    color: var(--hk-gold);
+  }
+
+  .hk-skins {
+    margin-top: 1.6rem;
+  }
+
+  .hk-skin-row {
+    display: flex;
+    gap: 0.7rem;
+    overflow-x: auto;
+    padding: 0.4rem 0.3rem 0.6rem;
+    scrollbar-width: none;
+  }
+
+  .hk-thumb {
+    position: relative;
+    flex: none;
+    width: 5.5rem;
+    aspect-ratio: 1;
+    padding: 0;
+    border: 1px solid var(--hk-gold-soft);
+    background: var(--ink);
+    cursor: pointer;
+    clip-path: polygon(14% 0, 86% 0, 100% 14%, 100% 86%, 86% 100%, 14% 100%, 0 86%, 0 14%);
+    opacity: 0.6;
+    transition: opacity 0.3s, transform 0.3s var(--ease-out-expo);
+  }
+
+  .hk-thumb :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+  }
+
+  .hk-thumb:hover,
+  .hk-thumb:focus-visible {
+    opacity: 0.9;
+    transform: translateY(-2px);
+  }
+
+  .hk-thumb.is-active {
+    opacity: 1;
+    border-color: var(--hk-gold);
+    box-shadow: inset 0 0 0 2px var(--hk-gold);
+  }
+
+  .hk-thumb.is-active::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    box-shadow: inset 0 0 0 2px var(--hk-gold), inset 0 -1.2rem 1.2rem -0.6rem rgb(216 180 106 / 45%);
+  }
+
+  /* ---- hero panel ---- */
+  .hero-eyebrow {
+    color: var(--hk-gold);
+    margin-bottom: var(--space-2);
+  }
+
+  .hk-epithet {
+    font-family: var(--font-display);
+    font-size: var(--text-base);
+    letter-spacing: 0.35em;
+    color: var(--hk-red);
+    text-shadow: 0 0 1.2rem rgb(200 50 58 / 45%);
+  }
+
+  .hk-title {
+    margin-top: 0.3rem;
+    font-size: calc(var(--text-2xl) * 0.78);
+    line-height: 1;
+    color: #f4ead4;
+    text-shadow: 0 0.2rem 1.6rem rgb(0 0 0 / 60%);
+  }
+
+  .hk-subtitle {
+    margin-top: var(--space-2);
+    font-size: var(--text-lg);
+    color: var(--hk-gold);
+  }
+
+  .hk-panel :global(.project-desc) {
+    color: color-mix(in srgb, var(--bone) 85%, transparent);
+  }
+
+  .hk-skills {
+    margin-top: var(--space-4);
+  }
+
+  .hk-skills ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.2rem 1.6rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .hk-skill {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    animation: hk-skill-in 0.6s var(--ease-out-expo) both;
+    animation-delay: calc(0.4s + var(--i) * 0.12s);
+  }
+
+  @keyframes hk-skill-in {
+    from { opacity: 0; transform: scale(0.6); }
+  }
+
+  .hk-skill-btn {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 3.6rem;
+    height: 3.6rem;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, #2a3a5a, var(--ink) 75%);
+    box-shadow: 0 0 0 2px var(--hk-gold), 0 0 0 5px rgb(10 17 32 / 90%), 0 0 0 6px var(--hk-gold-soft), 0 0 1.4rem rgb(216 180 106 / 25%);
+  }
+
+  .hk-skill-glyph {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    color: #f4ead4;
+  }
+
+  .hk-skill-key {
+    position: absolute;
+    right: -0.5rem;
+    bottom: -0.5rem;
+    display: grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    font-weight: 700;
+    color: var(--ink);
+    background: var(--hk-gold);
+    clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  }
+
+  .hk-skill-name {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.05em;
+    color: var(--bone);
+  }
+
+  .hk-profile {
+    margin-top: var(--space-4);
+    padding: 1rem 1.2rem;
+  }
+
+  .hk-quote {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: var(--text-base);
+    color: #f4ead4;
+  }
+
+  .hk-quote span[aria-hidden] {
+    color: var(--hk-red);
+  }
+
+  .hk-info {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.6rem 1.2rem;
+    margin: 0.8rem 0 0;
+    padding-top: 0.8rem;
+    border-top: 1px solid rgb(216 180 106 / 18%);
+  }
+
+  .hk-info div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+
+  .hk-info dt {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--hk-gold);
+  }
+
+  .hk-info dd {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--bone);
+  }
+
+  /* ---- replays ---- */
+  .hk-replays {
+    position: relative;
+    z-index: 1;
+    padding: var(--space-5) var(--edge) var(--space-6);
+  }
+
+  .hk-replays-title {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.6em;
     margin-bottom: var(--space-5);
+    font-size: var(--text-xl);
+    color: #f4ead4;
   }
 
-  .mk-rank svg {
-    width: 1.4rem;
-    height: 1.4rem;
+  .hk-diamond {
+    width: 0.6rem;
+    height: 0.6rem;
+    background: var(--hk-red);
+    transform: rotate(45deg);
+    box-shadow: 0 0 0.8rem rgb(200 50 58 / 70%);
   }
 
-  .mk-rank polygon:first-child {
-    fill: none;
-    stroke: var(--gold);
-    stroke-width: 2.5;
+  .hk-replay-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr));
+    gap: clamp(1.5rem, 3vw, 2.5rem);
+    max-width: 72rem;
+    margin: 0 auto;
+    align-items: start;
   }
 
-  .mk-rank-star {
-    fill: var(--gold);
-  }
-
-  .mk-victory {
-    color: var(--mood-b);
-    letter-spacing: 0.3em;
-  }
-
-  .mk-content {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-    gap: clamp(1.5rem, 4vw, 3.5rem);
-  }
-
-  .mk-splash {
-    position: relative;
-    flex: none;
-    width: clamp(11rem, 22vw, 17rem);
+  .hk-replay {
     margin: 0;
+    padding: 0.6rem;
   }
 
-  .mk-splash-frame {
-    position: absolute;
-    inset: -0.4rem;
-    z-index: 1;
-    border: 1px solid color-mix(in srgb, var(--mood-b) 65%, transparent);
-    pointer-events: none;
-  }
-
-  .mk-splash :global(img) {
-    width: 100%;
-    display: block;
-    filter: saturate(1.15) contrast(1.1) brightness(0.88);
-    box-shadow: 0 1.5rem 3.5rem -1.2rem rgb(0 0 0 / 80%), 0 0 3rem 0.3rem color-mix(in srgb, var(--mood-glow) 30%, transparent);
-  }
-
-  .mk-info {
-    flex: 1 1 22rem;
-    max-width: 26rem;
-  }
-
-  .hero-eyebrow {
-    color: var(--mood-b);
-    margin-bottom: var(--space-2);
-  }
-
-  .mk-title {
-    font-size: clamp(1.7rem, 1.4rem + 1.6vw, 2.6rem);
-    line-height: 0.98;
-    color: var(--bone);
-  }
-
-  .mk-subtitle {
-    font-size: var(--text-lg);
-    color: var(--bone-soft);
-    margin-top: var(--space-2);
-  }
-
-  .mk-credits {
-    margin-top: var(--space-4);
-  }
-
-  .mk-credits-label {
-    color: var(--mood-b);
-    margin-bottom: 0.6em;
-  }
-
-  .mk-credit-tags {
+  .hk-replay figcaption {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.5em;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  .mk-credit-tag {
-    padding: 0.32em 0.85em;
+    align-items: baseline;
+    gap: 0.6em;
+    margin-bottom: 0.6rem;
     font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    letter-spacing: 0.03em;
-    color: var(--bone);
-    border: 1px solid color-mix(in srgb, var(--mood-b) 55%, transparent);
-    background: color-mix(in srgb, var(--mood-b) 14%, transparent);
-    opacity: 0;
-    animation: mk-stat-in 0.5s var(--ease-out-expo) forwards;
-    animation-delay: calc(0.2s + var(--i) * 0.08s);
-  }
-
-  @keyframes mk-stat-in {
-    from { opacity: 0; transform: translateX(-0.4rem); }
-    to { opacity: 1; transform: none; }
-  }
-
-  .mk-infobox {
-    margin-top: var(--space-4);
-    padding-top: var(--space-4);
-    border-top: 1px solid color-mix(in srgb, var(--mood-b) 35%, var(--void-line));
-  }
-
-  .mk-info-quote {
-    font-family: var(--font-display);
-    font-style: italic;
     font-size: var(--text-sm);
-    line-height: 1.45;
-    color: color-mix(in srgb, var(--bone) 68%, transparent);
-    margin-bottom: var(--space-3);
-  }
-
-  .mk-info-quote span {
-    color: var(--mood-b);
-  }
-
-  .mk-info-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.7em 1.2em;
-    margin: 0;
-  }
-
-  .mk-info-row {
-    display: flex;
-    flex-direction: column;
-    gap: 0.2em;
-    opacity: 0;
-    animation: mk-stat-in 0.6s var(--ease-out-expo) forwards;
-    animation-delay: calc(0.3s + var(--i) * 0.1s);
-  }
-
-  .mk-info-row dt {
-    font-family: var(--font-mono);
-    font-size: 0.64rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: color-mix(in srgb, var(--mood-b) 70%, var(--bone) 30%);
-  }
-
-  .mk-info-row dd {
-    font-size: var(--text-xs);
-    color: var(--bone-soft);
-    margin: 0;
-  }
-
-  .mk-highlights {
-    position: relative;
-    z-index: 1;
-    margin-top: var(--space-6);
-    padding-top: var(--space-5);
-    border-top: 1px solid var(--void-line);
-  }
-
-  .mk-highlights-label {
-    text-align: center;
-    color: var(--mood-b);
-    margin-bottom: var(--space-3);
-  }
-
-  .highlight-row {
-    display: grid;
-    gap: var(--space-4);
-    max-width: 64rem;
-    margin-inline: auto;
-  }
-
-  .highlight {
-    position: relative;
-    display: block;
-    width: 100%;
-    height: auto;
-    padding: 0;
-    overflow: hidden;
-    background: #000;
-    transition: transform 0.4s var(--ease-out-expo);
-  }
-
-  .highlight:hover,
-  .highlight:focus-visible {
-    transform: translateY(-0.3rem);
-  }
-
-  .highlight :global(img) {
-    width: 100%;
-    height: auto;
-    object-fit: contain;
-    filter: saturate(1.05) brightness(0.92) contrast(1.02);
-    transition: filter 0.4s, transform 0.6s var(--ease-out-expo);
-  }
-
-  .highlight:hover :global(img),
-  .highlight:focus-visible :global(img) {
-    filter: saturate(1.2) brightness(0.94);
-    transform: scale(1.06);
-  }
-
-  .highlight-scrim {
-    position: absolute;
-    inset: 0;
-    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 8%);
-    pointer-events: none;
-  }
-
-  .highlight:hover .highlight-scrim,
-  .highlight:focus-visible .highlight-scrim {
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mood-b) 65%, transparent), 0 0 1.2rem 0.15rem color-mix(in srgb, var(--mood-glow) 30%, transparent);
-  }
-
-  .highlight-num {
-    position: absolute;
-    left: 0.5rem;
-    bottom: 0.4rem;
-    z-index: 1;
-    font-family: var(--font-mono);
-    font-size: 0.6rem;
-    letter-spacing: 0.08em;
-    color: rgb(255 255 255 / 80%);
-    text-shadow: 0 1px 4px rgb(0 0 0 / 70%);
-  }
-
-  @media (max-width: 700px) {
-    .mk-content {
-      flex-direction: column;
-      text-align: center;
-    }
-    .mk-info {
-      max-width: none;
-    }
-    .mk-credit-tags {
-      justify-content: center;
-    }
-    .mk-info-grid {
-      grid-template-columns: 1fr;
-      justify-items: center;
-    }
-  }
-
-  /* ---- lightbox: same RGB-split "impact" treatment carried over ---- */
-  .mk-lightbox {
-    position: fixed;
-    inset: 0;
-    z-index: 60;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgb(5 3 3 / 92%);
-    backdrop-filter: blur(6px);
-  }
-
-  .mk-lightbox[hidden] {
-    display: none;
-  }
-
-  .mk-lightbox-frame {
-    position: relative;
-    width: min(90vw, 54rem);
-    aspect-ratio: 16 / 9;
-    border: 1px solid color-mix(in srgb, var(--mood-b) 55%, transparent);
-    overflow: hidden;
-    box-shadow: 0 2rem 5rem -1.5rem rgb(0 0 0 / 85%);
-  }
-
-  .mk-lb-layers {
-    position: absolute;
-    inset: 0;
-  }
-
-  .mk-lb-layers[hidden] {
-    display: none;
-  }
-
-  .layer {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .layer-main {
-    filter: saturate(1.25) contrast(1.1) brightness(0.92);
-  }
-
-  .layer-r,
-  .layer-b {
-    opacity: 0.3;
-    mix-blend-mode: screen;
-    animation: glitch-shift 2.4s steps(2) infinite;
-  }
-
-  .layer-r {
-    filter: sepia(1) saturate(6) hue-rotate(-50deg) brightness(0.9);
-    transform: translateX(3px);
-  }
-
-  .layer-b {
-    filter: sepia(1) saturate(6) hue-rotate(160deg) brightness(0.9);
-    transform: translateX(-3px);
-    animation-name: glitch-shift-rev;
-  }
-
-  @keyframes glitch-shift {
-    0%, 90% { transform: translateX(3px); }
-    92% { transform: translateX(9px); }
-    94% { transform: translateX(1px); }
-    100% { transform: translateX(3px); }
-  }
-
-  @keyframes glitch-shift-rev {
-    0%, 90% { transform: translateX(-3px); }
-    92% { transform: translateX(-9px); }
-    94% { transform: translateX(-1px); }
-    100% { transform: translateX(-3px); }
-  }
-
-  .mk-lightbox-close {
-    position: absolute;
-    top: var(--space-3);
-    right: var(--edge);
-    z-index: 2;
-    width: 2.6rem;
-    height: 2.6rem;
     color: var(--bone);
-    border: 1px solid var(--void-line);
-    border-radius: 50%;
-    display: grid;
-    place-items: center;
-    transition: border-color var(--dur-fast), color var(--dur-fast);
   }
 
-  .mk-lightbox-close svg {
-    width: 1.1rem;
-    height: 1.1rem;
+  .hk-replay-num {
+    color: var(--hk-gold);
   }
 
-  .mk-lightbox-close:hover {
-    color: var(--mood-b);
-    border-color: var(--mood-b);
-  }
-
-  .mk-lightbox-nav {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 2;
-    width: 3rem;
-    height: 3rem;
-    font-size: 1.8rem;
-    color: var(--bone);
-    display: grid;
-    place-items: center;
-    transition: color var(--dur-fast);
-  }
-
-  .mk-lightbox-prev {
-    left: max(1rem, calc(50% - 29rem));
-  }
-
-  .mk-lightbox-next {
-    right: max(1rem, calc(50% - 29rem));
-  }
-
-  .mk-lightbox-nav:hover {
-    color: var(--mood-b);
+  .hk-replay :global(.film-frame) {
+    max-width: none;
   }
 
   @media (max-width: 900px) {
-    .mk-lightbox-prev { left: 0.5rem; }
-    .mk-lightbox-next { right: 0.5rem; }
+    .hk-screen {
+      grid-template-columns: minmax(0, 36rem);
+      min-height: auto;
+      padding-top: 6rem;
+    }
+
+    .hk-cue {
+      display: none;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .hk-thumb {
+      width: 4.4rem;
+    }
+
+    .hk-skill-btn {
+      width: 3.1rem;
+      height: 3.1rem;
+    }
+
+    .hk-info {
+      grid-template-columns: 1fr 1fr;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .ember { animation: none; opacity: 0; }
-    .layer-r, .layer-b { animation: none; }
-    .highlight:hover :global(img) { transform: none; }
-    .mk-credit-tag { animation: none; opacity: 1; transform: none; }
-    .mk-info-row { animation: none; opacity: 1; }
+    .hk-skin.is-active,
+    .hk-skill {
+      animation: none;
+    }
   }
 </style>
 
 <script>
   function initImpact() {
-    const roots = document.querySelectorAll<HTMLElement>('[data-impact]');
-    roots.forEach((root) => {
-      if (root.dataset.impactInit === '1') return;
-      root.dataset.impactInit = '1';
+    const root = document.querySelector<HTMLElement>('[data-impact]');
+    if (!root || root.dataset.impactInit === '1') return;
+    root.dataset.impactInit = '1';
 
-      const banners = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-mk-banner]'));
-      const lightbox = root.querySelector<HTMLElement>('[data-mk-lightbox]');
-      const slides = Array.from(root.querySelectorAll<HTMLElement>('[data-mk-slide]'));
-      const closeBtn = root.querySelector<HTMLButtonElement>('[data-mk-close]');
-      const prevBtn = root.querySelector<HTMLButtonElement>('[data-mk-prev]');
-      const nextBtn = root.querySelector<HTMLButtonElement>('[data-mk-next]');
-      let current = 0;
-      let lastFocused: HTMLElement | null = null;
+    const skins = Array.from(root.querySelectorAll<HTMLElement>('[data-hk-skin]'));
+    const thumbs = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-hk-thumb]'));
+    const count = root.querySelector<HTMLElement>('[data-hk-count]');
 
-      function showSlide(i: number) {
-        current = (i + slides.length) % slides.length;
-        slides.forEach((s, si) => {
-          s.hidden = si !== current;
-        });
-      }
-
-      function openLightbox(i: number) {
-        if (!lightbox) return;
-        lastFocused = document.activeElement as HTMLElement;
-        showSlide(i);
-        lightbox.hidden = false;
-        closeBtn?.focus();
-      }
-
-      function closeLightbox() {
-        if (!lightbox) return;
-        lightbox.hidden = true;
-        lastFocused?.focus();
-      }
-
-      banners.forEach((btn) => {
-        btn.addEventListener('click', () => openLightbox(Number(btn.dataset.index)));
+    const select = (i: number) => {
+      skins.forEach((skin, si) => skin.classList.toggle('is-active', si === i));
+      thumbs.forEach((thumb, ti) => {
+        thumb.classList.toggle('is-active', ti === i);
+        thumb.setAttribute('aria-pressed', ti === i ? 'true' : 'false');
       });
-      closeBtn?.addEventListener('click', closeLightbox);
-      prevBtn?.addEventListener('click', () => showSlide(current - 1));
-      nextBtn?.addEventListener('click', () => showSlide(current + 1));
-      lightbox?.addEventListener('click', (e) => {
-        if (e.target === lightbox) closeLightbox();
-      });
-      document.addEventListener('keydown', (e) => {
-        if (lightbox?.hidden) return;
-        if (e.key === 'Escape') closeLightbox();
-        if (e.key === 'ArrowLeft') showSlide(current - 1);
-        if (e.key === 'ArrowRight') showSlide(current + 1);
+      if (count) count.textContent = String(i + 1).padStart(2, '0');
+    };
+
+    thumbs.forEach((thumb, i) => {
+      thumb.addEventListener('click', () => select(i));
+      thumb.addEventListener('keydown', (event) => {
+        if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
+        event.preventDefault();
+        const nextIndex = (i + (event.key === 'ArrowRight' ? 1 : -1) + thumbs.length) % thumbs.length;
+        thumbs[nextIndex].focus();
+        select(nextIndex);
       });
     });
   }

@@ -1,0 +1,1001 @@
+---
+// Smaller pieces that don't belong to one film. Same paper and pins as the
+// sketchbook, but each pile is laid out like the thing it is: a band
+// lineup, a hand of cards, polaroids, New Year prints, a calendar page,
+// a pinned strip, storyboard sheets. Piles share rows so the page stays
+// short; an index at the top jumps straight to one.
+import { Image, getImage } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { getProjectImage, responsiveWidths } from '@/lib/images';
+import ProjectFooter from './ProjectFooter.astro';
+import I18nText from '@/components/I18nText.astro';
+import { trAll } from '@/i18n/ui';
+import { vividOf } from '@/lib/color';
+import { charReveal } from '@/lib/reveal-text';
+import ProjectIntro from '@/components/ProjectIntro.astro';
+import VideoPlayer from '@/components/VideoPlayer.astro';
+import ScrollCue from '@/components/ScrollCue.astro';
+import '@fontsource-variable/caveat';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+  next: CollectionEntry<'projects'>;
+}
+const { project, next } = Astro.props;
+const { title, subtitle, description, year, roles, category, cover, coverAlt, gallery, accentFrom, accentTo, links, videos, piles = [], storyboards = [] } = project.data;
+const glow = vividOf(accentFrom, accentTo);
+const coverImg = getProjectImage(project.id, cover);
+const categoryLabel = trAll(`category.${category}` as const);
+
+type Item = (typeof gallery)[number];
+type Pile = { id: string; label: NonNullable<Item['chapter']>; items: Item[]; display: (typeof piles)[number]['display']; note?: (typeof piles)[number]['note'] };
+
+const groups: Pile[] = [];
+for (const item of gallery) {
+  if (!item.chapter) continue;
+  const last = groups[groups.length - 1];
+  if (last && last.label.en === item.chapter.en) {
+    last.items.push(item);
+  } else {
+    const meta = piles.find((p) => p.chapter === item.chapter!.en);
+    groups.push({ id: `pile-${groups.length + 1}`, label: item.chapter, items: [item], display: meta?.display ?? 'strip', note: meta?.note });
+  }
+}
+
+const sheets = await Promise.all(
+  storyboards.map(async (board) =>
+    Promise.all(
+      board.pages.map(async (file) => {
+        const src = getProjectImage(project.id, file);
+        const full = await getImage({ src, width: Math.min(src.width, 1800) });
+        return { file, src, full: full.src };
+      })
+    )
+  )
+);
+const roman = ['I', 'II', 'III', 'IV', 'V', 'VI'];
+
+const tilt = (i: number) => ((((i * 53 + 7) % 9) - 4) * 0.8).toFixed(2);
+const isGif = (file: string) => file.endsWith('.gif');
+const fanAngle = (i: number, n: number) => ((i - (n - 1) / 2) * (n > 4 ? 7 : 9)).toFixed(2);
+const fanDrop = (i: number, n: number) => (Math.abs(i - (n - 1) / 2) ** 2 * 0.5).toFixed(2);
+---
+
+<article class="collection" style={`--mood-a:${accentFrom}; --mood-b:${accentTo}; --mood-glow:${glow};`} data-collection data-reveal-root>
+  <header class="pw-hero">
+    <div class="pw-hero-cover">
+      <span class="pw-nail" aria-hidden="true"></span>
+      <div class="pw-cover-frame">
+        <Image
+          src={coverImg}
+          alt={coverAlt.en}
+          widths={responsiveWidths(coverImg, [320, 480, 640])}
+          sizes="(max-width: 700px) 62vw, 21rem"
+          loading="eager"
+          fetchpriority="high"
+          transition:name={`project-cover-${project.id}`}
+        />
+      </div>
+    </div>
+    <div class="pw-hero-copy">
+      <p class="hero-eyebrow eyebrow">
+        <I18nText {...categoryLabel} /> · {year}
+      </p>
+      <h1 class="pw-hero-title" transition:name={`project-title-${project.id}`} set:html={charReveal(title, 120, 22)} />
+      <p class="pw-hero-subtitle">
+        <I18nText en={subtitle.en} fr={subtitle.fr} zh={subtitle.zh} />
+      </p>
+      <ProjectIntro description={description} links={links} />
+      <ul class="hero-roles">
+        {roles.en.map((_, i) => (
+          <li>
+            <I18nText en={roles.en[i]} fr={roles.fr[i]} zh={roles.zh[i]} />
+          </li>
+        ))}
+      </ul>
+    </div>
+    <div class="pw-hero-cue">
+      <ScrollCue />
+    </div>
+  </header>
+
+  <nav class="pw-index" aria-label="Piles" data-pw-index>
+    {videos?.length ? (
+      <a href="#pile-motion" data-pw-jump>
+        <I18nText en="in motion" fr="en mouvement" zh="动画" />
+        <span class="pw-index-count">{videos.length}</span>
+      </a>
+    ) : null}
+    {groups.map((group) => (
+      <a href={`#${group.id}`} data-pw-jump>
+        <I18nText en={group.label.en} fr={group.label.fr} zh={group.label.zh} />
+        <span class="pw-index-count">{group.items.length}</span>
+      </a>
+    ))}
+    {storyboards.length > 0 && (
+      <a href="#pile-storyboards" data-pw-jump>
+        <I18nText en="Storyboards" fr="Storyboards" zh="分镜" />
+        <span class="pw-index-count">{storyboards.length}</span>
+      </a>
+    )}
+  </nav>
+
+  {videos?.map((clip) => (
+    <section class="pw-motion" id="pile-motion">
+      <div class="pw-motion-player">
+        <VideoPlayer src={`/videos/${project.id}/${clip.file}`} />
+      </div>
+      <div class="pw-motion-copy">
+        <p class="pw-kicker eyebrow"><I18nText en="in motion" fr="en mouvement" zh="动画" /></p>
+        <h2 class="pw-pile-title"><I18nText en={clip.label.en} fr={clip.label.fr} zh={clip.label.zh} /></h2>
+        <p class="pw-pile-note">
+          <I18nText
+            en="A fan animation of Anakin Skywalker on Mustafar."
+            fr="Une animation de fan : Anakin Skywalker sur Mustafar."
+            zh="一段同人动画：穆斯塔法星上的安纳金·天行者。"
+          />
+        </p>
+      </div>
+    </section>
+  ))}
+
+  <div class="pw-piles">
+    {groups.map((group) => (
+      <section class:list={['pw-pile', `is-${group.display}`]} id={group.id} style={`--count:${group.items.length};`}>
+        <header class="pw-pile-head">
+          <h2 class="pw-pile-title">
+            <I18nText en={group.label.en} fr={group.label.fr} zh={group.label.zh} />
+          </h2>
+          {group.note && (
+            <p class="pw-pile-note">
+              <I18nText en={group.note.en} fr={group.note.fr} zh={group.note.zh} />
+            </p>
+          )}
+        </header>
+        <div class="pw-pile-body" data-lb-group>
+          {group.items.map((item, i) => {
+            const img = getProjectImage(project.id, item.file);
+            const text = item.caption ?? item.alt;
+            return (
+              <figure
+                class="pw-piece"
+                style={`--tilt:${tilt(i)}deg; --fan:${fanAngle(i, group.items.length)}deg; --drop:${fanDrop(i, group.items.length)}rem; --i:${i};`}
+                data-artwork
+                data-note-id={`${project.id}:${item.file}`}
+                data-pw-piece
+                tabindex={group.display === 'hand' ? 0 : undefined}
+              >
+                <span class="pw-frame">
+                  {isGif(item.file) ? (
+                    <img src={img.src} alt={item.alt.en} width={img.width} height={img.height} loading="lazy" />
+                  ) : (
+                    <Image src={img} alt={item.alt.en} widths={responsiveWidths(img, [360, 560, 900])} sizes="(max-width: 700px) 80vw, 24rem" loading="lazy" />
+                  )}
+                </span>
+                <figcaption>
+                  <I18nText en={text.en} fr={text.fr} zh={text.zh} />
+                </figcaption>
+              </figure>
+            );
+          })}
+        </div>
+        {group.display === 'hand' && (
+          <p class="pw-hand-caption" aria-live="polite" data-pw-hand-caption>
+            <I18nText en="Hover a card to read it." fr="Survole une carte pour la lire." zh="把鼠标移到卡牌上看说明。" />
+          </p>
+        )}
+      </section>
+    ))}
+  </div>
+
+  {storyboards.length > 0 && (
+    <section class="pw-boards" id="pile-storyboards">
+      <header class="pw-pile-head pw-boards-head">
+        <h2 class="pw-pile-title"><I18nText en="Storyboards" fr="Storyboards" zh="分镜" /></h2>
+        <p class="pw-pile-note">
+          <I18nText
+            en="Three storyboards. Open a page to read it full size, then turn the pages with the arrows."
+            fr="Trois storyboards. Ouvre une page pour la lire en grand, puis tourne les pages avec les flèches."
+            zh="三份分镜。点开一页看大图，用左右箭头翻页。"
+          />
+        </p>
+      </header>
+      {storyboards.map((board, bi) => (
+        <div class="pw-board">
+          <div class="pw-board-info">
+            <p class="pw-board-num">{roman[bi] ?? bi + 1}</p>
+            <h3 class="pw-board-title"><I18nText en={board.title.en} fr={board.title.fr} zh={board.title.zh} /></h3>
+            <p class="pw-pile-note"><I18nText en={board.note.en} fr={board.note.fr} zh={board.note.zh} /></p>
+            <p class="pw-board-meta">
+              <I18nText en={`${board.pages.length} pages`} fr={`${board.pages.length} pages`} zh={`${board.pages.length} 页`} />
+            </p>
+            <button type="button" class="pw-board-read" data-pw-read data-cursor-hover>
+              <I18nText en="read from page 1" fr="lire depuis la page 1" zh="从第一页开始看" />
+            </button>
+          </div>
+          <div class="pw-sheets" data-lb-group data-pw-sheets>
+            {sheets[bi].map((sheet, si) => (
+              <figure class="pw-sheet" data-artwork data-note-id={`${project.id}:${sheet.file}`}>
+                <Image
+                  src={sheet.src}
+                  alt={`${board.title.en}, page ${si + 1}`}
+                  data-full={sheet.full}
+                  widths={[280, 440]}
+                  sizes="15rem"
+                  loading="lazy"
+                />
+                <figcaption>{String(si + 1).padStart(2, '0')}</figcaption>
+              </figure>
+            ))}
+          </div>
+        </div>
+      ))}
+    </section>
+  )}
+
+  <ProjectFooter project={project} next={next} />
+</article>
+
+<style>
+  .collection {
+    background:
+      repeating-linear-gradient(0deg, transparent 0 39px, color-mix(in srgb, var(--mood-a) 14%, transparent) 39px 40px),
+      color-mix(in srgb, var(--void) 88%, var(--mood-a) 12%);
+  }
+
+  /* ---- hero ---- */
+  .pw-hero {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(2rem, 6vw, 5rem);
+    min-height: 88svh;
+    padding: var(--space-6) var(--edge) var(--space-5);
+  }
+
+  .pw-hero-cue {
+    position: absolute;
+    left: var(--edge);
+    bottom: var(--space-3);
+  }
+
+  .pw-hero-cover {
+    position: relative;
+    flex: none;
+    width: clamp(12rem, 22vw, 21rem);
+  }
+
+  .pw-cover-frame {
+    overflow: hidden;
+    border-radius: 2px;
+    border: 8px solid var(--bone);
+    box-shadow: 0 1.5rem 3.5rem -1rem rgb(0 0 0 / 65%), 0 0 3rem 0.2rem color-mix(in srgb, var(--mood-glow) 25%, transparent);
+    transform: rotate(-2deg);
+  }
+
+  .pw-cover-frame :global(img) {
+    width: 100%;
+    display: block;
+  }
+
+  .pw-nail {
+    position: absolute;
+    left: 50%;
+    top: -0.5rem;
+    z-index: 1;
+    width: 0.9rem;
+    height: 0.9rem;
+    margin-left: -0.45rem;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, var(--bone), var(--mood-b) 70%);
+    box-shadow: 0 0.3rem 0.4rem rgb(0 0 0 / 45%);
+  }
+
+  .pw-hero-copy {
+    flex: 1 1 24rem;
+    max-width: 34rem;
+  }
+
+  .hero-eyebrow {
+    color: var(--gold);
+    margin-bottom: var(--space-2);
+  }
+
+  .pw-hero-title {
+    font-size: var(--text-2xl);
+    line-height: 0.96;
+  }
+
+  .pw-hero-subtitle {
+    font-size: var(--text-lg);
+    color: var(--bone-soft);
+    margin-top: var(--space-2);
+  }
+
+  .hero-roles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    list-style: none;
+    margin-top: var(--space-3);
+    padding: 0;
+  }
+
+  .hero-roles li {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    border: 1px solid var(--void-line);
+    padding: 0.4em 0.85em;
+    border-radius: 999px;
+  }
+
+  /* ---- index of piles: paper tabs ---- */
+  .pw-index {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.6rem 0.8rem;
+    padding: 0 var(--edge) var(--space-5);
+  }
+
+  .pw-index a {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.5em;
+    padding: 0.5em 1em;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--void);
+    background: color-mix(in srgb, var(--bone) 88%, var(--mood-a));
+    transform: rotate(var(--r, -1deg));
+    transition: transform 0.35s var(--ease-out-expo), background 0.3s;
+  }
+
+  .pw-index a:nth-child(even) {
+    --r: 1.2deg;
+  }
+
+  .pw-index a:hover,
+  .pw-index a:focus-visible {
+    background: var(--gold);
+    transform: rotate(0deg) translateY(-2px);
+  }
+
+  :lang(zh) .pw-index a {
+    text-transform: none;
+  }
+
+  .pw-index-count {
+    opacity: 0.55;
+  }
+
+  /* ---- shared pile parts ---- */
+  .pw-pile-title {
+    font-size: var(--text-xl);
+    line-height: 1.05;
+  }
+
+  .pw-pile-note {
+    margin-top: var(--space-2);
+    max-width: 42ch;
+    font-size: var(--text-sm);
+    line-height: 1.6;
+    color: var(--bone-soft);
+  }
+
+  .pw-kicker {
+    color: var(--gold);
+    margin-bottom: var(--space-2);
+  }
+
+  .pw-piles {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-auto-flow: dense;
+    gap: var(--space-5) clamp(1.5rem, 4vw, 4rem);
+    padding: var(--space-5) var(--edge) var(--space-6);
+  }
+
+  .pw-pile {
+    grid-column: span 12;
+    scroll-margin-top: 5rem;
+  }
+
+  .pw-pile.is-lineup,
+  .pw-pile.is-polaroids {
+    grid-column: span 7;
+  }
+
+  .pw-pile.is-festival,
+  .pw-pile.is-calendar {
+    grid-column: span 5;
+  }
+
+  .pw-pile-head {
+    margin-bottom: var(--space-4);
+  }
+
+  .pw-pile-body {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: clamp(1rem, 2.5vw, 2rem);
+  }
+
+  .pw-piece {
+    position: relative;
+    margin: 0;
+  }
+
+  .pw-frame {
+    display: block;
+    overflow: hidden;
+  }
+
+  .pw-frame :global(img) {
+    display: block;
+    height: var(--h, 16rem);
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+  }
+
+  .pw-piece figcaption {
+    margin-top: 0.6rem;
+    max-width: 24ch;
+    font-family: 'Caveat Variable', cursive;
+    font-size: clamp(1.1rem, 1rem + 0.4vw, 1.35rem);
+    line-height: 1.2;
+    color: var(--bone);
+  }
+
+  :lang(zh) .pw-piece figcaption {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: var(--text-sm);
+  }
+
+  /* ---- lineup: one portrait per band member, like a gig poster ---- */
+  .is-lineup .pw-pile-body {
+    flex-wrap: nowrap;
+    gap: clamp(0.75rem, 1.8vw, 1.5rem);
+  }
+
+  .is-lineup .pw-piece {
+    flex: 1 1 0;
+    min-width: 0;
+    transform: rotate(var(--tilt));
+    transition: transform 0.45s var(--ease-out-expo);
+  }
+
+  .is-lineup .pw-piece:hover {
+    transform: rotate(0deg) translateY(-0.4rem);
+  }
+
+  .is-lineup .pw-frame {
+    border: 6px solid var(--bone);
+    box-shadow: 0 1.2rem 2.5rem -1rem rgb(0 0 0 / 60%);
+  }
+
+  .is-lineup .pw-frame :global(img) {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+  }
+
+  .is-lineup figcaption {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.06em;
+    color: var(--bone-soft);
+  }
+
+  :lang(zh) .is-lineup figcaption {
+    font-family: var(--font-mono);
+    font-style: normal;
+    font-size: var(--text-xs);
+  }
+
+  /* ---- hand: the cards fanned out, the hovered one is lifted ---- */
+  .is-hand {
+    text-align: center;
+  }
+
+  .is-hand .pw-pile-head {
+    text-align: left;
+  }
+
+  .is-hand .pw-pile-body {
+    flex-wrap: nowrap;
+    justify-content: center;
+    gap: 0;
+    padding: var(--space-3) 0 var(--space-4);
+  }
+
+  .is-hand .pw-piece {
+    flex: none;
+    width: clamp(9rem, 15vw, 14rem);
+    margin-inline: clamp(-3rem, -2.6vw, -1.2rem);
+    transform-origin: 50% 120%;
+    transform: rotate(var(--fan)) translateY(var(--drop));
+    transition: transform 0.5s var(--ease-out-expo);
+    outline: none;
+  }
+
+  .is-hand .pw-piece:hover,
+  .is-hand .pw-piece:focus-visible {
+    z-index: 5;
+    transform: rotate(0deg) translateY(-1.6rem) scale(1.08);
+  }
+
+  .is-hand .pw-frame {
+    aspect-ratio: 5 / 7;
+    padding: 0.45rem;
+    border-radius: 0.6rem;
+    background: linear-gradient(160deg, #2a2420, #120f0d);
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb, var(--gold) 70%, transparent),
+      inset 0 0 0 4px #120f0d,
+      inset 0 0 0 5px color-mix(in srgb, var(--gold) 35%, transparent),
+      0 1.4rem 2.4rem -1rem rgb(0 0 0 / 70%);
+  }
+
+  .is-hand .pw-frame :global(img) {
+    width: 100%;
+    height: 100%;
+    border-radius: 0.35rem;
+    object-fit: contain;
+    background: #efe6d8;
+  }
+
+  .is-hand .pw-piece:focus-visible .pw-frame {
+    box-shadow:
+      inset 0 0 0 2px var(--gold),
+      0 0 0 3px var(--gold),
+      0 1.4rem 2.4rem -1rem rgb(0 0 0 / 70%);
+  }
+
+  .is-hand figcaption {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .pw-hand-caption {
+    min-height: 2.6em;
+    margin-top: var(--space-2);
+    font-family: 'Caveat Variable', cursive;
+    font-size: clamp(1.2rem, 1rem + 0.6vw, 1.6rem);
+    color: var(--bone);
+  }
+
+  :lang(zh) .pw-hand-caption {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: var(--text-base);
+  }
+
+  /* ---- polaroids ---- */
+  .is-polaroids .pw-pile-body {
+    display: grid;
+    grid-template-columns: repeat(var(--count), minmax(0, 1fr));
+  }
+
+  .is-polaroids .pw-piece {
+    padding: 0.6rem 0.6rem 0;
+    background: #f3ece0;
+    box-shadow: 0 1.2rem 2.4rem -1rem rgb(0 0 0 / 65%);
+    transform: rotate(var(--tilt));
+    transition: transform 0.45s var(--ease-out-expo);
+  }
+
+  .is-polaroids .pw-piece::before {
+    content: '';
+    position: absolute;
+    top: -0.55rem;
+    left: 50%;
+    width: 3rem;
+    height: 1.1rem;
+    transform: translateX(-50%) rotate(-4deg);
+    background: color-mix(in srgb, var(--bone) 55%, transparent);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 25%);
+  }
+
+  .is-polaroids .pw-piece:hover {
+    z-index: 2;
+    transform: rotate(0deg) translateY(-0.3rem);
+  }
+
+  .is-polaroids .pw-frame :global(img) {
+    width: 100%;
+    height: auto;
+    max-height: 18rem;
+  }
+
+  .is-polaroids figcaption {
+    padding: 0.4rem 0.2rem 0.8rem;
+    margin: 0;
+    color: #2a2420;
+  }
+
+  /* ---- festival: New Year prints on red paper with a gold rule ---- */
+  .is-festival .pw-pile-body {
+    padding: clamp(1rem, 2vw, 1.6rem);
+    background:
+      radial-gradient(circle at 20% 15%, rgb(255 210 120 / 16%), transparent 45%),
+      #8e1c1a;
+    box-shadow: inset 0 0 0 2px #d9a441, inset 0 0 0 6px #8e1c1a, inset 0 0 0 7px rgb(217 164 65 / 60%), 0 1.4rem 3rem -1rem rgb(0 0 0 / 65%);
+    justify-content: center;
+  }
+
+  .is-festival .pw-piece {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .is-festival .pw-frame {
+    box-shadow: 0 0 0 2px #d9a441;
+  }
+
+  .is-festival .pw-frame :global(img) {
+    width: 100%;
+    height: clamp(12rem, 18vw, 17rem);
+    object-fit: cover;
+  }
+
+  .is-festival figcaption {
+    color: #f6dca0;
+  }
+
+  /* ---- calendar: one torn-off page of the solar terms ---- */
+  .is-calendar .pw-pile-body {
+    justify-content: center;
+  }
+
+  .is-calendar .pw-piece {
+    position: relative;
+    width: min(100%, 16rem);
+    padding: 1.6rem 0.8rem 0.8rem;
+    background: #f3ece0;
+    box-shadow: 0 1.4rem 2.8rem -1rem rgb(0 0 0 / 65%);
+    transform: rotate(1.5deg);
+  }
+
+  .is-calendar .pw-piece::before {
+    content: '';
+    position: absolute;
+    top: 0.45rem;
+    left: 12%;
+    right: 12%;
+    height: 0.7rem;
+    background: radial-gradient(circle, #2a2420 0 0.22rem, transparent 0.26rem) 0 50% / 1.6rem 0.7rem repeat-x;
+  }
+
+  .is-calendar .pw-frame :global(img) {
+    width: 100%;
+    height: auto;
+  }
+
+  .is-calendar figcaption {
+    max-width: none;
+    color: #2a2420;
+  }
+
+  /* ---- strip: pinned in a row, all at one height ---- */
+  .is-strip .pw-piece {
+    transform: rotate(var(--tilt));
+    transition: transform 0.45s var(--ease-out-expo);
+  }
+
+  .is-strip .pw-piece:hover {
+    z-index: 2;
+    transform: rotate(0deg) translateY(-0.3rem);
+  }
+
+  .is-strip .pw-frame {
+    border: 6px solid var(--bone);
+    box-shadow: 0 1.2rem 2.5rem -1rem rgb(0 0 0 / 60%);
+  }
+
+  .is-strip .pw-frame :global(img) {
+    --h: clamp(13rem, 18vw, 17rem);
+  }
+
+  /* ---- Anakin: the moving piece gets a stage of its own ---- */
+  .pw-motion {
+    display: grid;
+    grid-template-columns: minmax(0, 24rem) minmax(0, 28rem);
+    justify-content: center;
+    align-items: center;
+    gap: clamp(2rem, 5vw, 4.5rem);
+    padding: var(--space-4) var(--edge) var(--space-5);
+    scroll-margin-top: 5rem;
+  }
+
+  .pw-motion-player :global(.film-frame) {
+    margin-inline: auto;
+  }
+
+  .pw-motion .pw-pile-title {
+    font-size: var(--text-2xl);
+  }
+
+  /* ---- storyboards ---- */
+  .pw-boards {
+    padding: var(--space-5) var(--edge) var(--space-6);
+    border-top: 1px solid var(--void-line);
+    scroll-margin-top: 4rem;
+  }
+
+  .pw-boards-head {
+    margin-bottom: var(--space-5);
+  }
+
+  .pw-board {
+    display: grid;
+    grid-template-columns: minmax(14rem, 19rem) minmax(0, 1fr);
+    gap: clamp(1.5rem, 3vw, 3rem);
+    align-items: start;
+    padding-block: var(--space-4);
+    border-top: 1px dashed color-mix(in srgb, var(--bone) 18%, transparent);
+  }
+
+  .pw-board-num {
+    font-family: var(--font-display);
+    font-size: var(--text-2xl);
+    line-height: 1;
+    color: var(--gold);
+  }
+
+  .pw-board-title {
+    margin-top: var(--space-2);
+    font-size: var(--text-lg);
+    line-height: 1.15;
+  }
+
+  .pw-board-meta {
+    margin-top: var(--space-2);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--bone-faint);
+  }
+
+  .pw-board-read {
+    margin-top: var(--space-3);
+    padding: 0.65em 1.2em;
+    border: 1px solid var(--gold);
+    border-radius: 999px;
+    background: none;
+    color: var(--gold);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.3s, color 0.3s;
+  }
+
+  .pw-board-read:hover,
+  .pw-board-read:focus-visible {
+    background: var(--gold);
+    color: var(--void);
+  }
+
+  .pw-sheets {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    padding: 0.4rem 0.2rem 1rem;
+    scroll-snap-type: x proximity;
+    scrollbar-width: thin;
+    scrollbar-color: var(--gold) transparent;
+  }
+
+  .pw-sheet {
+    flex: none;
+    margin: 0;
+    scroll-snap-align: start;
+  }
+
+  .pw-sheet :global(img) {
+    display: block;
+    height: clamp(14rem, 22vw, 20rem);
+    width: auto;
+    background: #fff;
+    box-shadow: 0 0.8rem 1.6rem -0.8rem rgb(0 0 0 / 70%);
+    transition: transform 0.4s var(--ease-out-expo);
+    cursor: zoom-in;
+  }
+
+  .pw-sheet:hover :global(img) {
+    transform: translateY(-0.3rem);
+  }
+
+  .pw-sheet figcaption {
+    margin-top: 0.4rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--bone-faint);
+  }
+
+  /* ---- smaller screens ---- */
+  @media (max-width: 1000px) {
+    .pw-pile.is-lineup,
+    .pw-pile.is-polaroids,
+    .pw-pile.is-festival,
+    .pw-pile.is-calendar {
+      grid-column: span 12;
+    }
+
+    .pw-board {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .pw-hero {
+      flex-direction: column;
+      text-align: center;
+      min-height: auto;
+      padding-top: 6.5rem;
+    }
+
+    .pw-hero-copy {
+      flex: none;
+      width: 100%;
+    }
+
+    .pw-hero-copy :global(.project-desc) {
+      margin-inline: auto;
+    }
+
+    .pw-hero-copy :global(.project-links) {
+      justify-content: center;
+    }
+
+    .hero-roles {
+      justify-content: center;
+    }
+
+    .pw-motion {
+      grid-template-columns: 1fr;
+      text-align: center;
+    }
+
+    .pw-motion .pw-pile-note {
+      margin-inline: auto;
+    }
+
+    /* the fan and the lineup become swipeable rows on a phone */
+    .is-lineup .pw-pile-body,
+    .is-hand .pw-pile-body {
+      justify-content: flex-start;
+      gap: 1rem;
+      overflow-x: auto;
+      padding: 1.6rem 0.4rem 1rem;
+      scroll-snap-type: x mandatory;
+    }
+
+    .is-lineup .pw-piece {
+      flex: none;
+      width: 68vw;
+      scroll-snap-align: center;
+    }
+
+    .is-hand .pw-piece {
+      width: 56vw;
+      margin-inline: 0;
+      transform: none;
+      scroll-snap-align: center;
+    }
+
+    .is-hand .pw-piece:hover,
+    .is-hand .pw-piece:focus-visible {
+      transform: none;
+    }
+
+    .is-hand figcaption {
+      position: static;
+      width: auto;
+      height: auto;
+      clip-path: none;
+    }
+
+    .pw-hand-caption {
+      display: none;
+    }
+
+    .is-polaroids .pw-pile-body {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .is-strip .pw-pile-body {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      padding: 0.6rem 0.4rem 1rem;
+      scroll-snap-type: x mandatory;
+    }
+
+    .is-strip .pw-piece {
+      flex: none;
+      scroll-snap-align: center;
+    }
+
+    .is-strip .pw-frame :global(img) {
+      --h: 15rem;
+      max-width: 80vw;
+    }
+
+    .is-festival .pw-pile-body {
+      flex-direction: column;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pw-piece,
+    .pw-index a,
+    .pw-sheet :global(img) {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  function initCollection() {
+    const root = document.querySelector<HTMLElement>('[data-collection]');
+    if (!root || root.dataset.pwInit === '1') return;
+    root.dataset.pwInit = '1';
+
+    root.querySelectorAll<HTMLAnchorElement>('[data-pw-jump]').forEach((link) => {
+      link.addEventListener('click', (event) => {
+        const target = document.querySelector<HTMLElement>(link.getAttribute('href') ?? '');
+        if (!target) return;
+        event.preventDefault();
+        const lenis = (window as any).__lenis;
+        if (lenis?.scrollTo) lenis.scrollTo(target, { offset: -80, duration: 1.1 });
+        else target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+
+    root.querySelectorAll<HTMLButtonElement>('[data-pw-read]').forEach((button) => {
+      button.addEventListener('click', () => {
+        button.closest('.pw-board')?.querySelector<HTMLImageElement>('[data-pw-sheets] img')?.click();
+      });
+    });
+
+    root.querySelectorAll<HTMLElement>('.is-hand').forEach((pile) => {
+      const caption = pile.querySelector<HTMLElement>('[data-pw-hand-caption]');
+      if (!caption) return;
+      const initial = caption.innerHTML;
+      pile.querySelectorAll<HTMLElement>('[data-pw-piece]').forEach((card) => {
+        const show = () => {
+          const text = card.querySelector('figcaption');
+          if (text) caption.innerHTML = text.innerHTML;
+        };
+        card.addEventListener('mouseenter', show);
+        card.addEventListener('focus', show);
+        card.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            card.querySelector('img')?.click();
+          }
+        });
+      });
+      pile.querySelector('.pw-pile-body')?.addEventListener('mouseleave', () => {
+        caption.innerHTML = initial;
+      });
+    });
+  }
+
+  document.addEventListener('astro:page-load', initCollection);
+</script>

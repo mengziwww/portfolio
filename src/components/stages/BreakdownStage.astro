@@ -140,9 +140,10 @@ const embers = Array.from({ length: 20 }, (_, i) => ({
 
   {video && (
     <section class="bd-reel">
-      <p class="bd-reel-label eyebrow">
+      <h2 class="bd-phase-title">
+        <span class="bd-phase-index">{String(phases.length + 1).padStart(2, '0')}</span>
         <I18nText en="storyboard" fr="storyboard" zh="分镜" />
-      </p>
+      </h2>
       <VideoPlayer src={video} />
     </section>
   )}
@@ -256,7 +257,7 @@ const embers = Array.from({ length: 20 }, (_, i) => ({
   .bd-hero-card {
     position: relative;
     flex: none;
-    width: clamp(11rem, 22vw, 24rem);
+    width: clamp(14rem, 30vw, 30rem);
   }
 
   .bd-hero-frame {
@@ -331,11 +332,12 @@ const embers = Array.from({ length: 20 }, (_, i) => ({
 
   .bd-reel {
     padding: var(--space-5) var(--edge);
+    border-top: 1px solid var(--void-line);
   }
 
-  .bd-reel-label {
-    color: var(--gold);
-    margin-bottom: var(--space-3);
+  .bd-reel :global(.film-frame) {
+    max-width: 62rem;
+    margin-inline: auto;
   }
 
   .bd-phase-title {
@@ -353,9 +355,11 @@ const embers = Array.from({ length: 20 }, (_, i) => ({
     letter-spacing: 0.05em;
   }
 
+  /* every board shares one height, whatever its shape: the small concept
+     sheets get room to read, the big extras stop taking a whole screen */
   .bd-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 21rem), 1fr));
     gap: var(--space-4);
   }
 
@@ -375,6 +379,7 @@ const embers = Array.from({ length: 20 }, (_, i) => ({
 
   .bd-card-frame :global(img) {
     width: 100%;
+    height: clamp(15rem, 24vw, 22rem);
     display: block;
     object-fit: contain;
     filter: saturate(0.94);
@@ -395,8 +400,9 @@ const embers = Array.from({ length: 20 }, (_, i) => ({
 
   .bd-card figcaption {
     margin-top: var(--space-2);
-    font-size: var(--text-xs);
-    color: var(--bone-faint);
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    color: var(--bone-soft);
     max-width: 45ch;
   }
 

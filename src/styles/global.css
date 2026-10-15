@@ -439,22 +439,6 @@ html[data-focus='strong'] :focus-visible {
   border: 0;
 }
 
-.skip-link {
-  position: fixed;
-  top: -3rem;
-  left: var(--edge);
-  z-index: 1000;
-  background: var(--bone);
-  color: var(--void);
-  padding: 0.6em 1.2em;
-  border-radius: 999px;
-  transition: top var(--dur-fast) var(--ease-out-expo);
-}
-
-.skip-link:focus-visible {
-  top: var(--space-2);
-}
-
 :focus-visible {
   outline: 2px solid var(--gold);
   outline-offset: 3px;
@@ -497,16 +481,17 @@ html[data-focus='strong'] :focus-visible {
   display: none;
 }
 
-html:not([lang='fr']):not([lang='zh']) [data-lang='en'],
-html[lang='en'] [data-lang='en'] {
+/* zh-Hant (traditional) reuses the zh spans: :lang(zh) matches both. */
+html:not(:lang(fr)):not(:lang(zh)) [data-lang='en'],
+html:lang(en) [data-lang='en'] {
   display: inline;
 }
 
-html[lang='fr'] [data-lang='fr'] {
+html:lang(fr) [data-lang='fr'] {
   display: inline;
 }
 
-html[lang='zh'] [data-lang='zh'] {
+html:lang(zh) [data-lang='zh'] {
   display: inline;
 }
 
@@ -514,16 +499,16 @@ html[lang='zh'] [data-lang='zh'] {
   display: none;
 }
 
-html:not([lang='fr']):not([lang='zh']) [data-lang-block='en'],
-html[lang='en'] [data-lang-block='en'] {
+html:not(:lang(fr)):not(:lang(zh)) [data-lang-block='en'],
+html:lang(en) [data-lang-block='en'] {
   display: block;
 }
 
-html[lang='fr'] [data-lang-block='fr'] {
+html:lang(fr) [data-lang-block='fr'] {
   display: block;
 }
 
-html[lang='zh'] [data-lang-block='zh'] {
+html:lang(zh) [data-lang-block='zh'] {
   display: block;
 }
 

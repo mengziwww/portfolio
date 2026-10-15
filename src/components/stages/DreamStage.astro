@@ -1,14 +1,7 @@
 ---
-// Full rebuild, not another pass on the same idea. A scattered field of
-// floating cards, no matter how the drift or the background got tuned,
-// was always fundamentally a gallery with atmosphere layered on top.
-// This is a different object: falling through the dream itself. Scroll
-// is the fall — a tunnel of light recedes and rotates slowly behind
-// everything, the void deepens from a warm near-dusk at the top to a
-// cold, distant indigo further down, and each image is a window she
-// passes at its own depth, nearer ones drifting past faster than far
-// ones as she scrolls (real GSAP-scrubbed parallax, not just a shared
-// ambient sway).
+// A dream cinema: one screen in the dark, her images drifting around it as
+// glowing memories. Picking one sends it flying onto the screen, its caption
+// shows up like a subtitle, and the film plays on by itself until touched.
 import { Image } from 'astro:assets';
 import type { CollectionEntry } from 'astro:content';
 import { getProjectImage, responsiveWidths } from '@/lib/images';
@@ -29,64 +22,61 @@ const glow = vividOf(accentFrom, accentTo);
 const coverImg = getProjectImage(project.id, cover);
 const categoryLabel = trAll(`category.${category}` as const);
 const clientLabel = trAll(category === 'commission' ? 'project.client' : 'project.at');
+const total = gallery.length;
+const pad = (n: number) => String(n).padStart(2, '0');
 
-// depth is the whole idea here: a near window (depth close to 1) is
-// bigger, sharper and drifts past faster on scroll; a far one (depth
-// close to 0) is smaller, softer, and barely moves — an actual sense of
-// passing through layers, not just images sharing one ambient sway.
-const portals = gallery.map((item, i) => {
+// memories drift in two loose columns on either side of the screen
+const perSide = [Math.ceil(total / 2), Math.floor(total / 2)];
+const memories = gallery.map((item, i) => {
+  const side = i % 2;
+  const k = Math.floor(i / 2);
+  const rows = Math.max(1, perSide[side] - 1);
   const seed = (i * 61 + 17) % 100;
-  const seed2 = (i * 97 + 41) % 100;
-  const depth = 0.35 + (seed % 6) * 0.12;
+  const zig = (k % 2 === 0 ? 1 : -1) * (3 + (seed % 3));
+  const edge = 11 + zig;
   return {
     item,
-    depth: depth.toFixed(2),
-    side: i % 2 === 0 ? -1 : 1,
-    offset: 3 + (seed % 5) * 2.2,
-    rot: (((seed % 7) - 3) * 2.2).toFixed(2),
-    swayDur: 13 + (seed2 % 7) * 2,
-    swayDelay: -((seed % 9) * 1.3),
-    blobA: 40 + (seed % 20),
-    blobB: 60 - (seed % 20),
+    img: getProjectImage(project.id, item.file),
+    x: (side === 0 ? edge : 100 - edge).toFixed(2),
+    y: (9 + (k * 76) / rows + (side ? 5 : 0)).toFixed(2),
+    size: (0.85 + (seed % 4) * 0.1).toFixed(2),
+    dur: 7 + (seed % 5) * 1.4,
+    delay: -((seed % 9) * 0.9),
+    hue: seed % 3,
   };
 });
 
-const motes = Array.from({ length: 30 }, (_, i) => {
+const motes = Array.from({ length: 26 }, (_, i) => {
   const seed = (i * 37 + 5) % 100;
   return {
     left: `${(i * 41) % 100}%`,
     top: `${(i * 29 + 13) % 100}%`,
-    size: 0.3 + (seed % 5) * 0.4,
+    size: 0.25 + (seed % 5) * 0.3,
     warm: seed % 2 === 0,
     delay: `${(i % 9) * 1.1}s`,
     dur: `${16 + (seed % 7) * 2}s`,
   };
 });
 
-// thin rays radiating from a vanishing point, the tunnel she's falling
-// through — evenly spaced angles, jittered length/opacity so it never
-// reads as a perfect, mechanical starburst
-const rays = Array.from({ length: 16 }, (_, i) => {
-  const seed = (i * 43 + 11) % 100;
-  return {
-    angle: (i / 16) * 360,
-    len: 38 + (seed % 30),
-    op: 0.08 + (seed % 10) * 0.012,
-  };
-});
+const seats = Array.from({ length: 2 }, (_, row) =>
+  Array.from({ length: row === 0 ? 15 : 13 }, (_, i) => ({ i })),
+);
+
+const ui = {
+  now: { en: 'now dreaming', fr: 'en plein rêve', zh: '正在做梦' },
+  pick: {
+    en: 'Catch a memory and send it to the screen.',
+    fr: 'Attrape un souvenir pour le projeter.',
+    zh: '抓住一段记忆，把它放上银幕。',
+  },
+  play: { en: 'let it dream', fr: 'laisser rêver', zh: '继续做梦' },
+  pause: { en: 'wake up', fr: 'se réveiller', zh: '醒来' },
+  prev: { en: 'Previous memory', fr: 'Souvenir précédent', zh: '上一段记忆' },
+  nextMem: { en: 'Next memory', fr: 'Souvenir suivant', zh: '下一段记忆' },
+};
 ---
 
 <article class="dream" style={`--mood-a:${accentFrom}; --mood-b:${accentTo}; --mood-glow:${glow};`} data-dream data-reveal-root>
-  <div class="dream-tunnel" data-dream-tunnel aria-hidden="true">
-    <div class="tunnel-rays">
-      {rays.map((r) => (
-        <span
-          class="ray"
-          style={`--angle:${r.angle}deg; --len:${r.len}vmax; --op:${r.op};`}
-        ></span>
-      ))}
-    </div>
-  </div>
   <div class="dream-motes" aria-hidden="true">
     {motes.map((m) => (
       <span
@@ -95,13 +85,14 @@ const rays = Array.from({ length: 16 }, (_, i) => {
       ></span>
     ))}
   </div>
+
   <header class="dr-hero">
     <div class="dr-cover">
       <Image
         src={coverImg}
         alt={coverAlt.en}
         widths={responsiveWidths(coverImg, [420, 640, 900])}
-        sizes="(max-width: 700px) 78vw, 24rem"
+        sizes="(max-width: 700px) 62vw, 20rem"
         loading="eager"
         fetchpriority="high"
         transition:name={`project-cover-${project.id}`}
@@ -133,35 +124,97 @@ const rays = Array.from({ length: 16 }, (_, i) => {
     </div>
   </header>
 
-  <div class="dream-fall" data-dream-fall>
-    {portals.map((p) => (
-      <figure
-        class="dream-portal"
-        data-portal
-        data-artwork
-        data-note-id={`${project.id}:${p.item.file}`}
-        data-depth={p.depth}
-        style={`--depth:${p.depth}; --side:${p.side}; --offset:${p.offset}vw; --rot:${p.rot}deg; --sway-dur:${p.swayDur}s; --sway-delay:${p.swayDelay}s; --blob-a:${p.blobA}%; --blob-b:${p.blobB}%;`}
-      >
-        <div class="dream-sway">
-        <div class="portal-mask">
-          <Image
-            src={getProjectImage(project.id, p.item.file)}
-            alt={p.item.alt.en}
-            widths={responsiveWidths(getProjectImage(project.id, p.item.file), [320, 480, 640])}
-            sizes="(max-width: 700px) 60vw, 22vw"
-            loading="lazy"
-          />
+  <section class="dm-cinema" data-dm aria-roledescription="carousel">
+    <div class="dm-beam" aria-hidden="true"></div>
+
+    <div class="dm-stage">
+      <div class="dm-screen-wrap">
+        <p class="dm-marquee">
+          <span class="dm-dot" aria-hidden="true"></span>
+          <I18nText {...ui.now} />
+          <span class="dm-count"><span data-dm-count>01</span> / {pad(total)}</span>
+        </p>
+        <figure class="dm-screen" data-dm-screen data-lb-group>
+          {memories.map((m, i) => (
+            <div
+              class:list={['dm-shot', { 'is-on': i === 0 }]}
+              data-dm-shot={i}
+              data-artwork
+              data-note-id={`${project.id}:${m.item.file}`}
+            >
+              <Image
+                src={m.img}
+                alt={m.item.alt.en}
+                widths={responsiveWidths(m.img, [640, 960, 1400])}
+                sizes="(max-width: 760px) 94vw, 56vw"
+                loading={i === 0 ? 'eager' : 'lazy'}
+              />
+            </div>
+          ))}
+          <span class="dm-flicker" aria-hidden="true"></span>
+        </figure>
+        <div class="dm-subs" aria-live="polite">
+          {memories.map((m, i) => (
+            <p class="dm-sub" data-dm-sub={i} hidden={i !== 0}>
+              {m.item.caption && <I18nText en={m.item.caption.en} fr={m.item.caption.fr} zh={m.item.caption.zh} />}
+            </p>
+          ))}
         </div>
-        {p.item.caption && (
-          <figcaption>
-            <I18nText en={p.item.caption.en} fr={p.item.caption.fr} zh={p.item.caption.zh} />
-          </figcaption>
-        )}
+        <div class="dm-controls">
+          <button type="button" class="dm-step" data-dm-step="-1">
+            <span aria-hidden="true">‹</span>
+            <span class="sr-only"><I18nText {...ui.prev} /></span>
+          </button>
+          <button type="button" class="dm-play" data-dm-play aria-pressed="true">
+            <span class="dm-play-on"><I18nText {...ui.pause} /></span>
+            <span class="dm-play-off"><I18nText {...ui.play} /></span>
+          </button>
+          <button type="button" class="dm-step" data-dm-step="1">
+            <span aria-hidden="true">›</span>
+            <span class="sr-only"><I18nText {...ui.nextMem} /></span>
+          </button>
         </div>
-      </figure>
-    ))}
-  </div>
+      </div>
+
+      <p class="dm-hint"><I18nText {...ui.pick} /></p>
+
+      <ul class="dm-memories">
+        {memories.map((m, i) => (
+          <li
+            class="dm-memory"
+            style={`--x:${m.x}%; --y:${m.y}%; --s:${m.size}; --dur:${m.dur}s; --delay:${m.delay}s;`}
+            data-hue={m.hue}
+          >
+            <button
+              type="button"
+              class:list={['dm-orb', { 'is-watching': i === 0 }]}
+              data-dm-orb={i}
+              aria-label={`${pad(i + 1)} ${m.item.alt.en}`}
+            >
+              <span class="dm-wing is-l" aria-hidden="true"></span>
+              <span class="dm-wing is-r" aria-hidden="true"></span>
+              <span class="dm-orb-pic">
+                <Image src={m.img} alt="" widths={[160, 240]} sizes="6rem" loading="lazy" />
+              </span>
+              <span class="dm-orb-num" aria-hidden="true">{pad(i + 1)}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    <svg class="dm-seats" viewBox="0 0 1000 120" preserveAspectRatio="none" aria-hidden="true">
+      {seats.map((row, r) => (
+        <g transform={`translate(${r === 0 ? 0 : 36} ${r === 0 ? 40 : 72})`}>
+          {row.map((s) => (
+            <path
+              d={`M${s.i * 68 + 6} 60 V${18 - r * 2} Q${s.i * 68 + 6} 4 ${s.i * 68 + 20} 4 H${s.i * 68 + 48} Q${s.i * 68 + 62} 4 ${s.i * 68 + 62} ${18 - r * 2} V60 Z`}
+            />
+          ))}
+        </g>
+      ))}
+    </svg>
+  </section>
 
   <ProjectFooter project={project} next={next} />
 </article>
@@ -169,63 +222,14 @@ const rays = Array.from({ length: 16 }, (_, i) => {
 <style>
   .dream {
     position: relative;
-    background: var(--void);
     overflow: hidden;
-    /* deepens from a warm near-dusk at the hero to a colder, more
-       distant indigo the further she falls — updated by the scroll-
-       scrubbed script below, same custom-property technique already
-       used for After Life's archive background */
-    background-image: radial-gradient(
-      ellipse 90% 60% at 50% 0%,
-      color-mix(in srgb, var(--mood-a) var(--dream-glow-pct, 22%), transparent),
-      transparent 70%
-    );
-  }
-
-  /* ---- the tunnel: a slow, barely-rotating starburst of thin rays from
-     a vanishing point above the page, standing in for the sensation of
-     falling through something rather than sitting in front of a lit
-     backdrop. Deliberately not the veil/blob wash used before — the
-     point this time was a different visual language, not a retune of
-     the same one. ---- */
-  .dream-tunnel {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    display: grid;
-    place-items: center;
-    overflow: hidden;
-  }
-
-  .tunnel-rays {
-    position: relative;
-    width: 1px;
-    height: 1px;
-    animation: tunnel-spin 90s linear infinite;
-  }
-
-  .ray {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 1px;
-    height: var(--len, 50vmax);
-    transform-origin: top center;
-    transform: rotate(var(--angle, 0deg));
-    background: linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--mood-glow) calc(var(--op, 0.1) * 100%), transparent),
-      transparent 85%
-    );
-  }
-
-  @keyframes tunnel-spin {
-    to { transform: rotate(360deg); }
+    background:
+      radial-gradient(ellipse 90% 50% at 50% 0%, color-mix(in srgb, var(--mood-a) 22%, transparent), transparent 70%),
+      linear-gradient(180deg, var(--void), color-mix(in srgb, var(--mood-b) 38%, #07050c) 55%, #07050c);
   }
 
   .dream-motes {
-    position: fixed;
+    position: absolute;
     inset: 0;
     z-index: 0;
     pointer-events: none;
@@ -234,39 +238,29 @@ const rays = Array.from({ length: 16 }, (_, i) => {
   .mote {
     position: absolute;
     border-radius: 50%;
-    background: color-mix(in srgb, var(--mood-b) 70%, var(--bone) 30%);
+    background: color-mix(in srgb, var(--mood-b) 60%, var(--bone) 40%);
     filter: blur(1.5px);
     opacity: 0;
     animation: mote-float ease-in-out infinite;
   }
 
   .mote.is-warm {
-    background: color-mix(in srgb, var(--mood-a) 70%, var(--gold) 30%);
+    background: color-mix(in srgb, var(--mood-a) 60%, var(--gold) 40%);
   }
 
   @keyframes mote-float {
     0% { opacity: 0; transform: translate(0, 0); }
-    20% { opacity: 0.5; }
+    20% { opacity: 0.55; }
     50% { transform: translate(1.5rem, -2rem); }
     80% { opacity: 0.35; }
     100% { opacity: 0; transform: translate(-1rem, -4rem); }
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .tunnel-rays,
-    .mote {
-      animation: none;
-      opacity: 0.12;
-    }
-    .dr-cover :global(img) {
-      filter: saturate(1.05);
-    }
-  }
-
+  /* ---- hero ---- */
   .dr-hero {
     position: relative;
     z-index: 2;
-    min-height: 100svh;
+    min-height: 88svh;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -277,7 +271,7 @@ const rays = Array.from({ length: 16 }, (_, i) => {
 
   .dr-cover {
     flex: none;
-    width: clamp(11rem, 22vw, 24rem);
+    width: clamp(11rem, 20vw, 20rem);
     overflow: hidden;
     border-radius: 2px;
     box-shadow: 0 2rem 5rem -1.5rem rgb(0 0 0 / 70%), 0 0 4rem 0.4rem color-mix(in srgb, var(--mood-glow) 25%, transparent);
@@ -287,7 +281,6 @@ const rays = Array.from({ length: 16 }, (_, i) => {
   .dr-cover :global(img) {
     width: 100%;
     display: block;
-    filter: saturate(1.05);
   }
 
   .dr-copy {
@@ -334,136 +327,645 @@ const rays = Array.from({ length: 16 }, (_, i) => {
     bottom: var(--space-3);
   }
 
-  /* ---- the fall: normal document flow, not an absolutely-positioned
-     scatter — each portal's actual position in the page is simply
-     "next", with depth expressed through size/blur/opacity and a small
-     side offset, then real motion comes from two independent sources:
-     a gentle idle sway (CSS) and scroll-scrubbed parallax (script,
-     translateY driven by --depth, see below). ---- */
-  .dream-fall {
+  /* ---- the cinema ---- */
+  .dm-cinema {
     position: relative;
     z-index: 1;
+    min-height: 100svh;
+    padding: var(--space-4) var(--edge) 0;
     display: flex;
     flex-direction: column;
+    justify-content: center;
+  }
+
+  .dm-beam {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 12%;
+    bottom: 0;
+    pointer-events: none;
+    background: linear-gradient(0deg, color-mix(in srgb, #fff3d6 26%, transparent), transparent 80%);
+    clip-path: polygon(48.5% 100%, 51.5% 100%, 78% 0, 22% 0);
+    filter: blur(14px);
+    opacity: 0.35;
+    mix-blend-mode: screen;
+    animation: dm-beam 6s ease-in-out infinite;
+  }
+
+  @keyframes dm-beam {
+    0%, 100% { opacity: 0.32; }
+    47% { opacity: 0.4; }
+    50% { opacity: 0.26; }
+    53% { opacity: 0.38; }
+  }
+
+  .dm-stage {
+    position: relative;
+    width: 100%;
+    max-width: 92rem;
+    margin-inline: auto;
+    height: min(86svh, 56rem);
+    min-height: 34rem;
+  }
+
+  .dm-screen-wrap {
+    position: absolute;
+    left: 50%;
+    top: 45%;
+    width: min(52vw, 54rem, (86svh - 13rem) * 1.6);
+    transform: translate(-50%, -50%);
+    z-index: 2;
+  }
+
+  .dm-marquee {
+    display: flex;
     align-items: center;
-    gap: clamp(3rem, 9vw, 7rem);
-    padding: var(--space-6) var(--edge) var(--space-6);
+    gap: 0.6rem;
+    margin-bottom: 0.7rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--gold) 80%, var(--bone));
   }
 
-  .dream-portal {
+  .dm-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: #ff5d6c;
+    box-shadow: 0 0 0.6rem #ff5d6c;
+    animation: dm-rec 1.6s steps(2) infinite;
+  }
+
+  @keyframes dm-rec {
+    50% { opacity: 0.25; }
+  }
+
+  .dm-count {
+    margin-left: auto;
+    color: var(--bone-soft);
+  }
+
+  .dm-screen {
     position: relative;
-    width: min(52rem, 92vw);
-    opacity: 1;
-    --tilt: 0deg;
-  }
-
-  .dream-sway {
-    animation: portal-sway var(--sway-dur, 15s) ease-in-out infinite;
-    animation-delay: var(--sway-delay, 0s);
-  }
-
-  @keyframes portal-sway {
-    0%, 100% { transform: translateX(calc(var(--side, 0) * 1.5rem)) rotate(var(--tilt)); }
-    50% { transform: translateX(calc(var(--side, 0) * 1.5rem)) translateY(-0.8rem) rotate(var(--tilt)); }
-  }
-
-  .portal-mask {
-    position: relative;
-    width: 100%;
+    margin: 0;
+    aspect-ratio: 16 / 10;
+    background: #050308;
+    border-radius: 0.5rem;
     overflow: hidden;
-    border-radius: 1.1rem;
-    background: rgb(0 0 0 / 28%);
-    box-shadow: 0 0 3rem 0.2rem color-mix(in srgb, var(--mood-glow) 22%, transparent);
-  }
-
-  @keyframes portal-morph {
-    0%, 100% {
-      border-radius: var(--blob-a, 45%) calc(100% - var(--blob-a, 45%)) var(--blob-b, 55%) calc(100% - var(--blob-b, 55%)) / var(--blob-b, 55%) var(--blob-a, 45%) calc(100% - var(--blob-a, 45%)) calc(100% - var(--blob-b, 55%));
-    }
-    50% {
-      border-radius: calc(100% - var(--blob-a, 45%)) var(--blob-a, 45%) calc(100% - var(--blob-b, 55%)) var(--blob-b, 55%) / calc(100% - var(--blob-a, 45%)) calc(100% - var(--blob-b, 55%)) var(--blob-b, 55%) var(--blob-a, 45%);
-    }
-  }
-
-  .portal-mask :global(img) {
-    width: 100%;
-    height: auto;
-    object-fit: contain;
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, #fff3d6 18%, transparent),
+      0 0 3rem 0.4rem color-mix(in srgb, #fff3d6 16%, transparent),
+      0 0 9rem 2rem color-mix(in srgb, var(--mood-glow) 26%, transparent);
     cursor: zoom-in;
   }
 
-  .dream-portal figcaption {
-    margin-top: var(--space-2);
-    padding-inline: 0.4rem;
-    font-size: var(--text-xs);
-    color: var(--bone-faint);
-    text-align: center;
-    max-width: 22ch;
-    margin-inline: auto;
-    opacity: 0.85;
+  .dm-shot {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.7s ease, filter 0.9s ease;
+    filter: blur(8px) brightness(1.6);
   }
 
-  @media (max-width: 700px) {
-    .dream-portal {
-      width: min(70vw, 18rem);
-      --tilt: var(--rot, 0deg);
+  .dm-shot.is-on {
+    opacity: 1;
+    filter: none;
+    pointer-events: auto;
+  }
+
+  .dm-shot :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+
+  .dm-flicker {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse at 50% 50%, transparent 55%, rgb(0 0 0 / 45%)),
+      repeating-linear-gradient(0deg, rgb(255 255 255 / 2.5%) 0 1px, transparent 1px 3px);
+    animation: dm-flick 0.18s steps(2) infinite;
+  }
+
+  @keyframes dm-flick {
+    50% { opacity: 0.82; }
+  }
+
+  .dm-subs {
+    min-height: 3.4em;
+    margin-top: 0.9rem;
+    text-align: center;
+  }
+
+  .dm-sub {
+    display: inline-block;
+    max-width: 44ch;
+    padding: 0.25em 0.7em;
+    font-size: var(--text-base);
+    line-height: 1.4;
+    color: #fffbea;
+    background: rgb(0 0 0 / 55%);
+    text-shadow: 0 1px 2px #000;
+    animation: dm-sub-in 0.5s ease both;
+  }
+
+  .dm-sub[hidden] {
+    display: none;
+  }
+
+  @keyframes dm-sub-in {
+    from { opacity: 0; transform: translateY(0.3rem); }
+  }
+
+  .dm-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.8rem;
+    margin-top: 0.4rem;
+  }
+
+  .dm-step,
+  .dm-play {
+    font-family: var(--font-mono);
+    color: var(--bone);
+    background: rgb(255 255 255 / 6%);
+    border: 1px solid rgb(255 255 255 / 18%);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+  }
+
+  .dm-step {
+    width: 2.4rem;
+    height: 2.4rem;
+    font-size: 1.3rem;
+    line-height: 1;
+  }
+
+  .dm-play {
+    padding: 0.55em 1.2em;
+    font-size: var(--text-xs);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .dm-step:hover,
+  .dm-play:hover,
+  .dm-step:focus-visible,
+  .dm-play:focus-visible {
+    background: rgb(255 255 255 / 14%);
+    border-color: var(--gold);
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .dm-play[aria-pressed='true'] .dm-play-off,
+  .dm-play[aria-pressed='false'] .dm-play-on {
+    display: none;
+  }
+
+  .dm-hint {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0.4rem;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.08em;
+    color: var(--bone-soft);
+    z-index: 3;
+  }
+
+  /* ---- memory fairies ---- */
+  .dm-memories {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .dm-memory {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    z-index: 3;
+    transform: translate(-50%, -50%);
+  }
+
+  .dm-orb {
+    --size: calc(clamp(3.6rem, 6.2vw, 6rem) * var(--s, 1));
+    --halo: #ffe7a8;
+    position: relative;
+    display: block;
+    width: var(--size);
+    height: var(--size);
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    animation: dm-drift var(--dur, 8s) ease-in-out var(--delay, 0s) infinite;
+    transition: opacity 0.5s ease, scale 0.5s ease;
+  }
+
+  [data-hue='1'] .dm-orb {
+    --halo: #c9b8ff;
+  }
+
+  [data-hue='2'] .dm-orb {
+    --halo: #ffb8cf;
+  }
+
+  @keyframes dm-drift {
+    0%, 100% { transform: translate(0, 0) rotate(-3deg); }
+    30% { transform: translate(0.6rem, -0.9rem) rotate(2deg); }
+    65% { transform: translate(-0.5rem, -0.3rem) rotate(-1deg); }
+  }
+
+  .dm-orb-pic {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow:
+      0 0 0 2px color-mix(in srgb, var(--halo) 70%, transparent),
+      0 0 1.2rem 0.3rem color-mix(in srgb, var(--halo) 50%, transparent),
+      0 0 3rem 0.6rem color-mix(in srgb, var(--halo) 22%, transparent);
+    animation: dm-pulse 3.2s ease-in-out var(--delay, 0s) infinite;
+  }
+
+  .dm-orb-pic::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 32% 26%, rgb(255 255 255 / 60%), transparent 22%),
+      radial-gradient(circle at 50% 50%, transparent 52%, color-mix(in srgb, var(--halo) 40%, transparent) 100%);
+  }
+
+  @keyframes dm-pulse {
+    50% {
+      box-shadow:
+        0 0 0 2px color-mix(in srgb, var(--halo) 90%, transparent),
+        0 0 1.6rem 0.5rem color-mix(in srgb, var(--halo) 65%, transparent),
+        0 0 4rem 1rem color-mix(in srgb, var(--halo) 28%, transparent);
+    }
+  }
+
+  .dm-orb-pic :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    filter: saturate(1.1) brightness(1.05);
+  }
+
+  .dm-wing {
+    position: absolute;
+    top: 8%;
+    width: 46%;
+    height: 56%;
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    background: radial-gradient(ellipse at 50% 60%, color-mix(in srgb, var(--halo) 45%, transparent), transparent 70%);
+    border: 1px solid color-mix(in srgb, var(--halo) 35%, transparent);
+    animation: dm-flap 0.9s ease-in-out infinite alternate;
+  }
+
+  .dm-wing.is-l {
+    right: 72%;
+    transform-origin: 100% 70%;
+    rotate: -24deg;
+  }
+
+  .dm-wing.is-r {
+    left: 72%;
+    transform-origin: 0 70%;
+    rotate: 24deg;
+  }
+
+  @keyframes dm-flap {
+    to { transform: scaleX(0.55); }
+  }
+
+  .dm-orb-num {
+    position: absolute;
+    left: 50%;
+    bottom: -1.3rem;
+    translate: -50% 0;
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.1em;
+    color: color-mix(in srgb, var(--halo) 80%, var(--bone));
+    opacity: 0.8;
+  }
+
+  .dm-orb:hover,
+  .dm-orb:focus-visible {
+    scale: 1.14;
+    outline: none;
+  }
+
+  .dm-orb:focus-visible .dm-orb-pic {
+    outline: 2px solid var(--gold);
+    outline-offset: 4px;
+  }
+
+  .dm-orb.is-watching {
+    opacity: 0;
+    scale: 0.4;
+    pointer-events: none;
+  }
+
+  .dm-fly {
+    position: fixed;
+    z-index: 50;
+    overflow: hidden;
+    pointer-events: none;
+    box-shadow: 0 0 3rem 1rem rgb(255 231 168 / 45%);
+  }
+
+  .dm-fly img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .dm-seats {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: clamp(3.5rem, 9vw, 7rem);
+    margin-top: -3rem;
+    fill: #07050c;
+    z-index: 2;
+    filter: drop-shadow(0 -1px 0 rgb(255 243 214 / 10%));
+  }
+
+  .dream :global(.project-footer) {
+    position: relative;
+    z-index: 2;
+  }
+
+  @media (max-width: 1100px) {
+    .dm-screen-wrap {
+      width: min(60vw, 46rem);
+    }
+  }
+
+  @media (max-width: 760px) {
+    .dr-hero {
+      min-height: auto;
+      padding-top: 6.5rem;
+      text-align: center;
+    }
+
+    .dr-cover {
+      width: min(62vw, 16rem);
+    }
+
+    .dr-copy {
+      flex-basis: 100%;
+    }
+
+    .dr-copy :global(.project-desc) {
+      margin-inline: auto;
+    }
+
+    .dr-copy :global(.project-links),
+    .hero-roles {
+      justify-content: center;
+    }
+
+    .dr-cue {
+      display: none;
+    }
+
+    .dm-cinema {
+      min-height: auto;
+      padding-top: var(--space-5);
+    }
+
+    .dm-stage {
+      height: auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .dm-screen-wrap {
+      position: relative;
+      left: auto;
+      top: auto;
+      width: 100%;
+      transform: none;
+    }
+
+    .dm-hint {
+      position: static;
+      order: 2;
+      margin-top: var(--space-3);
+    }
+
+    .dm-memories {
+      order: 3;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1.6rem 1.4rem;
+      padding: var(--space-3) 0.6rem var(--space-5);
+    }
+
+    .dm-memory {
+      position: relative;
+      left: auto;
+      top: auto;
+      transform: none;
+    }
+
+    .dm-orb {
+      --size: calc(3.4rem * var(--s, 1));
+    }
+
+    .dm-orb.is-watching {
+      opacity: 0.25;
+      scale: 0.8;
+    }
+
+    .dm-beam {
+      display: none;
+    }
+
+    .dm-seats {
+      margin-top: 0;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .dream-sway,
-    .portal-mask {
+    .mote,
+    .dm-beam,
+    .dm-orb,
+    .dm-orb-pic,
+    .dm-wing,
+    .dm-flicker,
+    .dm-dot {
       animation: none;
     }
+    .mote {
+      opacity: 0.12;
+    }
+  }
+
+  :global(html[data-motion='quiet']) .dm-orb,
+  :global(html[data-motion='still']) .dm-orb,
+  :global(html[data-motion='still']) .dm-wing,
+  :global(html[data-motion='still']) .dm-flicker,
+  :global(html[data-motion='still']) .mote {
+    animation: none;
   }
 </style>
 
 <script>
-  import { gsap } from 'gsap';
-  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  let timer: number | undefined;
+  let observer: IntersectionObserver | undefined;
 
   function initDream() {
-    const roots = document.querySelectorAll<HTMLElement>('[data-dream]');
-    if (!roots.length) return;
-    gsap.registerPlugin(ScrollTrigger);
+    const root = document.querySelector<HTMLElement>('[data-dm]');
+    if (!root || root.dataset.dmInit === '1') return;
+    root.dataset.dmInit = '1';
+
     const motion = document.documentElement.dataset.motion;
     const reduced = motion === 'quiet' || motion === 'still' || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const shots = Array.from(root.querySelectorAll<HTMLElement>('[data-dm-shot]'));
+    const subs = Array.from(root.querySelectorAll<HTMLElement>('[data-dm-sub]'));
+    const orbs = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-dm-orb]'));
+    const screen = root.querySelector<HTMLElement>('[data-dm-screen]')!;
+    const count = root.querySelector<HTMLElement>('[data-dm-count]')!;
+    const play = root.querySelector<HTMLButtonElement>('[data-dm-play]')!;
+    const total = shots.length;
+    let current = 0;
+    let playing = !reduced;
+    let visible = false;
+    let flying = false;
 
-    roots.forEach((root) => {
-      if (root.dataset.dreamInit === '1') return;
-      root.dataset.dreamInit = '1';
+    const show = (i: number) => {
+      shots.forEach((s, k) => s.classList.toggle('is-on', k === i));
+      subs.forEach((s, k) => (s.hidden = k !== i));
+      orbs.forEach((o, k) => o.classList.toggle('is-watching', k === i));
+      count.textContent = String(i + 1).padStart(2, '0');
+      current = i;
+    };
 
-      // background warms near the hero, cools toward deep indigo the
-      // further into the fall she scrolls — same idea as After Life's
-      // scroll-driven color mix, tuned for a dream rather than a ruin
-      gsap.to(root, {
-        '--dream-glow-pct': '4%',
-        ease: 'none',
-        scrollTrigger: { trigger: root, start: 'top top', end: 'bottom bottom', scrub: 0.6 },
-      });
+    const go = (i: number) => {
+      const target = (i + total) % total;
+      if (target === current || flying) return;
+      const orb = orbs[target];
+      const pic = orb.querySelector('img');
+      const from = orb.getBoundingClientRect();
+      const to = screen.getBoundingClientRect();
+      const onScreen = from.bottom > 0 && from.top < innerHeight && to.bottom > 0 && to.top < innerHeight;
+      if (reduced || !pic || !onScreen) {
+        show(target);
+        return;
+      }
+      flying = true;
+      const ghost = document.createElement('div');
+      ghost.className = 'dm-fly';
+      ghost.setAttribute('aria-hidden', 'true');
+      ghost.style.cssText = `left:${from.left}px;top:${from.top}px;width:${from.width}px;height:${from.height}px;border-radius:50%;`;
+      const img = document.createElement('img');
+      img.src = pic.currentSrc || pic.src;
+      img.alt = '';
+      ghost.append(img);
+      root.append(ghost);
+      orb.classList.add('is-watching');
+      const dx = to.left + to.width / 2 - (from.left + from.width / 2);
+      const dy = to.top + to.height / 2 - (from.top + from.height / 2);
+      const sx = to.width / from.width;
+      const sy = to.height / from.height;
+      const lift = Math.min(160, Math.abs(dx) * 0.3 + 60);
+      const anim = ghost.animate(
+        [
+          { transform: 'translate(0, 0) scale(1)', borderRadius: '50%', opacity: 1 },
+          { transform: `translate(${dx * 0.5}px, ${dy * 0.5 - lift}px) scale(${(1 + sx) / 3}, ${(1 + sy) / 3})`, borderRadius: '40%', opacity: 1, offset: 0.55 },
+          { transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`, borderRadius: '4%', opacity: 0.2 },
+        ],
+        { duration: 900, easing: 'cubic-bezier(.45,.05,.3,1)' },
+      );
+      anim.onfinish = () => {
+        ghost.remove();
+        flying = false;
+      };
+      window.setTimeout(() => show(target), 620);
+    };
 
-      if (reduced) return;
+    const tick = () => {
+      window.clearTimeout(timer);
+      if (!playing || !visible) return;
+      timer = window.setTimeout(() => {
+        go(current + 1);
+        tick();
+      }, 5200);
+    };
 
-      // near portals (depth close to 1) drift past faster than far ones
-      // (depth close to 0) as the page scrolls — real parallax, not a
-      // shared ambient sway
-      root.querySelectorAll<HTMLElement>('[data-portal]').forEach((el) => {
-        const depth = Number(el.dataset.depth ?? '0.6');
-        gsap.to(el, {
-          y: () => -60 * depth,
-          ease: 'none',
-          scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: 0.8 },
-        });
-      });
+    const setPlaying = (on: boolean) => {
+      playing = on;
+      play.setAttribute('aria-pressed', String(on));
+      tick();
+    };
+
+    if (reduced) play.setAttribute('aria-pressed', 'false');
+
+    orbs.forEach((orb, i) =>
+      orb.addEventListener('click', () => {
+        setPlaying(false);
+        go(i);
+      }),
+    );
+    root.querySelectorAll<HTMLButtonElement>('[data-dm-step]').forEach((b) =>
+      b.addEventListener('click', () => {
+        setPlaying(false);
+        go(current + Number(b.dataset.dmStep));
+      }),
+    );
+    play.addEventListener('click', () => setPlaying(!playing));
+    root.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      e.preventDefault();
+      setPlaying(false);
+      go(current + (e.key === 'ArrowRight' ? 1 : -1));
     });
+    screen.addEventListener('click', () => setPlaying(false));
+
+    observer = new IntersectionObserver(
+      ([entry]) => {
+        visible = entry.isIntersecting;
+        tick();
+      },
+      { threshold: 0.45 },
+    );
+    observer.observe(screen);
   }
 
-  document.addEventListener('astro:page-load', () => {
-    initDream();
-    requestAnimationFrame(() => ScrollTrigger.refresh());
-  });
-
+  document.addEventListener('astro:page-load', initDream);
   document.addEventListener('astro:before-swap', () => {
-    ScrollTrigger.getAll().forEach((t) => t.kill());
+    window.clearTimeout(timer);
+    observer?.disconnect();
+    observer = undefined;
   });
 </script>

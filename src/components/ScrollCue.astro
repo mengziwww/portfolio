@@ -80,6 +80,41 @@ const { label = { en: 'scroll', fr: 'défiler', zh: '向下滚动' } } = Astro.p
       opacity: 0.6;
     }
   }
+
+  /* on phones the hero text runs to the bottom of the screen, so the cue
+     floats above it instead of sitting in a corner the text covers */
+  @media (max-width: 700px), (max-width: 1100px) and (orientation: portrait) {
+    .scroll-cue {
+      position: fixed;
+      left: 50%;
+      bottom: max(1rem, env(safe-area-inset-bottom));
+      z-index: 40;
+      flex-direction: row;
+      gap: 0.55rem;
+      padding: 0.5rem 0.95rem;
+      border: 1px solid rgb(255 255 255 / 14%);
+      border-radius: 999px;
+      background: rgb(9 8 10 / 72%);
+      backdrop-filter: blur(8px);
+      transform: translateX(-50%);
+      transition: opacity 0.4s, transform 0.4s var(--ease-out-expo);
+    }
+
+    .scroll-cue.is-gone {
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, 1rem);
+    }
+
+    .cue-line {
+      height: 1.1rem;
+    }
+
+    .cue-label {
+      writing-mode: horizontal-tb;
+      color: var(--bone-soft);
+    }
+  }
 </style>
 
 <script>
@@ -99,5 +134,14 @@ const { label = { en: 'scroll', fr: 'défiler', zh: '向下滚动' } } = Astro.p
     });
   }
 
-  document.addEventListener('astro:page-load', initScrollCues);
+  let onScroll: (() => void) | undefined;
+
+  document.addEventListener('astro:page-load', () => {
+    initScrollCues();
+    const cues = document.querySelectorAll<HTMLElement>('[data-scroll-cue]');
+    if (onScroll) window.removeEventListener('scroll', onScroll);
+    onScroll = () => cues.forEach((cue) => cue.classList.toggle('is-gone', window.scrollY > 40));
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+  });
 </script>

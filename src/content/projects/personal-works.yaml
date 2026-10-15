@@ -1,23 +1,88 @@
 title: Personal works
 year: 2025
 category: personal
-template: sketchbook
+template: collection
 order: 8
 size: wide
 accentFrom: "#8A5A3A"
 accentTo: "#161310"
 roles:
-  en: [Drawing]
-  fr: [Dessin]
-  zh: [画]
+  en: [Drawing, Animation, Storyboard]
+  fr: [Dessin, Animation, Storyboard]
+  zh: [绘画, 动画, 分镜]
 subtitle:
-  en: smaller pieces, in a few piles
-  fr: des pièces plus petites, en quelques tas
-  zh: 一些小作品，分成几叠
+  en: what I draw between films
+  fr: ce que je dessine entre deux films
+  zh: 做片子之外画的东西
 description:
-  en: Placeholder. Drawings, commissions and fan art. I'll write about each pile later.
-  fr: Texte provisoire. Dessins, commandes et fan art. J'écrirai sur chaque tas plus tard.
-  zh: 先放着。画、委托和同人。每一叠我之后再写。
+  en: "Everything I make outside of films: fan art for a band I love, a card game, commissions, New Year pictures, my sketchbook, a fan animation and three storyboards."
+  fr: "Tout ce que je fais en dehors des films : du fan art pour un groupe que j'aime, un jeu de cartes, des commandes, des images de nouvel an, mon carnet, une animation de fan et trois storyboards."
+  zh: "片子以外的东西都在这里：给喜欢的乐队画的同人、一套卡牌游戏、委托、新年贺图、速写本、一段同人动画，还有三份分镜。"
+piles:
+  - chapter: Since Tomorrow
+    display: lineup
+    note:
+      en: Fan art for the band Since Tomorrow, one portrait per member.
+      fr: Du fan art pour le groupe Since Tomorrow, un portrait par membre.
+      zh: 给 Since Tomorrow 乐队画的同人，每位成员一张。
+  - chapter: Card game
+    display: hand
+    note:
+      en: "Designs for a card game: the party, its monsters, and the title."
+      fr: "Des designs pour un jeu de cartes : l'équipe, ses monstres, et le titre."
+      zh: 一套卡牌游戏的设计：主角团、怪物，还有标题。
+  - chapter: Commissions
+    display: polaroids
+    note:
+      en: Characters I drew for other people.
+      fr: Des personnages dessinés pour d'autres personnes.
+      zh: 帮别人画的角色。
+  - chapter: Spring Festival
+    display: festival
+    note:
+      en: Pictures for the Chinese New Year.
+      fr: Des images pour le nouvel an chinois.
+      zh: 过年画的贺图。
+  - chapter: 24 solar terms
+    display: calendar
+    note:
+      en: One of the 24 solar terms of the Chinese calendar.
+      fr: Un des 24 termes solaires du calendrier chinois.
+      zh: 二十四节气里的一个。
+  - chapter: Sketchbook
+    display: strip
+    note:
+      en: Practice, style tests, and a few drawings just for me.
+      fr: De l'entraînement, des essais de style, et quelques dessins juste pour moi.
+      zh: 练习、风格测试，还有一些只是画给自己的。
+storyboards:
+  - title:
+      en: Untitled Storyboard Project I
+      fr: Untitled Storyboard Project I
+      zh: Untitled Storyboard Project I
+    note:
+      en: Placeholder. I'll write a few words about this storyboard later.
+      fr: Texte provisoire. J'écrirai quelques mots sur ce storyboard plus tard.
+      zh: 说明先空着，之后再写这份分镜。
+    pages: [storyboard-1-01.jpg, storyboard-1-02.jpg, storyboard-1-03.jpg, storyboard-1-04.jpg, storyboard-1-05.jpg, storyboard-1-06.jpg, storyboard-1-07.jpg, storyboard-1-08.jpg, storyboard-1-09.jpg]
+  - title:
+      en: Untitled Storyboard Project II
+      fr: Untitled Storyboard Project II
+      zh: Untitled Storyboard Project II
+    note:
+      en: Placeholder. I'll write about this one later too.
+      fr: Texte provisoire. J'écrirai sur celui-ci plus tard aussi.
+      zh: 说明先空着，之后再写。
+    pages: [storyboard-2-01.jpg, storyboard-2-02.jpg, storyboard-2-03.jpg, storyboard-2-04.jpg, storyboard-2-05.jpg, storyboard-2-06.jpg, storyboard-2-07.jpg, storyboard-2-08.jpg, storyboard-2-09.jpg, storyboard-2-10.jpg, storyboard-2-11.jpg, storyboard-2-12.jpg, storyboard-2-13.jpg, storyboard-2-14.jpg, storyboard-2-15.jpg, storyboard-2-16.jpg, storyboard-2-17.jpg, storyboard-2-18.jpg, storyboard-2-19.jpg, storyboard-2-20.jpg, storyboard-2-21.jpg, storyboard-2-22.jpg]
+  - title:
+      en: Untitled Storyboard Project III
+      fr: Untitled Storyboard Project III
+      zh: Untitled Storyboard Project III
+    note:
+      en: Placeholder. A few words about this storyboard will go here.
+      fr: Texte provisoire. Quelques mots sur ce storyboard viendront ici.
+      zh: 这里之后会写几句关于这份分镜的话。
+    pages: [storyboard-3-01.jpg, storyboard-3-02.jpg, storyboard-3-03.jpg, storyboard-3-04.jpg, storyboard-3-05.jpg, storyboard-3-06.jpg, storyboard-3-07.jpg, storyboard-3-08.jpg]
 cover: cover.png
 coverAlt:
   en: "For a while I kept dreaming of the sea. My anxiety was like a tree swaying in a storm. It looks fragile, but it bends and doesn't fall easily. It doesn't fight back. It just grows."

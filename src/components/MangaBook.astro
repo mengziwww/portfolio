@@ -180,7 +180,8 @@ const helpId = `manga-help-${projectId}`;
     if (status.kind === 'cover') return words.cover;
     if (status.kind === 'back') return words.back;
     if (status.kind === 'end') return words.end;
-    return words.pages(status.pages);
+    const text = words.pages(status.pages);
+    return document.documentElement.lang === 'zh-Hant' ? text.replace('页', '頁') : text;
   }
 
   const cleanups: Array<() => void> = [];

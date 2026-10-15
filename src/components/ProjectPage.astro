@@ -9,6 +9,7 @@ import SketchbookStage from '@/components/stages/SketchbookStage.astro';
 import BreakdownStage from '@/components/stages/BreakdownStage.astro';
 import DreamStage from '@/components/stages/DreamStage.astro';
 import ProcessStage from '@/components/stages/ProcessStage.astro';
+import CollectionStage from '@/components/stages/CollectionStage.astro';
 import { getProjectImage } from '@/lib/images';
 import { getImage } from 'astro:assets';
 import NotesMode from '@/components/NotesMode.astro';
@@ -41,4 +42,5 @@ const ogImg = await getImage({ src: ogSource, width: 1200, height: 630 });
   {project.data.template === 'breakdown' && <BreakdownStage project={project} next={next} />}
   {project.data.template === 'dream' && <DreamStage project={project} next={next} />}
   {project.data.template === 'process' && <ProcessStage project={project} next={next} />}
+  {project.data.template === 'collection' && <CollectionStage project={project} next={next} />}
 </Base>

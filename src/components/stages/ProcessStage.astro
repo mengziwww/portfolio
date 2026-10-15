@@ -221,11 +221,16 @@ const pollen = Array.from({ length: 26 }, (_, i) => ({
 </script>
 
 <style>
+  /* the film's own evening: a dusk sky going down into the warm dark of
+     the field, sunflower yellow for the accents */
   .process {
+    --sunflower: #f2c14e;
+    --dusk: #1b2a33;
     position: relative;
     background:
-      radial-gradient(ellipse 70% 45% at 50% 0%, color-mix(in srgb, var(--mood-a) 22%, transparent), transparent 70%),
-      color-mix(in srgb, var(--mood-a) 6%, var(--void));
+      radial-gradient(ellipse 60% 30% at 80% 8%, rgb(242 160 80 / 14%), transparent 70%),
+      radial-gradient(ellipse 70% 40% at 15% 60%, rgb(242 193 78 / 6%), transparent 70%),
+      linear-gradient(180deg, var(--dusk) 0%, #1d2226 35%, #1f1a14 70%, #1a130d 100%);
     overflow: hidden;
   }
 
@@ -277,16 +282,18 @@ const pollen = Array.from({ length: 26 }, (_, i) => ({
     height: 100%;
     object-fit: cover;
     object-position: 50% 35%;
-    filter: saturate(1.05) brightness(0.82);
+    filter: saturate(1.15) brightness(0.95);
   }
 
+  /* dark only where the words are (bottom-left), so the field keeps its
+     colors everywhere else */
   .pr-hero-scrim {
     position: absolute;
     inset: 0;
     z-index: 1;
     background:
-      linear-gradient(0deg, var(--void) 0%, color-mix(in srgb, var(--void) 78%, transparent) 32%, color-mix(in srgb, var(--void) 15%, transparent) 62%, transparent 85%),
-      linear-gradient(100deg, color-mix(in srgb, var(--void) 55%, transparent) 0%, transparent 45%);
+      linear-gradient(0deg, var(--dusk) 0%, color-mix(in srgb, var(--dusk) 55%, transparent) 22%, transparent 48%),
+      linear-gradient(90deg, rgb(12 14 16 / 84%) 0%, rgb(12 14 16 / 66%) 30%, rgb(12 14 16 / 20%) 50%, transparent 62%);
   }
 
   .pr-hero-copy {
@@ -386,11 +393,12 @@ const pollen = Array.from({ length: 26 }, (_, i) => ({
   }
 
   .pr-hero-desc {
-    font-size: var(--text-sm);
-    color: var(--bone-faint);
-    max-width: 56ch;
+    font-size: var(--text-base);
+    color: color-mix(in srgb, var(--bone) 92%, transparent);
+    max-width: 54ch;
     margin-top: var(--space-3);
-    line-height: 1.6;
+    line-height: 1.65;
+    text-shadow: 0 1px 12px rgb(0 0 0 / 70%);
   }
 
   .hero-roles {
@@ -550,7 +558,7 @@ const pollen = Array.from({ length: 26 }, (_, i) => ({
   .pr-chapter-index {
     font-family: var(--font-mono);
     font-size: var(--text-sm);
-    color: var(--chapter-tint, var(--gold));
+    color: var(--sunflower);
     letter-spacing: 0.05em;
   }
 
@@ -578,22 +586,23 @@ const pollen = Array.from({ length: 26 }, (_, i) => ({
   .pr-card-frame {
     display: block;
     overflow: hidden;
-    background: var(--bone-faint);
-    padding: 0.5rem 0.5rem 0;
-    box-shadow: 0 1rem 2rem -0.8rem rgb(0 0 0 / 55%);
+    background: #f6efe2;
+    padding: 0.5rem;
+    box-shadow: 0 1.2rem 2.4rem -0.9rem rgb(0 0 0 / 65%);
   }
 
   .pr-card-frame :global(img) {
     width: 100%;
     display: block;
     object-fit: contain;
-    background: #efe6d8;
+    background: #fff;
   }
 
   .pr-card figcaption {
     margin-top: var(--space-2);
-    font-size: var(--text-xs);
-    color: var(--bone-faint);
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    color: color-mix(in srgb, var(--bone) 85%, transparent);
     max-width: 45ch;
   }
 
@@ -602,12 +611,12 @@ const pollen = Array.from({ length: 26 }, (_, i) => ({
     position: absolute;
     top: -0.5rem;
     left: 50%;
-    width: 2.4rem;
+    width: 2.6rem;
     height: 1.1rem;
     z-index: 1;
     transform: translateX(-50%) rotate(-3deg);
-    background: rgb(255 255 255 / 18%);
-    border: 1px solid rgb(255 255 255 / 25%);
+    background: rgb(242 193 78 / 55%);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 30%);
   }
 
   .pr-card.pin-b::before {
@@ -646,7 +655,7 @@ const pollen = Array.from({ length: 26 }, (_, i) => ({
     display: flex;
     align-items: baseline;
     gap: 0.6em;
-    color: var(--gold);
+    color: var(--sunflower);
     margin-bottom: var(--space-3);
   }
 

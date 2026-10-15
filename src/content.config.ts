@@ -31,7 +31,7 @@ const projects = defineCollection({
     year: z.number(),
     category: z.enum(['commission', 'school', 'personal']),
     // which Stage component renders this project — see src/components/stages/
-    template: z.enum(['journey', 'impact', 'reel', 'atmosphere', 'sketchbook', 'breakdown', 'dream', 'process']),
+    template: z.enum(['journey', 'impact', 'reel', 'atmosphere', 'sketchbook', 'breakdown', 'dream', 'process', 'collection']),
     order: z.number(), // lower = shown earlier on the home mosaic
     // how much room this gets in the home mosaic — the grid auto-packs, so a
     // new project just picks one of these and finds its own spot
@@ -42,6 +42,9 @@ const projects = defineCollection({
     client: z.string().optional(),
     subtitle: localized,
     description: localized,
+    // used by the "atmosphere" stage: the story, told one sentence per
+    // picture as you scroll (falls back to the description)
+    story: localized.optional(),
     cover: z.string(), // filename in src/assets/projects/<id>/
     coverAlt: localized,
     // optional lines on the home poster. When set, they replace the
@@ -50,6 +53,8 @@ const projects = defineCollection({
     posterGenre: localized.optional(),
     gallery: z.array(galleryItem).default([]),
     video: z.string().optional(),
+    // a few words shown under `video`
+    videoNote: localized.optional(),
     // used by the "process" stage: several real clips (not one), each its
     // own stage of the work, e.g. storyboard reel -> animation -> making-of
     videos: z
@@ -74,6 +79,36 @@ const projects = defineCollection({
         date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
         youtube: z.string(), // video id
       })
+      .optional(),
+    // a line of context under a gallery chapter's title, matched on chapter.en
+    chapterNotes: z
+      .array(
+        z.object({
+          chapter: z.string(),
+          note: localized,
+        })
+      )
+      .optional(),
+    // used by the "collection" stage: how each gallery chapter is laid out,
+    // matched on chapter.en, plus a line of context under its title
+    piles: z
+      .array(
+        z.object({
+          chapter: z.string(),
+          display: z.enum(['lineup', 'hand', 'polaroids', 'festival', 'calendar', 'strip']),
+          note: localized,
+        })
+      )
+      .optional(),
+    // used by the "collection" stage: storyboards shown as page sequences
+    storyboards: z
+      .array(
+        z.object({
+          title: localized,
+          note: localized,
+          pages: z.array(z.string()), // filenames in src/assets/projects/<id>/
+        })
+      )
       .optional(),
   }),
 });

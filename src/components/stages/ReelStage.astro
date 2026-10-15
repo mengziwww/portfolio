@@ -28,7 +28,7 @@ interface Props {
   next: CollectionEntry<'projects'>;
 }
 const { project, next } = Astro.props;
-const { title, subtitle, description, year, roles, category, client, cover, coverAlt, gallery, accentFrom, accentTo, links } = project.data;
+const { title, subtitle, description, year, roles, category, client, cover, coverAlt, gallery, accentFrom, accentTo, links, chapterNotes = [] } = project.data;
 const glow = vividOf(accentFrom, accentTo);
 const coverImg = getProjectImage(project.id, cover);
 const categoryLabel = trAll(`category.${category}` as const);
@@ -47,6 +47,7 @@ for (const item of gallery) {
     chapterGroups.push({ label: item.chapter, items: [item] });
   }
 }
+const noteFor = (label: GalleryItem['chapter']) => chapterNotes.find((n) => n.chapter === label?.en)?.note;
 
 const fireflies = Array.from({ length: 22 }, (_, i) => ({
   left: `${(i * 41) % 100}%`,
@@ -62,6 +63,20 @@ const skyLanterns = Array.from({ length: 9 }, (_, i) => ({
   dur: `${18 + (i % 5) * 3}s`,
   size: 1 + (i % 3) * 0.3,
 }));
+
+// red lanterns hung along one cord that sags across the top of the hero;
+// `top` follows the same curve as the cord's path (M0 1 Q50 11 100 1)
+const hanging = [8, 22, 36, 50, 64, 78, 92].map((x, i) => {
+  const t = x / 100;
+  const y = (1 - t) ** 2 * 1 + 2 * (1 - t) * t * 11 + t ** 2 * 1;
+  return {
+    left: `${x}%`,
+    top: `${(y / 10) * 5.5}rem`,
+    size: i % 3 === 1 ? 2.6 : 2.1,
+    dur: `${3.4 + (i % 4) * 0.5}s`,
+    delay: `${-(i * 0.7)}s`,
+  };
+});
 
 const fireworks = Array.from({ length: 5 }, (_, i) => ({
   left: `${16 + ((i * 137) % 64)}%`,
@@ -107,12 +122,47 @@ const roofline = rooflinePath();
       ></span>
     ))}
   </div>
+  <svg class="ln-defs" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="ln-paper" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#ffe6b0" />
+        <stop offset="0.55" stop-color="#ffab4a" />
+        <stop offset="1" stop-color="#d4521f" />
+      </linearGradient>
+      <radialGradient id="ln-silk" cx="0.42" cy="0.4" r="0.65">
+        <stop offset="0" stop-color="#ff8a4c" />
+        <stop offset="0.55" stop-color="#d2281c" />
+        <stop offset="1" stop-color="#7a0f0c" />
+      </radialGradient>
+      <symbol id="ln-sky" viewBox="0 0 20 30">
+        <path d="M2.5 2.2 Q10 -0.6 17.5 2.2 L15.2 23.4 Q10 25.4 4.8 23.4 Z" fill="url(#ln-paper)" />
+        <path d="M6.6 1.3 L7.6 24.4 M10 0.8 V25 M13.4 1.3 L12.4 24.4" stroke="#b7451c" stroke-opacity="0.35" stroke-width="0.5" fill="none" />
+        <path d="M3.4 9.5 Q10 11 16.6 9.5" stroke="#b7451c" stroke-opacity="0.3" stroke-width="0.5" fill="none" />
+        <ellipse cx="10" cy="24.6" rx="5.2" ry="1.1" fill="#7a2a12" />
+        <ellipse cx="10" cy="26.4" rx="1.3" ry="2" fill="#fff2b0" />
+      </symbol>
+      <symbol id="ln-red" viewBox="0 0 24 44">
+        <line x1="12" y1="0" x2="12" y2="5" stroke="#d9a441" stroke-width="0.8" />
+        <rect x="7" y="4.4" width="10" height="2.8" rx="0.8" fill="#d9a441" />
+        <ellipse cx="12" cy="17.6" rx="11" ry="10.6" fill="url(#ln-silk)" />
+        <g stroke="#5c0a08" stroke-opacity="0.45" stroke-width="0.6" fill="none">
+          <ellipse cx="12" cy="17.6" rx="7.4" ry="10.6" />
+          <ellipse cx="12" cy="17.6" rx="3.6" ry="10.6" />
+          <line x1="12" y1="7" x2="12" y2="28.2" />
+        </g>
+        <rect x="7" y="27.6" width="10" height="2.8" rx="0.8" fill="#d9a441" />
+        <rect x="11.2" y="30.4" width="1.6" height="2" fill="#d9a441" />
+        <path d="M9.8 32.4 h4.4 l0.6 10 h-5.6 Z" fill="#e2b04a" />
+        <path d="M10.6 33 v9 M12 33 v9.2 M13.4 33 v9" stroke="#a8741f" stroke-width="0.35" />
+      </symbol>
+    </defs>
+  </svg>
   <div class="sky-lanterns" aria-hidden="true">
     {skyLanterns.map((s) => (
       <span
         class="sky-lantern"
         style={`left:${s.left}; animation-delay:${s.delay}; animation-duration:${s.dur}; --scale:${s.size};`}
-      ><i></i></span>
+      ><svg viewBox="0 0 20 30"><use href="#ln-sky" /></svg></span>
     ))}
   </div>
   <div class="fireworks" aria-hidden="true">
@@ -128,6 +178,14 @@ const roofline = rooflinePath();
 
   <header class="ln-hero">
     <div class="ln-hero-glow" aria-hidden="true"></div>
+    <div class="ln-string" aria-hidden="true">
+      <svg class="ln-string-cord" viewBox="0 0 100 10" preserveAspectRatio="none"><path d="M0 1 Q50 11 100 1" /></svg>
+      {hanging.map((h) => (
+        <span class="ln-hang" style={`left:${h.left}; top:${h.top}; --size:${h.size}rem; --sway-d:${h.dur}; --sway-delay:${h.delay};`}>
+          <svg viewBox="0 0 24 44"><use href="#ln-red" /></svg>
+        </span>
+      ))}
+    </div>
     <div class="ln-cover">
       <span class="lantern-cord" aria-hidden="true"></span>
       <div class="lantern-frame ln-cover-frame">
@@ -187,6 +245,9 @@ const roofline = rooflinePath();
           {group.label && (
             <p class="chapter-banner"><I18nText en={group.label.en} fr={group.label.fr} zh={group.label.zh} /></p>
           )}
+          {noteFor(group.label) && (
+            <p class="chapter-note"><I18nText {...noteFor(group.label)!} /></p>
+          )}
           {group.items.map((item) => (
             <figure class="moon-gate is-grand" data-artwork data-note-id={`${project.id}:${item.file}`}>
               <span class="gate-lintel" aria-hidden="true"><i></i></span>
@@ -212,6 +273,9 @@ const roofline = rooflinePath();
         <section class="chapter chapter-path" data-night-row={group.label ? 'true' : undefined}>
           {group.label && (
             <p class="chapter-banner"><I18nText en={group.label.en} fr={group.label.fr} zh={group.label.zh} /></p>
+          )}
+          {noteFor(group.label) && (
+            <p class="chapter-note"><I18nText {...noteFor(group.label)!} /></p>
           )}
           <div class="gate-path">
             {group.items.map((item, idx) => (
@@ -289,24 +353,110 @@ const roofline = rooflinePath();
 
   /* small paper sky-lanterns drifting up the whole page, a night-market
      detail beyond the wire-strung gallery lanterns */
+  .ln-defs {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+  }
+
   .sky-lantern {
     position: absolute;
     bottom: -3rem;
     display: block;
-    width: 0.55rem;
-    height: 0.7rem;
+    width: 1.1rem;
+    height: 1.65rem;
     transform: scale(var(--scale, 1));
     animation: sky-lantern-rise linear infinite;
   }
 
-  .sky-lantern i {
+  .sky-lantern svg {
     display: block;
     width: 100%;
     height: 100%;
-    border-radius: 30% 30% 40% 40%;
-    background: linear-gradient(180deg, #ffd79a, var(--gold));
-    box-shadow: 0 0 0.6rem 0.15rem color-mix(in srgb, var(--gold) 65%, transparent);
-    opacity: 0.85;
+    overflow: visible;
+    filter: drop-shadow(0 0 0.5rem rgb(255 160 70 / 55%));
+    animation: ln-sway 3.6s ease-in-out infinite alternate;
+    transform-origin: 50% 90%;
+  }
+
+  @keyframes ln-sway {
+    from { transform: rotate(-5deg); }
+    to { transform: rotate(5deg); }
+  }
+
+  /* ---- the cord of red lanterns across the top of the hero ---- */
+  .ln-string {
+    position: absolute;
+    top: 3.6rem;
+    left: 0;
+    right: 0;
+    height: 9rem;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .ln-string-cord {
+    position: absolute;
+    inset: 0 0 auto;
+    width: 100%;
+    height: 5.5rem;
+    overflow: visible;
+  }
+
+  .ln-string-cord path {
+    fill: none;
+    stroke: color-mix(in srgb, var(--gold) 55%, #3a2a18);
+    stroke-width: 1.2;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .ln-hang {
+    position: absolute;
+    width: var(--size);
+    height: calc(var(--size) * 44 / 24);
+    margin-left: calc(var(--size) / -2);
+    transform-origin: 50% 0;
+    animation: ln-hang-sway var(--sway-d) ease-in-out infinite alternate;
+    animation-delay: var(--sway-delay);
+  }
+
+  .ln-hang svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 0 0.9rem rgb(255 90 50 / 45%));
+  }
+
+  .ln-hang::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 40%;
+    width: 160%;
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: radial-gradient(circle, rgb(255 120 60 / 22%), transparent 65%);
+  }
+
+  @keyframes ln-hang-sway {
+    from { transform: rotate(-4deg); }
+    to { transform: rotate(4deg); }
+  }
+
+  @media (max-width: 700px) {
+    .ln-string {
+      top: 3.2rem;
+    }
+
+    .ln-hang:nth-child(odd of .ln-hang) {
+      display: none;
+    }
+
+    .ln-hang {
+      --size: 1.7rem !important;
+    }
   }
 
   @keyframes sky-lantern-rise {
@@ -410,6 +560,7 @@ const roofline = rooflinePath();
   @media (prefers-reduced-motion: reduce) {
     .firefly { animation: none; opacity: 0.35; }
     .sky-lantern { animation: none; opacity: 0; }
+    .ln-hang, .sky-lantern svg { animation: none; }
     .firework, .firework i { animation: none; opacity: 0; }
   }
 
@@ -584,7 +735,7 @@ const roofline = rooflinePath();
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: min(46rem, 88vw);
+    width: min(46rem, 88vw - 2 * clamp(1rem, 7vw, 4.5rem));
     transform: translateX(calc(var(--side, 0) * clamp(1rem, 7vw, 4.5rem)));
     filter: brightness(calc(1 - var(--row-i, 0) * 0.11));
     transition: filter 0.4s;
@@ -652,11 +803,28 @@ const roofline = rooflinePath();
   }
 
   .moon-gate figcaption {
-    margin-top: var(--space-2);
-    font-size: var(--text-xs);
-    color: var(--bone-faint);
+    margin: var(--space-2) auto 0;
+    padding: 0.45em 0.8em;
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    color: var(--bone);
     text-align: center;
-    max-width: 22ch;
+    max-width: 30ch;
+    background: rgb(10 8 8 / 55%);
+    border-radius: 3px;
+  }
+
+  .moon-gate.is-grand figcaption {
+    max-width: 40ch;
+  }
+
+  .chapter-note {
+    max-width: 44ch;
+    margin: calc(var(--space-4) * -1) auto var(--space-5);
+    text-align: center;
+    font-size: var(--text-base);
+    line-height: 1.6;
+    color: var(--bone-soft);
   }
 
   @media (max-width: 700px) {

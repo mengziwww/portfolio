@@ -35,6 +35,22 @@ coverAlt:
   en: A crowded, lantern-lit temple street with a golden-robed deity figure, a guardian lion statue and a grinning child
   fr: Une rue de temple animée et éclairée de lanternes, avec une divinité en robe dorée, un lion gardien et une enfant souriante
   zh: 灯笼高挂的热闹庙会街道，金袍神将、护法石狮与咧嘴笑的孩童
+chapterNotes:
+  - chapter: final effect
+    note:
+      en: Placeholder. A few words about the story will go here.
+      fr: Texte provisoire. Quelques mots sur l'histoire viendront ici.
+      zh: 这里之后写几句关于故事的话。
+  - chapter: World
+    note:
+      en: Placeholder. A few words about the world of the gods will go here.
+      fr: Texte provisoire. Quelques mots sur le monde des dieux viendront ici.
+      zh: 这里之后写几句关于神明世界的话。
+  - chapter: more from this project
+    note:
+      en: Placeholder. A few words about the research will go here.
+      fr: Texte provisoire. Quelques mots sur les recherches viendront ici.
+      zh: 这里之后写几句关于采风的话。
 gallery:
   - file: deity.png
     chapter: &chapterCharacters
@@ -42,60 +58,96 @@ gallery:
       fr: rendu final
       zh: 最终效果
     alt:
-      en: Close-up of a fierce, ornately masked deity figure in red and gold temple dress, a mischievous girl at their feet
-      fr: Gros plan sur une divinité au masque orné et féroce, en robe de temple rouge et or, avec une fillette espiègle à ses pieds
-      zh: 一位面容威严、头戴精致法冠的神将特写，身穿红金庙袍，脚边是调皮的女孩
+      en: The girl hides inside a costume head and follows the Earth God to find Mazu.
+      fr: La fille se cache dans une tête de costume et suit le dieu de la Terre pour retrouver Mazu.
+      zh: 女孩藏在头套里，跟着土地爷找妈祖。
+    caption:
+      en: The girl hides inside a costume head and follows the Earth God to find Mazu.
+      fr: La fille se cache dans une tête de costume et suit le dieu de la Terre pour retrouver Mazu.
+      zh: 女孩藏在头套里，跟着土地爷找妈祖。
   - file: scene-02.png
     chapter: &chapterWorld
       en: World
       fr: Univers
       zh: 世界
     alt:
-      en: Environment study of the reunion-night street, warm and crowded
-      fr: Étude d'environnement de la rue de la nuit des retrouvailles, chaleureuse et animée
-      zh: 团圆之夜街景环境稿，暖意融融、人声鼎沸
+      en: "The gods' offering table. The offerings of the humans unroll slowly along a painted scroll, drifting past like conveyor-belt sushi."
+      fr: "La table d'offrandes des dieux. Les offrandes des humains se déroulent lentement sur un rouleau peint, et défilent comme des sushis sur un tapis roulant."
+      zh: 神明的供桌，人类的供品在画卷上徐徐展开，像回转寿司一样，慢慢流动。
+    caption:
+      en: "The gods' offering table. The offerings of the humans unroll slowly along a painted scroll, drifting past like conveyor-belt sushi."
+      fr: "La table d'offrandes des dieux. Les offrandes des humains se déroulent lentement sur un rouleau peint, et défilent comme des sushis sur un tapis roulant."
+      zh: 神明的供桌，人类的供品在画卷上徐徐展开，像回转寿司一样，慢慢流动。
   - file: scene-03.png
     chapter: *chapterWorld
     alt:
-      en: A quieter corner of the same street, lanterns reflected in the dark
-      fr: Un coin plus calme de la même rue, lanternes se reflétant dans l'obscurité
-      zh: 同一条街道更安静的一角，灯笼倒影在夜色中
+      en: Mazu, sitting on the shore by the sea.
+      fr: Mazu, assise sur le rivage, au bord de la mer.
+      zh: 妈祖，坐在海边的岸上。
+    caption:
+      en: Mazu, sitting on the shore by the sea.
+      fr: Mazu, assise sur le rivage, au bord de la mer.
+      zh: 妈祖，坐在海边的岸上。
   - file: scene-04.png
     chapter: *chapterWorld
     alt:
-      en: A final environment pass, the crowd thinning as the night deepens
-      fr: Un dernier passage d'environnement, la foule se dispersant tandis que la nuit s'approfondit
-      zh: 最后一版环境稿，夜色渐深，人群渐渐散去
+      en: Mazu, leaning against a tree of shimmering jewels.
+      fr: Mazu, adossée à un arbre de pierres précieuses qui scintillent.
+      zh: 妈祖，倚靠着泛着流光的宝石树。
+    caption:
+      en: Mazu, leaning against a tree of shimmering jewels.
+      fr: Mazu, adossée à un arbre de pierres précieuses qui scintillent.
+      zh: 妈祖，倚靠着泛着流光的宝石树。
   - file: extra-34.png
     chapter: *chapterWorld
     alt:
-      en: Placeholder. I'll describe this image later.
-      fr: Texte provisoire. Je décrirai cette image plus tard.
-      zh: 说明先空着，之后再写。
+      en: The streets and alleys of the gods' world, where gods of every size and kind live side by side in peace.
+      fr: Les rues et les ruelles du monde des dieux, où des divinités de toutes les tailles et de toutes les sortes vivent en paix.
+      zh: 神明世界的大街小巷，不同尺寸和种类的神明和平共处。
+    caption:
+      en: The streets and alleys of the gods' world, where gods of every size and kind live side by side in peace.
+      fr: Les rues et les ruelles du monde des dieux, où des divinités de toutes les tailles et de toutes les sortes vivent en paix.
+      zh: 神明世界的大街小巷，不同尺寸和种类的神明和平共处。
   - file: prop-1.png
     chapter: *chapterWorld
     alt:
-      en: Placeholder. I'll describe this image later.
-      fr: Texte provisoire. Je décrirai cette image plus tard.
-      zh: 说明先空着，之后再写。
+      en: Dusk, waiting for the gods' procession.
+      fr: Le crépuscule, en attendant la procession des dieux.
+      zh: 等待游神活动的黄昏。
+    caption:
+      en: Dusk, waiting for the gods' procession.
+      fr: Le crépuscule, en attendant la procession des dieux.
+      zh: 等待游神活动的黄昏。
   - file: prop-2.png
     chapter: *chapterWorld
     alt:
-      en: Placeholder. I'll describe this image later.
-      fr: Texte provisoire. Je décrirai cette image plus tard.
-      zh: 说明先空着，之后再写。
+      en: "Background: a street in Changle, Fujian, at dusk."
+      fr: "Décor : une rue de Changle, au Fujian, au crépuscule."
+      zh: 背景，福建长乐的黄昏街道。
+    caption:
+      en: "Background: a street in Changle, Fujian, at dusk."
+      fr: "Décor : une rue de Changle, au Fujian, au crépuscule."
+      zh: 背景，福建长乐的黄昏街道。
   - file: prop-3.png
     chapter: *chapterWorld
     alt:
-      en: Placeholder. I'll describe this image later.
-      fr: Texte provisoire. Je décrirai cette image plus tard.
-      zh: 说明先空着，之后再写。
+      en: Dusk.
+      fr: Le crépuscule.
+      zh: 黄昏。
+    caption:
+      en: Dusk.
+      fr: Le crépuscule.
+      zh: 黄昏。
   - file: extra-30.png
     chapter:
       en: more from this project
       fr: encore de ce projet
       zh: 这个项目的其他画面
     alt:
-      en: Placeholder. I'll describe this image later.
-      fr: Texte provisoire. Je décrirai cette image plus tard.
-      zh: 说明先空着，之后再写。
+      en: Field research on the Bajiajiang, the Eight Generals of the temple processions.
+      fr: Recherches sur le terrain, auprès des Bajiajiang, les huit généraux des processions.
+      zh: 八家将实地采风。
+    caption:
+      en: Field research on the Bajiajiang, the Eight Generals of the temple processions.
+      fr: Recherches sur le terrain, auprès des Bajiajiang, les huit généraux des processions.
+      zh: 八家将实地采风。

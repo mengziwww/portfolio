@@ -26,7 +26,8 @@ interface Props {
   next: CollectionEntry<'projects'>;
 }
 const { project, next } = Astro.props;
-const { title, subtitle, year, roles, category, cover, coverAlt, gallery, description, accentFrom, accentTo, links } = project.data;
+const { title, subtitle, year, roles, category, cover, coverAlt, gallery, description, story, accentFrom, accentTo, links } = project.data;
+const told = story ?? description;
 const glow = vividOf(accentFrom, accentTo);
 const coverImg = getProjectImage(project.id, cover);
 const categoryLabel = trAll(`category.${category}` as const);
@@ -35,9 +36,9 @@ function splitFragments(text: string, zh = false): string[] {
   const raw = zh ? text.split(/(?<=[。！？])/) : text.split(/(?<=[.!?])\s+/);
   return raw.map((s) => s.trim()).filter(Boolean);
 }
-const fragEn = splitFragments(description.en);
-const fragFr = splitFragments(description.fr);
-const fragZh = splitFragments(description.zh, true);
+const fragEn = splitFragments(told.en);
+const fragFr = splitFragments(told.fr);
+const fragZh = splitFragments(told.zh, true);
 const fragCount = Math.max(fragEn.length, fragFr.length, fragZh.length);
 const fragments = Array.from({ length: fragCount }, (_, i) => ({
   en: fragEn[i] ?? '',
@@ -53,6 +54,22 @@ const mangaItems = stills
   .filter((item) => item.file.startsWith('board-'))
   .sort((a, b) => a.file.localeCompare(b.file, undefined, { numeric: true }));
 const trackItems = stills.filter((item) => !studyFiles.has(item.file) && !item.file.startsWith('board-'));
+
+// the text before the manga: its first sentence is set apart as a lead
+const prologueText = {
+  en: "This manga is the story as it first was. A girl decides to end her life. Her parents are long gone, and she is the last one left of her tribe. Just then, a red-skinned girl appears in front of her and says: you are the last human in the world, and you have one task, to come with me and watch the new world being born. On the way they talk about the seven days in which the gods made the world. Sadly, it took humans only seven days to destroy it. So after nightfall the gods will make the world again, and the girl will be its witness. Her body keeps decaying. Until she fades, they stay in the grass looking at the stars, thinking about the future of the new world. She is grateful to the messenger for not letting her die alone. In the end, what the new world becomes doesn't matter, because I will always love this world. Under the stars, the girl promises the bones that they will meet again.",
+  fr: "Ce manga, c'est l'histoire telle qu'elle était au tout début. Une fille décide de mettre fin à ses jours. Ses parents sont partis depuis longtemps, et elle est la dernière de sa tribu. C'est alors qu'une fille à la peau rouge apparaît devant elle et lui dit : tu es la dernière humaine au monde, et tu as une mission, venir avec moi voir naître le nouveau monde. En chemin, elles parlent des sept jours pendant lesquels les dieux ont créé le monde. Dommage, il n'a fallu que sept jours aux humains pour le détruire. Alors, à la tombée de la nuit, les dieux vont recréer le monde, et la fille en sera le témoin. Son corps se décompose peu à peu. Jusqu'à ce qu'elle s'efface, elles restent dans l'herbe à regarder les étoiles, à penser à l'avenir du nouveau monde. La fille remercie la messagère de ne pas l'avoir laissée mourir seule. Au fond, peu importe ce que deviendra le nouveau monde, parce que j'aimerai toujours ce monde. Sous les étoiles, la fille promet aux ossements qu'ils se reverront.",
+  zh: "这个漫画是故事最初的模样。一个女孩决定自杀，她的父母早已离去，部落的人只剩下她一个了。但正在这时候，一个红皮肤女孩出现在她的面前，她说：你是世界上最后一个人类了，你有一个任务，那就是跟我去看看新世界的诞生。路上他们讨论了神创世界的七日谈，很可惜，人类毁灭世界也只用了七天。于是天黑之后，神将重新创造这个世界，而自杀的女孩就是见证人。女孩的身体不断腐烂，他们在女孩临消散前一直在草地上看星空，一直在想新世界的未来。女孩很感谢使者让她的死亡不再孤独。其实，新世界会变成什么样并不重要，因为我会一直爱这个世界。在星空下，女孩对着尸骨许诺下一次的再见。",
+};
+function splitLead(text: string, zh = false) {
+  const [lead, ...rest] = splitFragments(text, zh);
+  return { lead, rest: rest.join(zh ? '' : ' ') };
+}
+const prologue = {
+  en: splitLead(prologueText.en),
+  fr: splitLead(prologueText.fr),
+  zh: splitLead(prologueText.zh, true),
+};
 
 const slides = trackItems.map((item, i) => {
   const img = getProjectImage(project.id, item.file);
@@ -85,7 +102,7 @@ const slides = trackItems.map((item, i) => {
       <p class="am-subtitle">
         <I18nText en={subtitle.en} fr={subtitle.fr} zh={subtitle.zh} />
       </p>
-      <ProjectIntro links={links} />
+      <ProjectIntro description={story ? description : undefined} links={links} />
       <ul class="hero-roles">
         {roles.en.map((_, i) => (
           <li style={`--i:${i}`}>
@@ -116,20 +133,19 @@ const slides = trackItems.map((item, i) => {
     <div class="eotw-frame" data-order-group="world">
       {slides.map((s, i) => (
         <figure class:list={['eotw-slide', { 'is-portrait': s.portrait }]} data-slide data-index={i} data-artwork data-note-id={`${project.id}:${s.item.file}`}>
-          <Image
-            src={getProjectImage(project.id, s.item.file)}
-            alt={s.item.alt.en}
-            widths={responsiveWidths(getProjectImage(project.id, s.item.file), [640, 960, 1280])}
-            sizes="(max-width: 900px) 84vw, 56rem"
-            loading={i < 1 ? 'eager' : 'lazy'}
-          />
+          <span class="eotw-pic">
+            <Image
+              src={getProjectImage(project.id, s.item.file)}
+              alt={s.item.alt.en}
+              widths={responsiveWidths(getProjectImage(project.id, s.item.file), [640, 960, 1280])}
+              sizes="(max-width: 900px) 84vw, 56rem"
+              loading={i < 1 ? 'eager' : 'lazy'}
+            />
+          </span>
           {s.frag && (
-            <>
-              <span class="eotw-scrim" aria-hidden="true"></span>
-              <figcaption class="eotw-line">
-                <I18nText en={s.frag.en} fr={s.frag.fr} zh={s.frag.zh} />
-              </figcaption>
-            </>
+            <figcaption class="eotw-line">
+              <I18nText en={s.frag.en} fr={s.frag.fr} zh={s.frag.zh} />
+            </figcaption>
           )}
         </figure>
       ))}
@@ -151,13 +167,16 @@ const slides = trackItems.map((item, i) => {
       <div class="eotw-studies-row" data-order-group="studies">
         {studyItems.map((item) => (
           <figure data-artwork data-note-id={`${project.id}:${item.file}`}>
-            <Image
-              src={getProjectImage(project.id, item.file)}
-              alt={item.alt.en}
-              widths={responsiveWidths(getProjectImage(project.id, item.file), [320, 480, 720])}
-              sizes="(max-width: 700px) 32vw, 16rem"
-              loading="lazy"
-            />
+            <span class="eotw-study-pic">
+              <Image
+                src={getProjectImage(project.id, item.file)}
+                alt={item.alt.en}
+                widths={responsiveWidths(getProjectImage(project.id, item.file), [360, 560, 900])}
+                sizes="(max-width: 700px) 80vw, 22rem"
+                loading="lazy"
+              />
+            </span>
+            <figcaption><I18nText {...(item.caption ?? item.alt)} /></figcaption>
           </figure>
         ))}
       </div>
@@ -169,13 +188,14 @@ const slides = trackItems.map((item, i) => {
       <h2>
         <I18nText en="manga" fr="manga" zh="漫画" />
       </h2>
-      <p class="manga-intro">
-        <I18nText
-          en="This manga is the story as it first was. A girl decides to end her life. Her parents are long gone, and she is the last one left of her tribe. Just then, a red-skinned girl appears in front of her and says: you are the last human in the world, and you have one task, to come with me and watch the new world being born. On the way they talk about the seven days in which the gods made the world. Sadly, it took humans only seven days to destroy it. So after nightfall the gods will make the world again, and the girl will be its witness. Her body keeps decaying. Until she fades, they stay in the grass looking at the stars, thinking about the future of the new world. She is grateful to the messenger for not letting her die alone. In the end, what the new world becomes doesn't matter, because I will always love this world. Under the stars, the girl promises the bones that they will meet again."
-          fr="Ce manga, c'est l'histoire telle qu'elle était au tout début. Une fille décide de mettre fin à ses jours. Ses parents sont partis depuis longtemps, et elle est la dernière de sa tribu. C'est alors qu'une fille à la peau rouge apparaît devant elle et lui dit : tu es la dernière humaine au monde, et tu as une mission, venir avec moi voir naître le nouveau monde. En chemin, elles parlent des sept jours pendant lesquels les dieux ont créé le monde. Dommage, il n'a fallu que sept jours aux humains pour le détruire. Alors, à la tombée de la nuit, les dieux vont recréer le monde, et la fille en sera le témoin. Son corps se décompose peu à peu. Jusqu'à ce qu'elle s'efface, elles restent dans l'herbe à regarder les étoiles, à penser à l'avenir du nouveau monde. La fille remercie la messagère de ne pas l'avoir laissée mourir seule. Au fond, peu importe ce que deviendra le nouveau monde, parce que j'aimerai toujours ce monde. Sous les étoiles, la fille promet aux ossements qu'ils se reverront."
-          zh="这个漫画是故事最初的模样。一个女孩决定自杀，她的父母早已离去，部落的人只剩下她一个了。但正在这时候，一个红皮肤女孩出现在她的面前，她说：你是世界上最后一个人类了，你有一个任务，那就是跟我去看看新世界的诞生。路上他们讨论了神创世界的七日谈，很可惜，人类毁灭世界也只用了七天。于是天黑之后，神将重新创造这个世界，而自杀的女孩就是见证人。女孩的身体不断腐烂，他们在女孩临消散前一直在草地上看星空，一直在想新世界的未来。女孩很感谢使者让她的死亡不再孤独。其实，新世界会变成什么样并不重要，因为我会一直爱这个世界。在星空下，女孩对着尸骨许诺下一次的再见。"
-        />
-      </p>
+      <div class="manga-prologue">
+        <p class="manga-lead">
+          <I18nText en={prologue.en.lead} fr={prologue.fr.lead} zh={prologue.zh.lead} />
+        </p>
+        <p class="manga-intro">
+          <I18nText en={prologue.en.rest} fr={prologue.fr.rest} zh={prologue.zh.rest} />
+        </p>
+      </div>
       <MangaBook projectId={project.id} items={mangaItems} />
     </section>
   )}
@@ -366,11 +386,20 @@ const slides = trackItems.map((item, i) => {
     pointer-events: auto;
   }
 
+  /* the window and, under it, room for the line that goes with the
+     picture: the words sit below the image now, never on top of it */
   .eotw-frame {
+    --fw: min(74vw, 54rem, (100svh - 13rem) * 1.6);
+    --ph: calc(var(--fw) * 0.625);
     position: relative;
-    width: min(74vw, 54rem);
-    aspect-ratio: 16 / 10;
-    max-height: 70svh;
+    width: var(--fw);
+    height: calc(var(--ph) + 7rem);
+  }
+
+  .eotw-pic {
+    position: relative;
+    display: block;
+    height: var(--ph);
     overflow: hidden;
     border-radius: 2px;
     background: #000;
@@ -379,8 +408,12 @@ const slides = trackItems.map((item, i) => {
 
   .eotw-frame-border {
     position: absolute;
-    inset: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--ph);
     z-index: 3;
+    pointer-events: none;
     border: 1px solid color-mix(in srgb, var(--bone) 16%, transparent);
     box-shadow: inset 0 0 4rem 0.5rem rgb(0 0 0 / 45%);
   }
@@ -419,26 +452,16 @@ const slides = trackItems.map((item, i) => {
     to { transform: scale(1.1); }
   }
 
-  .eotw-scrim {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    background: linear-gradient(0deg, rgb(0 0 0 / 72%) 0%, transparent 55%);
-  }
-
   .eotw-line {
-    position: absolute;
-    z-index: 2;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    margin: 0;
-    padding: var(--space-4);
-    max-width: 34ch;
+    max-width: 52ch;
+    margin: 1rem auto 0;
+    text-align: center;
     font-family: var(--font-display);
-    font-size: var(--text-lg);
+    font-size: clamp(1rem, 0.9rem + 0.45vw, 1.3rem);
     line-height: 1.5;
-    text-shadow: 0 2px 16px rgb(0 0 0 / 55%);
+    color: var(--bone);
+    text-shadow: 0 2px 16px rgb(0 0 0 / 70%);
+    text-wrap: balance;
   }
 
   /* wayfinding rail — which fragment of the sequence is currently active */
@@ -486,28 +509,21 @@ const slides = trackItems.map((item, i) => {
   }
 
   .eotw-slot {
-    height: 100svh;
+    height: 62svh;
   }
 
   @media (max-width: 700px) {
     .eotw-slot {
-      height: 88svh;
+      height: 58svh;
     }
     .eotw-frame {
-      width: 88vw;
-      max-height: 60svh;
+      --fw: 90vw;
+      --ph: min(calc(90vw * 0.75), 52svh);
+      height: calc(var(--ph) + 9rem);
     }
-    /* full var(--text-lg) plus the padding ate most of a short mobile
-       frame — caption now sits in its own compact strip instead of
-       floating over as much of the image */
     .eotw-line {
-      font-size: var(--text-sm);
-      line-height: 1.4;
-      max-width: none;
-      padding: var(--space-3);
-    }
-    .eotw-scrim {
-      background: linear-gradient(0deg, rgb(0 0 0 / 78%) 0%, rgb(0 0 0 / 78%) 32%, transparent 68%);
+      font-size: var(--text-base);
+      line-height: 1.45;
     }
   }
 
@@ -536,7 +552,7 @@ const slides = trackItems.map((item, i) => {
   .eotw-studies {
     position: relative;
     z-index: 1;
-    max-width: 52rem;
+    max-width: 76rem;
     margin: 0 auto;
     padding: var(--space-4) var(--edge) var(--space-3);
   }
@@ -555,35 +571,86 @@ const slides = trackItems.map((item, i) => {
     padding-inline: var(--edge);
   }
 
+  /* the studies laid out like sheets on a night table: each one whole,
+     at its own proportions, its words underneath */
   .eotw-studies-row {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.55rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+    align-items: start;
+    gap: clamp(1.2rem, 3vw, 2.5rem);
   }
 
   .eotw-studies-row figure {
     margin: 0;
+  }
+
+  .eotw-studies-row figure:nth-child(2) {
+    margin-top: 1.6rem;
+  }
+
+  .eotw-study-pic {
+    display: block;
+    padding: 0.5rem;
     background: #f4efe6;
-    height: 9.5rem;
-    overflow: hidden;
+    box-shadow: 0 1.6rem 3rem -1.2rem rgb(0 0 0 / 70%), 0 0 2.5rem color-mix(in srgb, var(--mood-glow) 12%, transparent);
   }
 
   .eotw-studies-row :global(img) {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
     display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .eotw-studies-row figcaption {
+    margin-top: 0.7rem;
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    color: var(--bone-soft);
+  }
+
+  /* the text before the manga, set like the opening page of a book */
+  .manga-prologue {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    gap: clamp(1.5rem, 4vw, 4rem);
+    max-width: 68rem;
+    margin: 0 auto var(--space-5);
+    padding: var(--space-4) var(--edge);
+  }
+
+  .manga-lead {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    line-height: 1.15;
+    color: var(--bone);
+    border-top: 1px solid color-mix(in srgb, var(--mood-b) 50%, transparent);
+    padding-top: var(--space-3);
   }
 
   .manga-intro {
-    max-width: 40rem;
-    margin: 0 auto var(--space-5);
-    padding-inline: var(--edge);
-    box-sizing: content-box;
-    font-size: var(--text-sm);
+    margin: 0;
+    columns: 2 18rem;
+    column-gap: clamp(1.5rem, 3vw, 2.5rem);
+    font-size: var(--text-base);
     line-height: 1.75;
-    color: var(--bone-soft);
+    color: color-mix(in srgb, var(--bone) 82%, transparent);
     text-wrap: pretty;
+  }
+
+  .manga-intro::first-letter {
+    float: left;
+    margin: 0.08em 0.12em 0 0;
+    font-family: var(--font-display);
+    font-size: 3.4em;
+    line-height: 0.8;
+    color: var(--mood-b);
+  }
+
+  @media (max-width: 800px) {
+    .manga-prologue {
+      grid-template-columns: 1fr;
+    }
   }
 
   .manga {
