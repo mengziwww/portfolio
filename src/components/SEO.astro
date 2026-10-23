@@ -1,26 +1,34 @@
 ---
 import { withBase } from '@/lib/projects';
+import { LANGS, langPath, type Lang } from '@/lib/lang';
 
 interface Props {
-  path: string;
+  path: string; // without the language prefix
   title: string;
   description: string;
   image?: string;
   imageAlt?: string;
   type?: 'website' | 'article';
+  lang?: Lang;
+  /** link the other language versions of this page */
+  alternates?: boolean;
 }
-const { path, title, description, image, imageAlt, type = 'website' } = Astro.props;
+const { path, title, description, image, imageAlt, type = 'website', lang = 'en', alternates = false } = Astro.props;
 
 const siteUrl = Astro.site ?? new URL('https://mengziwww.github.io');
-const canonicalUrl = new URL(withBase(path), siteUrl).toString();
+const urlFor = (code: Lang) => new URL(withBase(langPath(path, code)), siteUrl).toString();
+const canonicalUrl = urlFor(lang);
 const ogImage = image ? new URL(image, siteUrl).toString() : new URL(withBase('/og-default.jpg'), siteUrl).toString();
 const alt = imageAlt ?? 'Illustration by Menghan LI: a woman with black hair asleep among red flowers';
+const locales: Record<Lang, string> = { en: 'en_US', fr: 'fr_FR', zh: 'zh_CN' };
 ---
 
 <title>{title}</title>
 <meta name="description" content={description} />
 <meta name="author" content="Menghan LI" />
 <link rel="canonical" href={canonicalUrl} />
+{alternates && LANGS.map((code) => <link rel="alternate" hreflang={code} href={urlFor(code)} />)}
+{alternates && <link rel="alternate" hreflang="x-default" href={urlFor('en')} />}
 
 <meta property="og:site_name" content="Menghan LI" />
 <meta property="og:type" content={type} />
@@ -29,9 +37,8 @@ const alt = imageAlt ?? 'Illustration by Menghan LI: a woman with black hair asl
 <meta property="og:url" content={canonicalUrl} />
 <meta property="og:image" content={ogImage} />
 <meta property="og:image:alt" content={alt} />
-<meta property="og:locale" content="en_US" />
-<meta property="og:locale:alternate" content="fr_FR" />
-<meta property="og:locale:alternate" content="zh_CN" />
+<meta property="og:locale" content={locales[lang]} />
+{LANGS.filter((code) => code !== lang).map((code) => <meta property="og:locale:alternate" content={locales[code]} />)}
 
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content={title} />

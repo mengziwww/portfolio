@@ -1,0 +1,15 @@
+---
+import ProjectPage from '@/components/ProjectPage.astro';
+import { getProjectStaticPaths } from '@/lib/projects';
+import { PREFIXED, type Lang } from '@/lib/lang';
+import type { CollectionEntry } from 'astro:content';
+
+export async function getStaticPaths() {
+  const paths = await getProjectStaticPaths();
+  return PREFIXED.flatMap((lang) => paths.map(({ params, props }) => ({ params: { ...params, lang }, props })));
+}
+
+const { project, next } = Astro.props as { project: CollectionEntry<'projects'>; next: CollectionEntry<'projects'> };
+---
+
+<ProjectPage project={project} next={next} lang={Astro.params.lang as Lang} />

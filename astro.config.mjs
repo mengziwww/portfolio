@@ -7,7 +7,12 @@ export default defineConfig({
   site: 'https://mengziwww.github.io',
   base: '/portfolio',
   trailingSlash: 'always',
-  integrations: [sitemap({ filter: (page) => !page.includes('/notes/') })],
+  integrations: [
+    sitemap({
+      filter: (page) => !page.includes('/notes/'),
+      i18n: { defaultLocale: 'en', locales: { en: 'en', fr: 'fr', zh: 'zh' } },
+    }),
+  ],
   image: {
     // large source scans/exports (some 8-10MB) get squeezed hard on build
     domains: [],

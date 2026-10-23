@@ -12,51 +12,61 @@ import ProcessStage from '@/components/stages/ProcessStage.astro';
 import CollectionStage from '@/components/stages/CollectionStage.astro';
 import { getProjectImage } from '@/lib/images';
 import { getImage } from 'astro:assets';
-import { projectPath } from '@/lib/projects';
+import { withBase } from '@/lib/projects';
+import { langPath, type Lang } from '@/lib/lang';
+import { ui } from '@/i18n/ui';
 import NotesMode from '@/components/NotesMode.astro';
 
 interface Props {
   project: CollectionEntry<'projects'>;
   next: CollectionEntry<'projects'>;
   notes?: boolean;
+  lang?: Lang;
 }
-const { project, next, notes = false } = Astro.props;
+const { project, next, notes = false, lang = 'en' } = Astro.props;
 const { title, subtitle, description, cover, coverAlt, roles, year, release } = project.data;
 
 const ogSource = getProjectImage(project.id, cover);
 const ogImg = await getImage({ src: ogSource, width: 1200, height: 630 });
 
-// search snippets stop around 160 characters: cut on a word, never mid-word
-const clip = (text: string, max = 160) => {
+// search snippets stop around 160 characters (about 80 in Chinese): cut on
+// a word where there are words, never mid-word
+const clip = (text: string, max: number) => {
   if (text.length <= max) return text;
   const cut = text.slice(0, max - 1);
-  return `${cut.slice(0, cut.lastIndexOf(' ')).replace(/[\s,.;:]+$/, '')}…`;
+  const space = cut.lastIndexOf(' ');
+  return `${(space > max / 2 ? cut.slice(0, space) : cut).replace(/[\s,.;:，。；：、]+$/, '')}…`;
 };
-const subLine = subtitle.en.replace(/[.\s]+$/, '');
-const metaDescription = clip(`${title}: ${subLine}. ${description.en}`);
-const pageTitle = `${title} · Menghan LI, 2D animator`;
+const zh = lang === 'zh';
+const subLine = subtitle[lang].replace(/[.。\s]+$/, '');
+const metaDescription = zh
+  ? clip(`${title}：${subLine}。${description.zh}`, 80)
+  : clip(`${title}${lang === 'fr' ? ' : ' : ': '}${subLine}. ${description[lang]}`, 160);
+const pageTitle = `${title}${zh ? '｜' : ' · '}${ui[lang]['meta.role']}`;
 
 const site = Astro.site ?? new URL('https://mengziwww.github.io');
 const home = new URL(import.meta.env.BASE_URL, site).toString();
-const pageUrl = new URL(projectPath(project.id), site).toString();
+const langHome = new URL(withBase(langPath('/', lang)), site).toString();
+const pageUrl = new URL(withBase(langPath(`/works/${project.id}`, lang)), site).toString();
 const schema: Record<string, unknown>[] = [
   {
     '@type': 'CreativeWork',
     '@id': `${pageUrl}#work`,
     name: title,
     url: pageUrl,
+    inLanguage: lang,
     headline: `${title}, ${subLine}`,
-    description: description.en,
+    description: description[lang],
     image: new URL(ogImg.src, site).toString(),
     dateCreated: String(year),
-    keywords: roles.en.join(', '),
+    keywords: roles[lang].join(', '),
     creator: { '@id': `${home}#person` },
     isPartOf: { '@id': `${home}#website` },
   },
   {
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Menghan LI', item: home },
+      { '@type': 'ListItem', position: 1, name: 'Menghan LI', item: langHome },
       { '@type': 'ListItem', position: 2, name: title, item: pageUrl },
     ],
   },
@@ -65,7 +75,7 @@ const schema: Record<string, unknown>[] = [
         {
           '@type': 'VideoObject',
           name: title,
-          description: description.en,
+          description: description[lang],
           thumbnailUrl: `https://i.ytimg.com/vi/${release.youtube}/hqdefault.jpg`,
           uploadDate: release.date,
           embedUrl: `https://www.youtube.com/embed/${release.youtube}`,
@@ -79,10 +89,11 @@ const schema: Record<string, unknown>[] = [
 
 <Base
   path={notes ? `/notes/works/${project.id}` : `/works/${project.id}`}
+  lang={lang}
   title={pageTitle}
   description={metaDescription}
   ogImage={ogImg.src}
-  ogImageAlt={coverAlt.en}
+  ogImageAlt={coverAlt[lang]}
   ogType="article"
   noindex={notes}
   schema={schema}

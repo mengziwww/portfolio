@@ -18,8 +18,8 @@ const shots = projects.map((project) => ({
 
 <Base path="/404" title="Page not found, Menghan LI" description="This page is not in the film." bodyClass="not-found" noindex>
   <section class="lost" data-lost>
-    <p class="lost-eyebrow">404</p>
     <h1>
+      <span class="lost-code"><I18nText en="404?" fr="404 ?" zh="404？" /></span>
       <I18nText en="I never drew this shot." fr="Ce plan, je ne l'ai jamais dessiné." zh="这个镜头我没有画过。" />
     </h1>
 
@@ -100,18 +100,15 @@ const shots = projects.map((project) => ({
     text-align: center;
   }
 
-  .lost-eyebrow {
-    font-family: var(--font-mono);
-    font-size: var(--text-sm);
-    letter-spacing: 0.3em;
-    color: var(--gold);
-  }
-
   .lost h1 {
     font-size: var(--text-2xl);
     line-height: 1.05;
-    max-width: 18ch;
+    max-width: 20ch;
     text-wrap: balance;
+  }
+
+  .lost-code {
+    color: var(--gold);
   }
 
   /* the paper: off-white, graphite lines, a little crooked on the desk */
@@ -310,6 +307,19 @@ const shots = projects.map((project) => ({
 </style>
 
 <script>
+  import { localizeHref, PREFIXED, type Lang } from '@/lib/lang';
+
+  // this one page answers every missing URL, /fr/ and /zh/ ones included:
+  // its links follow the language of the address that was asked for
+  function localizeLinks() {
+    const base = document.documentElement.dataset.base ?? '';
+    const lang = location.pathname.slice(base.length).match(/^\/(fr|zh)(?=\/|$)/)?.[1] as Lang | undefined;
+    if (!lang || !PREFIXED.includes(lang) || !document.querySelector('[data-lost]')) return;
+    document.querySelectorAll<HTMLAnchorElement>('a[href]').forEach((link) => {
+      link.setAttribute('href', localizeHref(link.getAttribute('href') ?? '', lang));
+    });
+  }
+
   function pickShots() {
     const root = document.querySelector('[data-lost]');
     if (!root) return;
@@ -326,5 +336,8 @@ const shots = projects.map((project) => ({
     });
   }
 
-  document.addEventListener('astro:page-load', pickShots);
+  document.addEventListener('astro:page-load', () => {
+    localizeLinks();
+    pickShots();
+  });
 </script>

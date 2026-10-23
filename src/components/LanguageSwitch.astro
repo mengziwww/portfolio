@@ -46,10 +46,24 @@ const { class: className } = Astro.props;
 </style>
 
 <script>
+  import { navigate } from 'astro:transitions/client';
   import { applyScript } from '@/lib/traditional';
 
   const KEY = 'menghan-lang';
   const VALID = ['en', 'fr', 'zh', 'zh-Hant'];
+  const SCROLL_KEY = 'menghan-lang-scroll';
+
+  /** The URL of this page in another language, or null when it switches in place. */
+  function urlFor(lang: string): string | null {
+    const root = document.documentElement;
+    if (root.dataset.langPage !== 'routed') return null;
+    const base = root.dataset.base ?? '';
+    const rest = location.pathname.slice(base.length);
+    const bare = rest.replace(/^\/(fr|zh)(?=\/|$)/, '') || '/';
+    const prefix = lang === 'zh-Hant' ? 'zh' : lang;
+    const target = prefix === 'en' ? `${base}${bare}` : `${base}/${prefix}${bare === '/' && !base ? '' : bare}`;
+    return target === location.pathname ? null : target + location.hash;
+  }
 
   function applyLang(lang: string) {
     // state lives only on the standard `lang` attribute — see global.css
@@ -74,6 +88,13 @@ const { class: className } = Astro.props;
           localStorage.setItem(KEY, lang);
         } catch {
           /* private browsing */
+        }
+        const target = urlFor(lang);
+        if (target) {
+          // same page, other language: the reader stays where they were
+          sessionStorage.setItem(SCROLL_KEY, String(window.scrollY));
+          void navigate(target);
+          return;
         }
         applyLang(lang);
         // a small reveal on the text that just became visible — the same
@@ -103,8 +124,26 @@ const { class: className } = Astro.props;
 
     // sync buttons to whatever the blocking head script already applied —
     // state lives only on the standard `lang` attribute, never data-lang
-    const current = document.documentElement.getAttribute('lang');
+    // /zh/ pages are built in simplified Chinese; traditional is a reading
+    // choice kept in the browser
+    let current = document.documentElement.getAttribute('lang');
+    try {
+      if (current === 'zh' && localStorage.getItem(KEY) === 'zh-Hant') current = 'zh-Hant';
+    } catch {
+      /* private browsing */
+    }
     if (current && VALID.includes(current)) applyLang(current);
+
+    const kept = sessionStorage.getItem(SCROLL_KEY);
+    if (kept !== null) {
+      sessionStorage.removeItem(SCROLL_KEY);
+      requestAnimationFrame(() => {
+        const y = Number(kept);
+        const lenis = (window as Window & { __lenis?: { scrollTo: (y: number, o: object) => void } }).__lenis;
+        if (lenis) lenis.scrollTo(y, { immediate: true, force: true });
+        else window.scrollTo(0, y);
+      });
+    }
   }
 
   document.addEventListener('astro:page-load', initSwitch);

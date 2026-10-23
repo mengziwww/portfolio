@@ -1,12 +1,9 @@
 ---
 import Base from '@/layouts/Base.astro';
 import RightsNotice from '@/components/RightsNotice.astro';
+import { ui } from '@/i18n/ui';
 ---
 
-<Base
-  path="/rights"
-  title="This work is mine, Menghan LI"
-  description="The drawings, films and designs on this site are mine."
->
+<Base path="/rights" title={ui.en['meta.rightsTitle']} description={ui.en['meta.rightsDescription']}>
   <RightsNotice />
 </Base>

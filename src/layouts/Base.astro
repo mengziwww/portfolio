@@ -14,6 +14,7 @@ import Lightbox from '@/components/Lightbox.astro';
 import ArtworkGuard from '@/components/ArtworkGuard.astro';
 import A11yTip from '@/components/A11yTip.astro';
 import ContactNudge from '@/components/ContactNudge.astro';
+import type { Lang } from '@/lib/lang';
 
 interface Props {
   path: string;
@@ -26,8 +27,11 @@ interface Props {
   noindex?: boolean;
   /** extra schema.org nodes for this page, joined to the site graph */
   schema?: Record<string, unknown>[];
+  /** the language this URL is built in; noindex pages switch language in place instead */
+  lang?: Lang;
 }
-const { path, title, description, ogImage, ogImageAlt, ogType, bodyClass, noindex = false, schema = [] } = Astro.props;
+const { path, title, description, ogImage, ogImageAlt, ogType, bodyClass, noindex = false, schema = [], lang = 'en' } = Astro.props;
+const base = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
 
 const home = new URL(import.meta.env.BASE_URL, Astro.site ?? 'https://mengziwww.github.io').toString();
 const graph = [
@@ -59,7 +63,7 @@ const graph = [
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={lang} data-base={base} data-lang-page={noindex ? 'free' : 'routed'}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -67,7 +71,7 @@ const graph = [
     <meta name="robots" content={noindex ? 'noindex, noai, noimageai' : 'noai, noimageai'} />
     <meta name="tdm-reservation" content="1" />
     <link rel="icon" href={`${import.meta.env.BASE_URL}favicon.svg`} type="image/svg+xml" />
-    <SEO path={path} title={title} description={description} image={ogImage} imageAlt={ogImageAlt} type={ogType} />
+    <SEO path={path} title={title} description={description} image={ogImage} imageAlt={ogImageAlt} type={ogType} lang={lang} alternates={!noindex} />
     <link rel="apple-touch-icon" href={`${import.meta.env.BASE_URL}apple-touch-icon.png`} />
     {!noindex && (
       <script type="application/ld+json" is:inline set:html={JSON.stringify({ '@context': 'https://schema.org', '@graph': graph })} />
@@ -78,11 +82,26 @@ const graph = [
       // head scripts after each swap) — no flash of the wrong language.
       (function () {
         try {
-          var lang = localStorage.getItem('menghan-lang');
-          if (lang === 'fr' || lang === 'zh' || lang === 'zh-Hant') {
-            // state lives only on `lang` — see global.css for why data-lang
-            // must never also be set on <html> itself
-            document.documentElement.setAttribute('lang', lang);
+          // state lives only on `lang` — see global.css for why data-lang
+          // must never also be set on <html> itself
+          var root = document.documentElement;
+          var stored = localStorage.getItem('menghan-lang');
+          var base = root.getAttribute('data-base') || '';
+          var rest = location.pathname.slice(base.length);
+          var prefixed = (rest.match(/^\/(fr|zh)(\/|$)/) || [])[1];
+          if (root.getAttribute('data-lang-page') === 'routed') {
+            // the URL decides; a visitor who chose French or Chinese before
+            // is sent to that version when they land on an English page
+            var built = root.getAttribute('lang');
+            var wanted = stored === 'zh-Hant' ? 'zh' : stored;
+            if (built === 'en' && (wanted === 'fr' || wanted === 'zh')) {
+              location.replace(base + '/' + wanted + (rest === '/' && !base ? '' : rest) + location.search + location.hash);
+              return;
+            }
+            if (built === 'zh' && stored === 'zh-Hant') root.setAttribute('lang', 'zh-Hant');
+          } else {
+            var lang = prefixed === 'zh' && stored === 'zh-Hant' ? 'zh-Hant' : prefixed || stored;
+            if (lang === 'fr' || lang === 'zh' || lang === 'zh-Hant') root.setAttribute('lang', lang);
           }
           var motion = localStorage.getItem('menghan-motion');
           if (!motion && window.matchMedia('(prefers-reduced-motion: reduce)').matches) motion = 'still';
