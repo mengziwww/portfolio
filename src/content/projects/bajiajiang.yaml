@@ -83,18 +83,18 @@ gallery:
       fr: Poses clés
       zh: 关键动作
     alt:
-      en: Key poses exploring the protagonist's walk and stance
-      fr: Poses clés explorant la démarche et la posture du protagoniste
-      zh: 探索主角走路姿态与站姿的关键动作稿
+      en: The protagonist training and fooling around, to show who he is
+      fr: Le héros qui s'entraîne et fait le pitre, pour montrer qui il est
+      zh: 主角练功和搞怪的样子，突出主角的个性
   - file: concept-styleframe.png
     chapter:
       en: Style frame
       fr: Style frame
       zh: 风格帧
     alt:
-      en: A style frame rendered in the same warm lantern palette as the color script
-      fr: Un style frame rendu dans la même palette chaleureuse de lanternes que le color script
-      zh: 与色彩脚本同一暖色灯笼色调的风格定稿
+      en: A more realistic color treatment
+      fr: Un traitement des couleurs plus réaliste
+      zh: 更现实的色调处理
   - file: still-temple.jpg
     chapter:
       en: more from this project

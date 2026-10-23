@@ -30,6 +30,18 @@ const groups: Group[] = [
     ],
   },
   {
+    name: 'density', en: 'Descriptions', fr: 'Descriptions', zh: '文字说明',
+    hint: {
+      en: 'Short keeps the project pages light. Full shows every description.',
+      fr: 'Court garde les pages des projets légères. Complet affiche toutes les descriptions.',
+      zh: '简短：项目页面更清爽。完整：显示所有的文字说明。',
+    },
+    options: [
+      { value: 'short', en: 'Short', fr: 'Court', zh: '简短' },
+      { value: 'full', en: 'Full', fr: 'Complet', zh: '完整' },
+    ],
+  },
+  {
     name: 'contrast', en: 'Contrast', fr: 'Contraste', zh: '对比度',
     hint: {
       en: 'White text and brighter lines on a pure black background.',
@@ -495,6 +507,8 @@ const groups: Group[] = [
 </style>
 
 <script>
+  import { markShortTexts } from '@/lib/short-text';
+
   const MOTION_KEY = 'menghan-motion';
   const CURSOR_KEY = 'menghan-cursor';
   const ASKED_KEY = 'menghan-motion-asked';
@@ -521,6 +535,7 @@ const groups: Group[] = [
       motion: motionValue(),
       cursor: cursorValue(),
       text: stored('text', 'md'),
+      density: stored('density', 'short'),
       contrast: stored('contrast', 'off'),
       space: stored('space', 'normal'),
       transparent: stored('transparent', 'normal'),
@@ -578,7 +593,7 @@ const groups: Group[] = [
 
   function resetAll() {
     try {
-      ['motion', 'cursor', 'text', 'contrast', 'space', 'transparent', 'focus', 'motion-asked'].forEach((k) =>
+      ['motion', 'cursor', 'text', 'density', 'contrast', 'space', 'transparent', 'focus', 'motion-asked'].forEach((k) =>
         localStorage.removeItem(`menghan-${k}`),
       );
     } catch {
@@ -622,6 +637,7 @@ const groups: Group[] = [
   }
 
   function initSettings() {
+    markShortTexts();
     if (document.documentElement.dataset.transparent === 'solid') window.setTimeout(paintSolid, 300);
     const openBtn = document.querySelector<HTMLButtonElement>('[data-settings-open]');
     const dialog = document.querySelector<HTMLDialogElement>('[data-settings-dialog]');
@@ -686,6 +702,7 @@ const groups: Group[] = [
     });
     const visualOff: Record<string, string> = {
       text: 'md',
+      density: 'short',
       contrast: 'off',
       space: 'normal',
       transparent: 'normal',

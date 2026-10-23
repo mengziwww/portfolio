@@ -1,11 +1,10 @@
 ---
 // A small corner card, offered once someone has spent a while on the
-// site: an email to me, already written in their language. Closing it
-// keeps it away for a month.
+// site, with a link to write to me. Closing it keeps it away for a month.
 const EMAIL = 'mengziwww@gmail.com';
 ---
 
-<aside class="nudge" data-nudge data-email={EMAIL} aria-labelledby="nudge-title" hidden>
+<aside class="nudge" data-nudge aria-labelledby="nudge-title" hidden>
   <button type="button" class="nudge-close" data-nudge-close>
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="M7 7l10 10M17 7L7 17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
@@ -27,9 +26,9 @@ const EMAIL = 'mengziwww@gmail.com';
     <span data-lang="zh">对我的作品感兴趣吗？</span>
   </p>
   <p class="nudge-text">
-    <span data-lang="en">If you would like to work together, the email is already written: just add the details.</span>
-    <span data-lang="fr">Si tu veux qu'on travaille ensemble, le mail est déjà prêt : il reste à ajouter les détails.</span>
-    <span data-lang="zh">想一起合作的话，邮件已经写好了，补上细节就行。</span>
+    <span data-lang="en">If you would like to work together, I would love to hear from you.</span>
+    <span data-lang="fr">Si tu veux qu'on travaille ensemble, écris-moi, ça me fera plaisir.</span>
+    <span data-lang="zh">想一起合作的话，欢迎给我写信。</span>
   </p>
   <a class="nudge-write" href={`mailto:${EMAIL}`} data-nudge-write>
     <span data-lang="en">Write to me</span>
@@ -163,25 +162,6 @@ const EMAIL = 'mengziwww@gmail.com';
   const NEED_PAGES = 2;
   const DAY = 86400000;
 
-  const mail = {
-    en: {
-      subject: 'Working together',
-      body: 'Hi Menghan,\n\nI found your portfolio and I would like to talk with you about a project.\n\nWho I am:\nThe project:\nWhen:\n\nThank you!',
-    },
-    fr: {
-      subject: 'Travailler ensemble',
-      body: "Bonjour Menghan,\n\nJ'ai découvert votre portfolio et j'aimerais vous parler d'un projet.\n\nQui je suis :\nLe projet :\nQuand :\n\nMerci !",
-    },
-    zh: {
-      subject: '合作邀请',
-      body: 'Menghan 你好，\n\n我看了你的作品集，想和你聊聊一个项目。\n\n我是：\n项目：\n时间：\n\n谢谢！',
-    },
-    'zh-Hant': {
-      subject: '合作邀請',
-      body: 'Menghan 你好，\n\n我看了你的作品集，想和你聊聊一個項目。\n\n我是：\n項目：\n時間：\n\n謝謝！',
-    },
-  } as const;
-
   let ticker = 0;
 
   function read(store: Storage, key: string): number {
@@ -204,12 +184,6 @@ const EMAIL = 'mengziwww@gmail.com';
     return read(localStorage, OFF_KEY) > Date.now() || read(sessionStorage, SHOWN_KEY) === 1;
   }
 
-  function mailto(email: string): string {
-    const lang = document.documentElement.lang as keyof typeof mail;
-    const text = mail[lang] ?? mail.en;
-    return `mailto:${email}?subject=${encodeURIComponent(text.subject)}&body=${encodeURIComponent(text.body)}`;
-  }
-
   function initNudge() {
     window.clearInterval(ticker);
     const card = document.querySelector<HTMLElement>('[data-nudge]');
@@ -222,11 +196,7 @@ const EMAIL = 'mengziwww@gmail.com';
       window.setTimeout(() => (card.hidden = true), 450);
     };
     card.querySelector('[data-nudge-close]')?.addEventListener('click', () => close(30));
-    const link = card.querySelector<HTMLAnchorElement>('[data-nudge-write]');
-    link?.addEventListener('click', () => {
-      link.href = mailto(card.dataset.email ?? '');
-      close(180);
-    });
+    card.querySelector('[data-nudge-write]')?.addEventListener('click', () => close(180));
 
     ticker = window.setInterval(() => {
       if (document.hidden) return;
@@ -236,7 +206,6 @@ const EMAIL = 'mengziwww@gmail.com';
       if (document.querySelector('dialog[open], [data-lightbox]:not([hidden]), [data-a11y-tip].is-on') || blocked()) return;
       window.clearInterval(ticker);
       write(sessionStorage, SHOWN_KEY, 1);
-      if (link) link.href = mailto(card.dataset.email ?? '');
       card.hidden = false;
       requestAnimationFrame(() => card.classList.add('is-on'));
     }, 5000);

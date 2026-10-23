@@ -25,8 +25,9 @@
   --font-body: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'Space Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
 
-  --text-xs: clamp(0.7rem, 0.66rem + 0.2vw, 0.78rem);
-  --text-sm: clamp(0.82rem, 0.78rem + 0.22vw, 0.92rem);
+  --text-2xs: clamp(0.74rem, 0.72rem + 0.1vw, 0.8rem);
+  --text-xs: clamp(0.8rem, 0.76rem + 0.2vw, 0.88rem);
+  --text-sm: clamp(0.9rem, 0.86rem + 0.2vw, 1rem);
   --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
   --text-lg: clamp(1.2rem, 1.05rem + 0.6vw, 1.55rem);
   --text-xl: clamp(1.8rem, 1.3rem + 2vw, 3.1rem);
@@ -389,6 +390,45 @@ html[data-motion='still'] *::after {
 
 html[data-text='lg'] {
   font-size: 112.5%;
+}
+
+/* short descriptions (the default): long texts fold away, see lib/short-text.ts */
+html:not([data-density='full']) [data-short='hide'] {
+  display: none !important;
+}
+
+/* in notes mode she sees every text, the folded ones faded, with a badge
+   to choose what short mode keeps */
+html:not([data-density='full']) .is-notes-page [data-short='hide'] {
+  display: revert !important;
+  outline: 1px dashed #e8c07d;
+  outline-offset: 4px;
+}
+
+.is-notes-page [data-short='hide'] > :not(.short-badge) {
+  opacity: 0.45;
+}
+
+.short-badge {
+  display: inline-block;
+  margin: 0.4em 0 0 0.6em;
+  padding: 0.2em 0.7em;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-style: normal;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: #1d0d07;
+  background: #e8c07d;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  vertical-align: middle;
+  opacity: 1;
+}
+
+[data-short='keep'] > .short-badge {
+  background: #9fd3a8;
 }
 
 html[data-text='xl'] {

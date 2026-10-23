@@ -381,7 +381,7 @@ const streamLines = Array.from({ length: 16 }, (_, i) =>
     overflow: hidden;
     writing-mode: vertical-rl;
     font-family: var(--font-mono);
-    font-size: 0.58rem;
+    font-size: var(--text-2xs);
     letter-spacing: 0.1em;
     line-height: 1.8;
     color: color-mix(in srgb, var(--mood-glow) 55%, transparent);
@@ -655,7 +655,7 @@ const streamLines = Array.from({ length: 16 }, (_, i) =>
     flex: none;
     padding: 0.2em 0.5em;
     font-family: var(--font-mono);
-    font-size: 0.65rem;
+    font-size: var(--text-2xs);
     font-weight: 700;
     letter-spacing: 0.12em;
     color: #17140f;
@@ -968,7 +968,7 @@ const streamLines = Array.from({ length: 16 }, (_, i) =>
   }
 
   @media (max-width: 700px) {
-    .af-hud { font-size: 0.68rem; gap: 0.5em; }
+    .af-hud { font-size: var(--text-2xs); gap: 0.5em; }
     .meta-row dt { width: 4.2em; }
   }
 

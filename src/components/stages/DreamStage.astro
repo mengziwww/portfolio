@@ -1,7 +1,8 @@
 ---
-// A dream cinema: one screen in the dark, her images drifting around it as
-// glowing memories. Picking one sends it flying onto the screen, its caption
-// shows up like a subtitle, and the film plays on by itself until touched.
+// A dream cinema: an old projector throws its beam onto one screen in the
+// dark, and her images are the frames of the reel running through it.
+// Picking a frame projects it, its caption shows up like a subtitle, and the
+// reel plays on by itself until touched.
 import { Image } from 'astro:assets';
 import type { CollectionEntry } from 'astro:content';
 import { getProjectImage, responsiveWidths } from '@/lib/images';
@@ -25,25 +26,8 @@ const clientLabel = trAll(category === 'commission' ? 'project.client' : 'projec
 const total = gallery.length;
 const pad = (n: number) => String(n).padStart(2, '0');
 
-// memories hover in two staggered columns on either side of the screen:
-// grid columns 1-2 on the left, 4-5 on the right, each fairy spanning two
-// half-rows so neighbours zigzag
-const memories = gallery.map((item, i) => {
-  const side = i % 2;
-  const k = Math.floor(i / 2);
-  const seed = (i * 61 + 17) % 100;
-  const outer = k % 2 === 0;
-  return {
-    item,
-    img: getProjectImage(project.id, item.file),
-    col: side === 0 ? (outer ? 1 : 2) : outer ? 5 : 4,
-    row: k + 1 + side,
-    size: (0.88 + (seed % 4) * 0.08).toFixed(2),
-    dur: 7 + (seed % 5) * 1.4,
-    delay: -((seed % 9) * 0.9),
-    hue: seed % 3,
-  };
-});
+const memories = gallery.map((item) => ({ item, img: getProjectImage(project.id, item.file) }));
+const spokes = [0, 72, 144, 216, 288];
 
 const motes = Array.from({ length: 18 }, (_, i) => {
   const seed = (i * 37 + 5) % 100;
@@ -57,16 +41,12 @@ const motes = Array.from({ length: 18 }, (_, i) => {
   };
 });
 
-const seats = Array.from({ length: 2 }, (_, row) =>
-  Array.from({ length: row === 0 ? 15 : 13 }, (_, i) => ({ i })),
-);
-
 const ui = {
   now: { en: 'now dreaming', fr: 'en plein rêve', zh: '正在做梦' },
   pick: {
-    en: 'Catch a memory and send it to the screen.',
-    fr: 'Attrape un souvenir pour le projeter.',
-    zh: '抓住一段记忆，把它放上银幕。',
+    en: 'Pick a frame on the reel to project it.',
+    fr: 'Choisis une image sur la pellicule pour la projeter.',
+    zh: '在胶片上选一格，把它放映出来。',
   },
   play: { en: 'let it dream', fr: 'laisser rêver', zh: '继续做梦' },
   pause: { en: 'wake up', fr: 'se réveiller', zh: '醒来' },
@@ -124,15 +104,42 @@ const ui = {
   </header>
 
   <section class="dm-cinema" data-dm aria-roledescription="carousel">
-    <div class="dm-beam" aria-hidden="true"></div>
+    <div class="dm-theatre">
+      <p class="dm-marquee">
+        <span class="dm-dot" aria-hidden="true"></span>
+        <I18nText {...ui.now} />
+        <span class="dm-count"><span data-dm-count>01</span> / {pad(total)}</span>
+        <button type="button" class="dm-play" data-dm-play aria-pressed="true">
+          <span class="dm-play-on"><I18nText {...ui.pause} /></span>
+          <span class="dm-play-off"><I18nText {...ui.play} /></span>
+        </button>
+      </p>
 
-    <div class="dm-stage">
-      <div class="dm-screen-wrap">
-        <p class="dm-marquee">
-          <span class="dm-dot" aria-hidden="true"></span>
-          <I18nText {...ui.now} />
-          <span class="dm-count"><span data-dm-count>01</span> / {pad(total)}</span>
-        </p>
+      <svg class="dm-projector" viewBox="0 0 224 172" aria-hidden="true">
+        {[{ x: 66, y: 48, r: 42 }, { x: 150, y: 56, r: 34 }].map((reel) => (
+          <g class="dm-reel" style={`transform-origin:${reel.x}px ${reel.y}px;`}>
+            <circle class="dm-reel-rim" cx={reel.x} cy={reel.y} r={reel.r} />
+            {spokes.map((a) => (
+              <circle
+                class="dm-reel-hole"
+                cx={reel.x + Math.cos((a * Math.PI) / 180) * reel.r * 0.55}
+                cy={reel.y + Math.sin((a * Math.PI) / 180) * reel.r * 0.55}
+                r={reel.r * 0.22}
+              />
+            ))}
+            <circle class="dm-reel-hub" cx={reel.x} cy={reel.y} r={reel.r * 0.14} />
+          </g>
+        ))}
+        <path class="dm-film-line" d="M66 90 L98 108 M150 90 L128 108" />
+        <rect class="dm-body" x="26" y="106" width="156" height="46" rx="8" />
+        <rect class="dm-body-panel" x="40" y="118" width="62" height="22" rx="3" />
+        <rect class="dm-lens" x="182" y="115" width="30" height="28" rx="4" />
+        <circle class="dm-lens-glass" cx="214" cy="129" r="9" />
+        <path class="dm-legs" d="M58 152 L46 170 M150 152 L162 170" />
+      </svg>
+
+      <div class="dm-frame">
+        <span class="dm-beam" aria-hidden="true"></span>
         <figure class="dm-screen" data-dm-screen data-lb-group>
           {memories.map((m, i) => (
             <div
@@ -152,66 +159,48 @@ const ui = {
           ))}
           <span class="dm-flicker" aria-hidden="true"></span>
         </figure>
-        <div class="dm-subs" aria-live="polite">
-          {memories.map((m, i) => (
-            <p class="dm-sub" data-dm-sub={i} hidden={i !== 0}>
-              {m.item.caption && <I18nText en={m.item.caption.en} fr={m.item.caption.fr} zh={m.item.caption.zh} />}
-            </p>
-          ))}
-        </div>
-        <div class="dm-controls">
-          <button type="button" class="dm-step" data-dm-step="-1">
-            <span aria-hidden="true">‹</span>
-            <span class="sr-only"><I18nText {...ui.prev} /></span>
-          </button>
-          <button type="button" class="dm-play" data-dm-play aria-pressed="true">
-            <span class="dm-play-on"><I18nText {...ui.pause} /></span>
-            <span class="dm-play-off"><I18nText {...ui.play} /></span>
-          </button>
-          <button type="button" class="dm-step" data-dm-step="1">
-            <span aria-hidden="true">›</span>
-            <span class="sr-only"><I18nText {...ui.nextMem} /></span>
-          </button>
-        </div>
-        <p class="dm-hint"><I18nText {...ui.pick} /></p>
       </div>
 
-      <ul class="dm-memories">
+      <div class="dm-subs" aria-live="polite">
         {memories.map((m, i) => (
-          <li
-            class="dm-memory"
-            style={`--col:${m.col}; --row:${m.row}; --s:${m.size}; --dur:${m.dur}s; --delay:${m.delay}s;`}
-            data-hue={m.hue}
-          >
+          <p class="dm-sub" data-dm-sub={i} hidden={i !== 0}>
+            {m.item.caption && <I18nText en={m.item.caption.en} fr={m.item.caption.fr} zh={m.item.caption.zh} />}
+          </p>
+        ))}
+      </div>
+    </div>
+
+    <div class="dm-strip">
+      <button type="button" class="dm-step" data-dm-step="-1">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+        <span class="sr-only"><I18nText {...ui.prev} /></span>
+      </button>
+      <ul class="dm-film" role="tablist" aria-label="Reel" data-dm-film>
+        {memories.map((m, i) => (
+          <li>
             <button
               type="button"
-              class:list={['dm-orb', { 'is-watching': i === 0 }]}
-              data-dm-orb={i}
+              class="dm-cell"
+              role="tab"
+              aria-selected={i === 0 ? 'true' : 'false'}
+              tabindex={i === 0 ? 0 : -1}
+              data-dm-cell={i}
               aria-label={`${pad(i + 1)} ${m.item.alt.en}`}
             >
-              <span class="dm-wing is-l" aria-hidden="true"></span>
-              <span class="dm-wing is-r" aria-hidden="true"></span>
-              <span class="dm-orb-pic">
-                <Image src={m.img} alt="" widths={[160, 240]} sizes="6rem" loading="lazy" />
+              <span class="dm-cell-pic">
+                <Image src={m.img} alt="" widths={[200, 320]} sizes="9rem" loading="lazy" />
               </span>
-              <span class="dm-orb-num" aria-hidden="true">{pad(i + 1)}</span>
+              <span class="dm-cell-num" aria-hidden="true">{pad(i + 1)}</span>
             </button>
           </li>
         ))}
       </ul>
+      <button type="button" class="dm-step" data-dm-step="1">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+        <span class="sr-only"><I18nText {...ui.nextMem} /></span>
+      </button>
     </div>
-
-    <svg class="dm-seats" viewBox="0 0 1000 120" preserveAspectRatio="none" aria-hidden="true">
-      {seats.map((row, r) => (
-        <g transform={`translate(${r === 0 ? 0 : 36} ${r === 0 ? 40 : 72})`}>
-          {row.map((s) => (
-            <path
-              d={`M${s.i * 68 + 6} 60 V${18 - r * 2} Q${s.i * 68 + 6} 4 ${s.i * 68 + 20} 4 H${s.i * 68 + 48} Q${s.i * 68 + 62} 4 ${s.i * 68 + 62} ${18 - r * 2} V60 Z`}
-            />
-          ))}
-        </g>
-      ))}
-    </svg>
+    <p class="dm-hint"><I18nText {...ui.pick} /></p>
   </section>
 
   <ProjectFooter project={project} next={next} />
@@ -326,56 +315,27 @@ const ui = {
 
   /* ---- the cinema ---- */
   .dm-cinema {
+    --throw: clamp(3rem, 7vw, 8rem);
+    --proj: clamp(8rem, 13vw, 13rem);
     position: relative;
     z-index: 1;
-    min-height: 100svh;
     padding: var(--space-5) var(--edge) var(--space-6);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
   }
 
-  .dm-beam {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 12%;
-    bottom: 0;
-    pointer-events: none;
-    background: linear-gradient(0deg, color-mix(in srgb, #fff3d6 14%, transparent), transparent 80%);
-    clip-path: polygon(48.5% 100%, 51.5% 100%, 78% 0, 22% 0);
-    opacity: 0.35;
-    animation: dm-beam 6s ease-in-out infinite;
-  }
-
-  @keyframes dm-beam {
-    0%, 100% { opacity: 0.32; }
-    47% { opacity: 0.4; }
-    50% { opacity: 0.26; }
-    53% { opacity: 0.38; }
-  }
-
-  .dm-stage {
-    position: relative;
+  .dm-theatre {
     display: grid;
-    grid-template-columns: repeat(2, minmax(4rem, 7rem)) auto repeat(2, minmax(4rem, 7rem));
-    grid-template-rows: repeat(8, 1fr);
+    grid-template-columns: var(--proj) var(--throw) min(58vw, 56rem, (100svh - 20rem) * 1.6);
+    grid-template-areas:
+      '. . marquee'
+      'proj . frame'
+      '. . subs';
     justify-content: center;
     align-items: center;
-    column-gap: clamp(0.8rem, 2.4vw, 2.6rem);
-    width: 100%;
     margin-inline: auto;
   }
 
-  .dm-screen-wrap {
-    position: relative;
-    grid-column: 3;
-    grid-row: 1 / -1;
-    width: min(46vw, 54rem, (100svh - 15rem) * 1.6);
-    z-index: 2;
-  }
-
   .dm-marquee {
+    grid-area: marquee;
     display: flex;
     align-items: center;
     gap: 0.6rem;
@@ -396,6 +356,11 @@ const ui = {
     animation: dm-rec 1.6s steps(2) infinite;
   }
 
+  [data-dm]:not(.is-rolling) .dm-dot {
+    animation: none;
+    opacity: 0.35;
+  }
+
   @keyframes dm-rec {
     50% { opacity: 0.25; }
   }
@@ -405,16 +370,129 @@ const ui = {
     color: var(--bone-soft);
   }
 
+  .dm-play {
+    padding: 0.5em 1.1em;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--bone);
+    background: rgb(255 255 255 / 6%);
+    border: 1px solid rgb(255 255 255 / 18%);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+  }
+
+  .dm-play[aria-pressed='true'] .dm-play-off,
+  .dm-play[aria-pressed='false'] .dm-play-on {
+    display: none;
+  }
+
+  /* the projector, seen from the side; its lens sits at 75% of its height,
+     lifted so the beam leaves it level with the middle of the screen */
+  .dm-projector {
+    grid-area: proj;
+    width: 100%;
+    overflow: visible;
+    translate: 0 -25%;
+  }
+
+  .dm-reel-rim {
+    fill: #241c30;
+    stroke: color-mix(in srgb, var(--bone) 45%, transparent);
+    stroke-width: 2;
+  }
+
+  .dm-reel-hole {
+    fill: #0b0810;
+  }
+
+  .dm-reel-hub {
+    fill: color-mix(in srgb, var(--gold) 70%, var(--bone));
+  }
+
+  .dm-reel {
+    animation: dm-spin 3.2s linear infinite;
+    animation-play-state: paused;
+  }
+
+  .is-rolling .dm-reel {
+    animation-play-state: running;
+  }
+
+  @keyframes dm-spin {
+    to { rotate: 360deg; }
+  }
+
+  .dm-film-line,
+  .dm-legs {
+    fill: none;
+    stroke: color-mix(in srgb, var(--bone) 40%, transparent);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+  }
+
+  .dm-body,
+  .dm-lens {
+    fill: #2d2340;
+    stroke: color-mix(in srgb, var(--bone) 45%, transparent);
+    stroke-width: 2;
+  }
+
+  .dm-body-panel {
+    fill: #1a1424;
+  }
+
+  .dm-lens-glass {
+    fill: #fff3d6;
+    filter: drop-shadow(0 0 6px #fff3d6);
+  }
+
+  .dm-frame {
+    grid-area: frame;
+    position: relative;
+  }
+
+  .dm-beam {
+    position: absolute;
+    right: 100%;
+    top: 0;
+    bottom: 0;
+    width: var(--throw);
+    pointer-events: none;
+    background: linear-gradient(90deg, rgb(255 243 214 / 60%), rgb(255 243 214 / 16%));
+    clip-path: polygon(0 calc(50% - 0.5rem), 100% 0, 100% 100%, 0 calc(50% + 0.5rem));
+    animation: dm-beam 6s ease-in-out infinite;
+  }
+
+  .is-cut .dm-beam {
+    animation: dm-cut 0.4s steps(3) both;
+  }
+
+  @keyframes dm-beam {
+    0%, 100% { opacity: 0.8; }
+    47% { opacity: 1; }
+    50% { opacity: 0.7; }
+    53% { opacity: 0.95; }
+  }
+
+  @keyframes dm-cut {
+    0% { opacity: 0.2; }
+    60% { opacity: 1; }
+    100% { opacity: 0.85; }
+  }
+
   .dm-screen {
     position: relative;
     margin: 0;
     aspect-ratio: 16 / 10;
     background: #050308;
-    border-radius: 0.5rem;
+    border-radius: 0.3rem;
     overflow: hidden;
     box-shadow:
-      0 0 0 1px color-mix(in srgb, #fff3d6 18%, transparent),
-      0 0 3rem 0.4rem color-mix(in srgb, #fff3d6 16%, transparent),
+      0 0 0 1px color-mix(in srgb, #fff3d6 22%, transparent),
+      -1.5rem 0 3rem -1rem color-mix(in srgb, #fff3d6 22%, transparent),
       0 0 9rem 2rem color-mix(in srgb, var(--mood-glow) 26%, transparent);
     cursor: zoom-in;
   }
@@ -424,8 +502,8 @@ const ui = {
     inset: 0;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.7s ease, filter 0.9s ease;
-    filter: blur(8px) brightness(1.6);
+    transition: opacity 0.6s ease, filter 0.8s ease;
+    filter: brightness(1.7) blur(4px);
   }
 
   .dm-shot.is-on {
@@ -455,63 +533,165 @@ const ui = {
     50% { opacity: 0.82; }
   }
 
+  /* every subtitle shares one cell, so the tallest one sets the height and
+     nothing below moves when they change */
   .dm-subs {
-    min-height: 3.4em;
+    grid-area: subs;
+    display: grid;
     margin-top: 0.9rem;
     text-align: center;
   }
 
   .dm-sub {
-    display: inline-block;
-    max-width: 44ch;
+    grid-area: 1 / 1;
+    justify-self: center;
+    align-self: start;
+    max-width: 46ch;
+    margin: 0;
     padding: 0.25em 0.7em;
     font-size: var(--text-base);
     line-height: 1.4;
     color: #fffbea;
     background: rgb(0 0 0 / 55%);
     text-shadow: 0 1px 2px #000;
-    animation: dm-sub-in 0.5s ease both;
   }
 
   .dm-sub[hidden] {
-    display: none;
+    display: block;
+    visibility: hidden;
+  }
+
+  .dm-sub:not([hidden]) {
+    animation: dm-sub-in 0.5s ease both;
+  }
+
+  .dm-sub:empty {
+    background: none;
   }
 
   @keyframes dm-sub-in {
-    from { opacity: 0; transform: translateY(0.3rem); }
+    from { opacity: 0; }
   }
 
-  .dm-controls {
-    display: flex;
-    justify-content: center;
+  /* the reel: a strip of film with sprocket holes along both edges */
+  .dm-strip {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;
     gap: 0.8rem;
-    margin-top: 0.4rem;
+    width: min(100%, 76rem);
+    margin: var(--space-5) auto 0;
   }
 
-  .dm-step,
-  .dm-play {
+  .dm-film {
+    --hole: rgb(255 243 214 / 42%);
+    position: relative;
+    display: flex;
+    gap: 0.45rem;
+    margin: 0;
+    padding: 1.25rem 0.6rem;
+    list-style: none;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    background:
+      repeating-linear-gradient(90deg, var(--hole) 0 0.6rem, transparent 0.6rem 1.25rem) left 0 top 0.4rem / 100% 0.42rem no-repeat local,
+      repeating-linear-gradient(90deg, var(--hole) 0 0.6rem, transparent 0.6rem 1.25rem) left 0 bottom 0.4rem / 100% 0.42rem no-repeat local,
+      #0d0a12;
+    border-radius: 0.3rem;
+    box-shadow: 0 1rem 2rem -1rem rgb(0 0 0 / 80%);
+  }
+
+  .dm-film::-webkit-scrollbar {
+    display: none;
+  }
+
+  .dm-film li {
+    flex: none;
+    scroll-snap-align: center;
+  }
+
+  .dm-cell {
+    position: relative;
+    display: block;
+    width: clamp(6.5rem, 9vw, 8.5rem);
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+  }
+
+  .dm-cell-pic {
+    display: block;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    border-radius: 2px;
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    opacity: 0.55;
+    filter: saturate(0.6);
+    transition: opacity 0.3s, filter 0.3s, outline-color 0.3s;
+  }
+
+  .dm-cell-pic :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .dm-cell-num {
+    position: absolute;
+    left: 0.3rem;
+    bottom: 0.2rem;
     font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: #fffbea;
+    text-shadow: 0 1px 3px #000;
+  }
+
+  .dm-cell:hover .dm-cell-pic,
+  .dm-cell:focus-visible .dm-cell-pic {
+    opacity: 0.9;
+    filter: none;
+  }
+
+  .dm-cell:focus-visible {
+    outline: none;
+  }
+
+  .dm-cell:focus-visible .dm-cell-pic {
+    outline-color: var(--bone);
+  }
+
+  .dm-cell[aria-selected='true'] .dm-cell-pic {
+    opacity: 1;
+    filter: none;
+    outline-color: var(--gold);
+    box-shadow: 0 0 1.4rem 0.2rem rgb(255 243 214 / 35%);
+  }
+
+  .dm-step {
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
     color: var(--bone);
     background: rgb(255 255 255 / 6%);
     border: 1px solid rgb(255 255 255 / 18%);
-    border-radius: 999px;
+    border-radius: 50%;
     cursor: pointer;
     transition: background 0.2s, border-color 0.2s;
   }
 
-  .dm-step {
-    width: 2.4rem;
-    height: 2.4rem;
-    font-size: 1.3rem;
-    line-height: 1;
-  }
-
-  .dm-play {
-    padding: 0.55em 1.2em;
-    font-size: var(--text-xs);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+  .dm-step svg {
+    width: 1.3rem;
+    height: 1.3rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
 
   .dm-step:hover,
@@ -531,11 +711,6 @@ const ui = {
     white-space: nowrap;
   }
 
-  .dm-play[aria-pressed='true'] .dm-play-off,
-  .dm-play[aria-pressed='false'] .dm-play-on {
-    display: none;
-  }
-
   .dm-hint {
     margin-top: 0.9rem;
     text-align: center;
@@ -545,220 +720,17 @@ const ui = {
     color: var(--bone-soft);
   }
 
-  /* ---- memory fairies ---- */
-  .dm-memories {
-    display: contents;
-    list-style: none;
-  }
-
-  .dm-memory {
-    position: relative;
-    grid-column: var(--col);
-    grid-row: var(--row) / span 2;
-    justify-self: center;
-    z-index: 3;
-  }
-
-  .dm-orb {
-    --size: calc(clamp(3.4rem, 5vw, 5.6rem) * var(--s, 1));
-    --halo: #ffe7a8;
-    position: relative;
-    display: block;
-    width: var(--size);
-    height: var(--size);
-    padding: 0;
-    border: 0;
-    background: none;
-    cursor: pointer;
-    animation: dm-drift var(--dur, 8s) ease-in-out var(--delay, 0s) infinite;
-    transition: opacity 0.5s ease, scale 0.5s ease;
-  }
-
-  [data-hue='1'] .dm-orb {
-    --halo: #c9b8ff;
-  }
-
-  [data-hue='2'] .dm-orb {
-    --halo: #ffb8cf;
-  }
-
-  @keyframes dm-drift {
-    0%, 100% { transform: translate(0, 0) rotate(-3deg); }
-    30% { transform: translate(0.6rem, -0.9rem) rotate(2deg); }
-    65% { transform: translate(-0.5rem, -0.3rem) rotate(-1deg); }
-  }
-
-  .dm-orb-pic {
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    overflow: hidden;
-    box-shadow:
-      0 0 0 2px color-mix(in srgb, var(--halo) 70%, transparent),
-      0 0 1.2rem 0.3rem color-mix(in srgb, var(--halo) 50%, transparent);
-  }
-
-  .dm-orb::before {
-    content: '';
-    position: absolute;
-    inset: -35%;
-    border-radius: 50%;
-    background: radial-gradient(circle, color-mix(in srgb, var(--halo) 38%, transparent) 35%, transparent 68%);
-    animation: dm-pulse 3.2s ease-in-out var(--delay, 0s) infinite;
-  }
-
-  .dm-orb-pic::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    background:
-      radial-gradient(circle at 32% 26%, rgb(255 255 255 / 60%), transparent 22%),
-      radial-gradient(circle at 50% 50%, transparent 52%, color-mix(in srgb, var(--halo) 40%, transparent) 100%);
-  }
-
-  @keyframes dm-pulse {
-    0%, 100% { opacity: 0.55; }
-    50% { opacity: 1; }
-  }
-
-  .dm-orb-pic :global(img) {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    filter: saturate(1.1) brightness(1.05);
-  }
-
-  .dm-wing {
-    position: absolute;
-    top: 8%;
-    width: 46%;
-    height: 56%;
-    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-    background: radial-gradient(ellipse at 50% 60%, color-mix(in srgb, var(--halo) 45%, transparent), transparent 70%);
-    border: 1px solid color-mix(in srgb, var(--halo) 35%, transparent);
-    animation: dm-flap 0.9s ease-in-out infinite alternate;
-  }
-
-  .dm-wing.is-l {
-    right: 72%;
-    transform-origin: 100% 70%;
-    rotate: -24deg;
-  }
-
-  .dm-wing.is-r {
-    left: 72%;
-    transform-origin: 0 70%;
-    rotate: 24deg;
-  }
-
-  @keyframes dm-flap {
-    to { transform: scaleX(0.55); }
-  }
-
-  .dm-orb-num {
-    position: absolute;
-    left: 50%;
-    bottom: -1.3rem;
-    translate: -50% 0;
-    font-family: var(--font-mono);
-    font-size: 0.66rem;
-    letter-spacing: 0.1em;
-    color: color-mix(in srgb, var(--halo) 80%, var(--bone));
-    opacity: 0.8;
-  }
-
-  .dm-orb:hover,
-  .dm-orb:focus-visible {
-    scale: 1.14;
-    outline: none;
-  }
-
-  .dm-orb:focus-visible .dm-orb-pic {
-    outline: 2px solid var(--gold);
-    outline-offset: 4px;
-  }
-
-  .dm-orb.is-watching {
-    opacity: 0;
-    scale: 0.4;
-    pointer-events: none;
-  }
-
-  .dm-fly {
-    position: absolute;
-    left: 0;
-    top: 0;
-    z-index: 50;
-    pointer-events: none;
-    transform-origin: 50% 50%;
-    will-change: transform, clip-path;
-  }
-
-  .dm-fly img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-
-  .dm-seats {
-    position: relative;
-    display: block;
-    width: 100%;
-    height: clamp(3.5rem, 9vw, 7rem);
-    margin-top: var(--space-4);
-    fill: #07050c;
-    z-index: 2;
-    filter: drop-shadow(0 -1px 0 rgb(255 243 214 / 10%));
-  }
-
   .dream :global(.project-footer) {
     position: relative;
     z-index: 2;
   }
 
-  @media (max-width: 1100px) {
-    .dm-stage {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .dm-screen-wrap {
-      width: min(100%, 46rem);
-    }
-
-    .dm-memories {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 1.8rem 1.4rem;
-      max-width: 46rem;
-      margin: 0;
-      padding: var(--space-4) 0.6rem 0;
-    }
-
-    .dm-orb {
-      --size: calc(4.2rem * var(--s, 1));
-    }
-
-    .dm-orb.is-watching {
-      opacity: 0.25;
-      scale: 0.8;
-    }
-  }
-
   @media (max-width: 1100px), (pointer: coarse) {
-    .dm-wing,
     .dm-flicker,
     .mote:nth-child(n + 9) {
       display: none;
     }
 
-    .dm-orb,
-    .dm-orb::before,
     .dm-beam {
       animation: none;
     }
@@ -793,26 +765,52 @@ const ui = {
     }
 
     .dm-cinema {
-      min-height: auto;
       padding-top: var(--space-5);
       padding-bottom: var(--space-5);
     }
 
-    .dm-orb {
-      --size: calc(3.4rem * var(--s, 1));
+    /* the projector moves above the screen, its lens 5.25rem from the left
+       edge (214/224 of its width) and 1.2rem above the screen */
+    .dm-theatre {
+      grid-template-columns: 100%;
+      grid-template-areas: 'marquee' 'proj' 'frame' 'subs';
+    }
+
+    .dm-projector {
+      width: 5.5rem;
+      justify-self: start;
+      translate: none;
+      margin-bottom: 0.1rem;
     }
 
     .dm-beam {
+      right: 0;
+      left: 0;
+      top: auto;
+      bottom: 100%;
+      width: auto;
+      height: 1.2rem;
+      clip-path: polygon(5rem 0, 5.5rem 0, 100% 100%, 0 100%);
+      background: linear-gradient(180deg, rgb(255 243 214 / 60%), rgb(255 243 214 / 16%));
+    }
+
+    .dm-strip {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .dm-strip .dm-step {
       display: none;
+    }
+
+    .dm-cell {
+      width: 6rem;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
     .mote,
     .dm-beam,
-    .dm-orb,
-    .dm-orb::before,
-    .dm-wing,
+    .dm-reel,
     .dm-flicker,
     .dm-dot {
       animation: none;
@@ -822,17 +820,14 @@ const ui = {
     }
   }
 
-  :global(html[data-motion='quiet']) .dm-orb,
   :global(html[data-motion='quiet']) .dm-flicker,
-  :global(html[data-motion='still']) .dm-orb,
-  :global(html[data-motion='still']) .dm-orb::before,
-  :global(html[data-motion='still']) .dm-wing,
+  :global(html[data-motion='still']) .dm-reel,
+  :global(html[data-motion='still']) .dm-beam,
   :global(html[data-motion='still']) .dm-flicker,
   :global(html[data-motion='still']) .mote {
     animation: none;
   }
 </style>
-
 <script>
   let timer: number | undefined;
   let observer: IntersectionObserver | undefined;
@@ -846,7 +841,8 @@ const ui = {
     const reduced = motion === 'quiet' || motion === 'still' || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const shots = Array.from(root.querySelectorAll<HTMLElement>('[data-dm-shot]'));
     const subs = Array.from(root.querySelectorAll<HTMLElement>('[data-dm-sub]'));
-    const orbs = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-dm-orb]'));
+    const cells = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-dm-cell]'));
+    const film = root.querySelector<HTMLElement>('[data-dm-film]')!;
     const screen = root.querySelector<HTMLElement>('[data-dm-screen]')!;
     const count = root.querySelector<HTMLElement>('[data-dm-count]')!;
     const play = root.querySelector<HTMLButtonElement>('[data-dm-play]')!;
@@ -854,80 +850,45 @@ const ui = {
     let current = 0;
     let playing = !reduced;
     let visible = false;
-    let flying = false;
+    let cut: number | undefined;
 
-    const show = (i: number) => {
-      shots.forEach((s, k) => s.classList.toggle('is-on', k === i));
-      subs.forEach((s, k) => (s.hidden = k !== i));
-      orbs.forEach((o, k) => o.classList.toggle('is-watching', k === i));
-      count.textContent = String(i + 1).padStart(2, '0');
-      current = i;
+    // scrolls the strip only, never the page
+    const centre = (cell: HTMLElement) => {
+      const left = cell.offsetLeft - (film.clientWidth - cell.offsetWidth) / 2;
+      film.scrollTo({ left, behavior: reduced ? 'auto' : 'smooth' });
     };
 
-    const go = (i: number) => {
-      const target = (i + total) % total;
-      if (target === current || flying) return;
-      const orb = orbs[target];
-      const pic = orb.querySelector('img');
-      const from = orb.getBoundingClientRect();
-      const to = screen.getBoundingClientRect();
-      const onScreen = from.bottom > 0 && from.top < innerHeight && to.bottom > 0 && to.top < innerHeight;
-      if (reduced || !pic || !onScreen) {
-        show(target);
-        return;
+    const go = (i: number, focus = false) => {
+      current = (i + total) % total;
+      shots.forEach((s, k) => s.classList.toggle('is-on', k === current));
+      subs.forEach((s, k) => (s.hidden = k !== current));
+      cells.forEach((c, k) => {
+        c.setAttribute('aria-selected', String(k === current));
+        c.tabIndex = k === current ? 0 : -1;
+      });
+      count.textContent = String(current + 1).padStart(2, '0');
+      const cell = cells[current];
+      if (cell) {
+        centre(cell.parentElement ?? cell);
+        if (focus) cell.focus({ preventScroll: true });
       }
-      // the ghost has the screen's final size from the start and is only
-      // ever scaled uniformly; a circular clip makes it look like the orb,
-      // then opens up to the full frame as it lands
-      flying = true;
-      const base = root.getBoundingClientRect();
-      const ghost = document.createElement('div');
-      ghost.className = 'dm-fly';
-      ghost.setAttribute('aria-hidden', 'true');
-      ghost.style.cssText = `width:${to.width}px;height:${to.height}px;`;
-      const img = document.createElement('img');
-      img.src = pic.currentSrc || pic.src;
-      img.alt = '';
-      ghost.append(img);
-      root.append(ghost);
-      orb.classList.add('is-watching');
-      const s = from.width / to.height;
-      const x0 = from.left + from.width / 2 - base.left - to.width / 2;
-      const y0 = from.top + from.height / 2 - base.top - to.height / 2;
-      const x1 = to.left - base.left;
-      const y1 = to.top - base.top;
-      const lift = Math.min(140, Math.abs(x1 - x0) * 0.25 + 50);
-      const rStart = to.height / 2;
-      const rEnd = Math.hypot(to.width, to.height) / 2;
-      const anim = ghost.animate(
-        [
-          { transform: `translate(${x0}px, ${y0}px) scale(${s})`, clipPath: `circle(${rStart}px at 50% 50%)`, opacity: 1 },
-          {
-            transform: `translate(${(x0 + x1) / 2}px, ${(y0 + y1) / 2 - lift}px) scale(${(s + 1) / 2.6})`,
-            clipPath: `circle(${rStart}px at 50% 50%)`,
-            opacity: 1,
-            offset: 0.5,
-          },
-          { transform: `translate(${x1}px, ${y1}px) scale(1)`, clipPath: `circle(${rEnd}px at 50% 50%)`, opacity: 0 },
-        ],
-        { duration: 950, easing: 'cubic-bezier(.45,.05,.3,1)' },
-      );
-      const land = () => {
-        ghost.remove();
-        flying = false;
-      };
-      anim.onfinish = land;
-      anim.oncancel = land;
-      window.setTimeout(() => show(target), 650);
+      if (!reduced) {
+        root.classList.remove('is-cut');
+        void root.offsetWidth;
+        root.classList.add('is-cut');
+        window.clearTimeout(cut);
+        cut = window.setTimeout(() => root.classList.remove('is-cut'), 450);
+      }
     };
 
     const tick = () => {
       window.clearTimeout(timer);
+      root.classList.toggle('is-rolling', playing && visible);
       if (!playing || !visible) return;
       timer = window.setTimeout(() => {
         go(current + 1);
         tick();
-      }, 5200);
+      }, 5600);
     };
 
     const setPlaying = (on: boolean) => {
@@ -938,12 +899,19 @@ const ui = {
 
     if (reduced) play.setAttribute('aria-pressed', 'false');
 
-    orbs.forEach((orb, i) =>
-      orb.addEventListener('click', () => {
+    cells.forEach((cell, i) => {
+      cell.addEventListener('click', () => {
         setPlaying(false);
         go(i);
-      }),
-    );
+      });
+      cell.addEventListener('keydown', (e) => {
+        const step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+        if (!step) return;
+        e.preventDefault();
+        setPlaying(false);
+        go(current + step, true);
+      });
+    });
     root.querySelectorAll<HTMLButtonElement>('[data-dm-step]').forEach((b) =>
       b.addEventListener('click', () => {
         setPlaying(false);
@@ -951,12 +919,6 @@ const ui = {
       }),
     );
     play.addEventListener('click', () => setPlaying(!playing));
-    root.addEventListener('keydown', (e) => {
-      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
-      e.preventDefault();
-      setPlaying(false);
-      go(current + (e.key === 'ArrowRight' ? 1 : -1));
-    });
     screen.addEventListener('click', () => setPlaying(false));
 
     observer = new IntersectionObserver(

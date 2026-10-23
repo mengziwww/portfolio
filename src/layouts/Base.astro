@@ -68,6 +68,7 @@ const { path, title, description, ogImage, bodyClass, noindex = false } = Astro.
           }
           var text = localStorage.getItem('menghan-text');
           if (text === 'lg' || text === 'xl') document.documentElement.setAttribute('data-text', text);
+          if (localStorage.getItem('menghan-density') === 'full') document.documentElement.setAttribute('data-density', 'full');
           if (localStorage.getItem('menghan-contrast') === 'high') document.documentElement.setAttribute('data-contrast', 'high');
           if (localStorage.getItem('menghan-space') === 'relaxed') document.documentElement.setAttribute('data-space', 'relaxed');
           if (localStorage.getItem('menghan-transparent') === 'solid') document.documentElement.setAttribute('data-transparent', 'solid');

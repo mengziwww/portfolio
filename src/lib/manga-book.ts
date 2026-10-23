@@ -550,6 +550,8 @@ export function createBook(opts: BookOptions) {
   let panX = 0;
   let width = 1;
   let height = 1;
+  let canvasW = 1;
+  let canvasH = 1;
 
   function has(face: Face | null) {
     return !!face && face.kind === 'board';
@@ -717,11 +719,14 @@ export function createBook(opts: BookOptions) {
     return [cx, 2.16];
   }
 
+  // the book is fitted to the stage, while the canvas bleeds past it so a
+  // lifted page has room to be drawn
   function placeCamera() {
-    const aspect = width / Math.max(1, height);
+    const aspect = canvasW / Math.max(1, canvasH);
     const t = Math.tan(((FOV / 2) * PI) / 180);
-    const fitH = PAGE_H * 1.1;
-    const d = Math.max(fitH / 2 / t, camFit / 2 / (t * aspect));
+    const fitH = PAGE_H * 1.1 * (canvasH / height);
+    const fitW = camFit * (canvasW / width);
+    const d = Math.max(fitH / 2 / t, fitW / 2 / (t * aspect));
     const x = -camX + panX;
     camera.aspect = aspect;
     camera.position.set(x, -d * Math.sin(TILT), pivot + d * Math.cos(TILT));
@@ -733,11 +738,14 @@ export function createBook(opts: BookOptions) {
     const rect = stage.getBoundingClientRect();
     width = Math.max(1, rect.width);
     height = Math.max(1, rect.height);
+    const crect = canvas.getBoundingClientRect();
+    canvasW = Math.max(1, crect.width);
+    canvasH = Math.max(1, crect.height);
     const wasNarrow = narrow;
     narrow = width < 640;
     if (narrow !== wasNarrow) focus = defaultFocus(1);
     renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
-    renderer.setSize(width, height, false);
+    renderer.setSize(canvasW, canvasH, false);
     const pagePx = (narrow ? width : width / 2) * Math.min(2, window.devicePixelRatio || 1);
     useLg = pagePx > 1100;
     placeCamera();
@@ -857,8 +865,8 @@ export function createBook(opts: BookOptions) {
 
   function setCursor() {
     const value = press && press.mode === 'turn' ? 'grabbing' : hover ? 'grab' : '';
-    if (value) canvas.style.setProperty('cursor', value, 'important');
-    else canvas.style.removeProperty('cursor');
+    if (value) stage.style.setProperty('cursor', value, 'important');
+    else stage.style.removeProperty('cursor');
   }
 
   function onDown(e: PointerEvent) {
@@ -880,7 +888,7 @@ export function createBook(opts: BookOptions) {
       thetaVel: 0,
     };
     if (e.pointerType === 'mouse') e.preventDefault();
-    canvas.setPointerCapture(e.pointerId);
+    stage.setPointerCapture(e.pointerId);
   }
 
   function startTurnDrag(pr: Press, dir: 1 | -1): boolean {
@@ -961,7 +969,7 @@ export function createBook(opts: BookOptions) {
     if (!press || e.pointerId !== press.id) return;
     const pr = press;
     press = null;
-    if (canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
+    if (stage.hasPointerCapture(e.pointerId)) stage.releasePointerCapture(e.pointerId);
 
     if (pr.mode === 'turn' && turn) {
       const vel = cancelled ? 0 : clamp(pr.thetaVel, -14, 14);
@@ -983,7 +991,7 @@ export function createBook(opts: BookOptions) {
       }
     } else if (pr.mode === 'pending' && !cancelled && performance.now() - pr.t0 < 400) {
       if (narrow) {
-        const rect = canvas.getBoundingClientRect();
+        const rect = stage.getBoundingClientRect();
         const fx = (e.clientX - rect.left) / rect.width;
         if (fx < 0.24) forward();
         else if (fx > 0.76) back();
@@ -1018,11 +1026,11 @@ export function createBook(opts: BookOptions) {
       back();
     }
   };
-  canvas.addEventListener('pointerdown', down);
-  canvas.addEventListener('pointermove', move);
-  canvas.addEventListener('pointerup', up);
-  canvas.addEventListener('pointercancel', cancel);
-  canvas.addEventListener('pointerleave', leave);
+  stage.addEventListener('pointerdown', down);
+  stage.addEventListener('pointermove', move);
+  stage.addEventListener('pointerup', up);
+  stage.addEventListener('pointercancel', cancel);
+  stage.addEventListener('pointerleave', leave);
   stage.addEventListener('keydown', onKey);
 
   const ro = new ResizeObserver(() => resize());
@@ -1060,11 +1068,11 @@ export function createBook(opts: BookOptions) {
       cancelAnimationFrame(raf);
       ro.disconnect();
       io.disconnect();
-      canvas.removeEventListener('pointerdown', down);
-      canvas.removeEventListener('pointermove', move);
-      canvas.removeEventListener('pointerup', up);
-      canvas.removeEventListener('pointercancel', cancel);
-      canvas.removeEventListener('pointerleave', leave);
+      stage.removeEventListener('pointerdown', down);
+      stage.removeEventListener('pointermove', move);
+      stage.removeEventListener('pointerup', up);
+      stage.removeEventListener('pointercancel', cancel);
+      stage.removeEventListener('pointerleave', leave);
       stage.removeEventListener('keydown', onKey);
       boards.forEach((slot) => {
         slot.tex?.dispose();

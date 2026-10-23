@@ -226,6 +226,7 @@
 </style>
 
 <script>
+  import { readLocalShort } from '@/lib/short-text';
   const STORAGE = 'menghan-review-notes';
   const ORDER_KEY = 'menghan-review-order';
   const MODE = 'menghan-notes-mode';
@@ -506,11 +507,12 @@
       const notes = readNotes();
       const orders = readOrders().filter((entry) => entry.ids?.length);
       const payload = {
-        for: 'Apply each comment to the real portfolio, the pages without /notes. Match the element with page + selector, and use text if the selector misses. orders is the image sequence she chose, per page and group.',
+        for: 'Apply each comment to the real portfolio, the pages without /notes. Match the element with page + selector, and use text if the selector misses. orders is the image sequence she chose, per page and group. short lists, per text key, whether that text stays (keep) or folds away (hide) in short mode; copy it into src/data/short-text.json.',
         exportedAt: new Date().toISOString(),
         count: notes.length,
         comments: notes,
         orders,
+        short: readLocalShort(),
       };
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
       const link = document.createElement('a');
@@ -536,7 +538,7 @@
         'click',
         (event) => {
           if (sessionStorage.getItem(MODE) !== 'annotate') return;
-          if (event.target instanceof Element && event.target.closest('[data-notes-order]')) return;
+          if (event.target instanceof Element && event.target.closest('[data-notes-order], [data-short-badge]')) return;
           const el = candidate(event.target);
           if (!el) return;
           event.preventDefault();

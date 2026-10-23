@@ -177,7 +177,7 @@ const slides = trackItems.map((item, i) => {
                 loading="lazy"
               />
             </span>
-            <figcaption><I18nText {...(item.caption ?? item.alt)} /></figcaption>
+            {item.caption && <figcaption><I18nText {...item.caption} /></figcaption>}
           </figure>
         ))}
       </div>

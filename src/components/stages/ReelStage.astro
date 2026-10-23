@@ -2,7 +2,8 @@
 // A temple-fair night: red lanterns on a cord, sky lanterns, fireworks,
 // a crowd that thins out on scroll. Single-image chapters hang in a
 // lacquered shrine frame; the multi-image chapter is the gods' offering
-// table, one shrine display fed by a slow conveyor of offering plates.
+// table, one shrine display above a row of offering plates resting on a
+// painted scroll.
 import { Image } from 'astro:assets';
 import type { CollectionEntry } from 'astro:content';
 import { getProjectImage, responsiveWidths } from '@/lib/images';
@@ -264,7 +265,13 @@ const roofline = rooflinePath();
           <div class="altar">
             <div class="altar-shrine">
               <span class="altar-eave" aria-hidden="true"></span>
-              <div class="altar-stage" data-lb-group>
+              <div class="altar-stage" data-lb-group data-altar-stage>
+                <button type="button" class="altar-step is-prev" data-altar-step="-1" aria-label="Previous offering">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+                </button>
+                <button type="button" class="altar-step is-next" data-altar-step="1" aria-label="Next offering">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+                </button>
                 {group.items.map((item, idx) => (
                   <figure class:list={['altar-shot', { 'is-on': idx === 0 }]} data-altar-shot={idx} data-artwork data-note-id={`${project.id}:${item.file}`}>
                     <Image
@@ -289,34 +296,33 @@ const roofline = rooflinePath();
 
             <div class="altar-table">
               <p class="altar-hint">
-                <I18nText en="offerings drift by. Take one." fr="les offrandes défilent. Prends-en une." zh="供品慢慢流过，挑一盘吧。" />
+                <I18nText en="choose an offering" fr="choisis une offrande" zh="选一盘供品" />
               </p>
-              <div class="belt" data-belt>
-                <div class="belt-track">
-                  {[0, 1, 2].map((copy) => (
-                    <ul class="belt-run" aria-hidden={copy > 0 ? 'true' : undefined}>
-                      {group.items.map((item, idx) => (
-                        <li class="belt-item" style={`--tilt:${((idx * 37) % 9) - 4}deg;`}>
-                          <button
-                            type="button"
-                            class:list={['plate', { 'is-taken': idx === 0 }]}
-                            data-plate={idx}
-                            tabindex={copy > 0 ? -1 : undefined}
-                            aria-label={item.alt.en}
-                          >
-                            <span class="plate-dish" aria-hidden="true"></span>
-                            <span class="plate-food">
-                              <Image src={getProjectImage(project.id, item.file)} alt="" widths={[200, 320]} sizes="9rem" loading="lazy" />
-                            </span>
-                            <span class="plate-num" aria-hidden="true">{String(idx + 1).padStart(2, '0')}</span>
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
+              <div class="offer-scroll">
+                <span class="offer-roller is-l" aria-hidden="true"></span>
+                <ul class="offer-row" role="tablist" aria-label="Offerings">
+                  {group.items.map((item, idx) => (
+                    <li class="offer-spot" style={`--tilt:${((idx * 37) % 9) - 4}deg;`}>
+                      <button
+                        type="button"
+                        class="plate"
+                        role="tab"
+                        aria-selected={idx === 0 ? 'true' : 'false'}
+                        tabindex={idx === 0 ? 0 : -1}
+                        data-plate={idx}
+                        aria-label={item.alt.en}
+                      >
+                        <span class="plate-dish" aria-hidden="true"></span>
+                        <span class="plate-food">
+                          <Image src={getProjectImage(project.id, item.file)} alt="" widths={[200, 320]} sizes="9rem" loading="lazy" />
+                        </span>
+                        <span class="plate-num" aria-hidden="true">{String(idx + 1).padStart(2, '0')}</span>
+                      </button>
+                    </li>
                   ))}
-                </div>
+                </ul>
+                <span class="offer-roller is-r" aria-hidden="true"></span>
               </div>
-              <span class="altar-table-edge" aria-hidden="true"></span>
             </div>
           </div>
         </section>
@@ -823,9 +829,8 @@ const roofline = rooflinePath();
     border-radius: 4px;
   }
 
-  /* ---- the gods' offering table: one shrine display, fed by a slow
-     conveyor of offering plates (her own image of the scroll that
-     unrolls "like conveyor-belt sushi") ---- */
+  /* ---- the gods' offering table: one shrine display, the plates laid
+     still along a painted scroll ---- */
   .altar {
     width: min(64rem, 100%);
     display: flex;
@@ -910,14 +915,12 @@ const roofline = rooflinePath();
 
   .altar-table {
     position: relative;
-    width: 100vw;
-    margin-top: var(--space-5);
-    padding: 1.4rem 0 0;
-    background: linear-gradient(180deg, transparent, rgb(60 26 14 / 55%) 30%, #3a1a0e 100%);
+    width: min(100%, 64rem);
+    margin-top: var(--space-4);
   }
 
   .altar-hint {
-    margin: 0 0 0.6rem;
+    margin: 0 0 0.7rem;
     text-align: center;
     font-family: var(--font-mono);
     font-size: var(--text-sm);
@@ -925,37 +928,40 @@ const roofline = rooflinePath();
     color: #f0d9a8;
   }
 
-  .belt {
-    overflow: hidden;
-    padding: 1.2rem 0 1.6rem;
-    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  /* the painted scroll the offerings rest on, held by a roller at each end */
+  .offer-scroll {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: stretch;
   }
 
-  .belt-track {
+  .offer-roller {
+    width: 1.1rem;
+    border-radius: 0.6rem;
+    background: linear-gradient(90deg, #3b1c10, #a8662f 45%, #3b1c10);
+    box-shadow: 0 0.6rem 1rem -0.4rem rgb(0 0 0 / 70%);
+  }
+
+  .offer-row {
     display: flex;
-    width: max-content;
-    animation: belt-run 60s linear infinite;
-  }
-
-  .belt:hover .belt-track,
-  .belt:focus-within .belt-track {
-    animation-play-state: paused;
-  }
-
-  @keyframes belt-run {
-    to { transform: translateX(calc(-100% / 3)); }
-  }
-
-  .belt-run {
-    display: flex;
-    gap: clamp(1.4rem, 3vw, 2.6rem);
-    padding: 0 clamp(0.7rem, 1.5vw, 1.3rem);
-    margin: 0;
+    justify-content: center;
+    gap: clamp(0.8rem, 2vw, 1.8rem);
+    margin: 0.5rem 0;
+    padding: 1.6rem clamp(0.8rem, 2vw, 1.6rem) 2.2rem;
     list-style: none;
+    background:
+      repeating-linear-gradient(90deg, rgb(140 60 30 / 10%) 0 1px, transparent 1px 3.2rem),
+      linear-gradient(180deg, #e9d6b2, #d9bf91);
+    box-shadow: inset 0 0.5rem 0.8rem -0.5rem rgb(80 40 10 / 55%), inset 0 -0.5rem 0.8rem -0.5rem rgb(80 40 10 / 55%);
+  }
+
+  .offer-spot {
+    flex: none;
   }
 
   .plate {
-    --plate: clamp(6.5rem, 11vw, 10rem);
+    --plate: clamp(5.4rem, 8.6vw, 7.6rem);
     position: relative;
     display: grid;
     place-items: center;
@@ -966,7 +972,58 @@ const roofline = rooflinePath();
     background: none;
     cursor: pointer;
     rotate: var(--tilt);
-    transition: translate 0.35s ease, rotate 0.35s ease;
+    transition: translate 0.35s var(--ease-out-expo), rotate 0.35s ease, scale 0.35s var(--ease-out-expo);
+  }
+
+  .plate[aria-selected='true'] {
+    translate: 0 -0.7rem;
+    rotate: 0deg;
+    scale: 1.1;
+  }
+
+  .plate[aria-selected='true'] .plate-dish {
+    box-shadow: 0 0 0 3px #d9a441, 0 0 1.6rem 0.3rem rgb(255 190 90 / 55%), 0 1rem 1.4rem -0.4rem rgb(0 0 0 / 65%);
+  }
+
+  .altar-step {
+    position: absolute;
+    top: 50%;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    translate: 0 -50%;
+    color: #f6dca0;
+    background: rgb(20 8 5 / 78%);
+    border: 1px solid #d9a441;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.25s, color 0.25s;
+  }
+
+  .altar-step.is-prev {
+    left: 0.7rem;
+  }
+
+  .altar-step.is-next {
+    right: 0.7rem;
+  }
+
+  .altar-step:hover,
+  .altar-step:focus-visible {
+    color: #1d0d07;
+    background: #d9a441;
+  }
+
+  .altar-step svg {
+    width: 1.3rem;
+    height: 1.3rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
 
   .plate-dish {
@@ -1000,54 +1057,29 @@ const roofline = rooflinePath();
     translate: -50% 0;
     font-family: var(--font-mono);
     font-size: var(--text-xs);
-    color: #f0d9a8;
+    color: #6b2a14;
+  }
+
+  .plate[aria-selected='true'] .plate-num {
+    color: #b9302a;
+    font-weight: 700;
   }
 
   .plate:hover,
   .plate:focus-visible {
-    translate: 0 -0.6rem;
+    translate: 0 -0.5rem;
     rotate: 0deg;
     outline: none;
+  }
+
+  .plate[aria-selected='true']:hover,
+  .plate[aria-selected='true']:focus-visible {
+    translate: 0 -0.7rem;
   }
 
   .plate:focus-visible .plate-dish {
     outline: 2px solid var(--gold);
     outline-offset: 3px;
-  }
-
-  .plate.is-taken .plate-food {
-    opacity: 0.25;
-  }
-
-  .altar-table-edge {
-    display: block;
-    height: 0.8rem;
-    background: linear-gradient(180deg, #7a3a1c, #2a1208);
-    box-shadow: inset 0 1px 0 rgb(255 200 140 / 25%);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .belt {
-      overflow-x: auto;
-    }
-    .belt-track {
-      animation: none;
-    }
-    .belt-run[aria-hidden] {
-      display: none;
-    }
-  }
-
-  :global(html[data-motion='still']) .belt {
-    overflow-x: auto;
-  }
-
-  :global(html[data-motion='still']) .belt-track {
-    animation: none;
-  }
-
-  :global(html[data-motion='still']) .belt-run[aria-hidden] {
-    display: none;
   }
 
   @media (max-width: 700px) {
@@ -1062,8 +1094,22 @@ const roofline = rooflinePath();
     .chapter-note {
       font-size: var(--text-base);
     }
+    .offer-row {
+      justify-content: flex-start;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      padding-inline: 1rem;
+      scrollbar-width: none;
+    }
+    .offer-spot {
+      scroll-snap-align: center;
+    }
     .plate {
-      --plate: 5.6rem;
+      --plate: 4.8rem;
+    }
+    .altar-step {
+      width: 2.5rem;
+      height: 2.5rem;
     }
   }
 
@@ -1094,14 +1140,57 @@ const roofline = rooflinePath();
         const captions = Array.from(altar.querySelectorAll<HTMLElement>('[data-altar-caption]'));
         const plates = Array.from(altar.querySelectorAll<HTMLButtonElement>('[data-plate]'));
         const count = altar.querySelector<HTMLElement>('[data-altar-count]');
-        plates.forEach((plate) =>
-          plate.addEventListener('click', () => {
-            const i = Number(plate.dataset.plate);
-            shots.forEach((s, k) => s.classList.toggle('is-on', k === i));
-            captions.forEach((c, k) => (c.hidden = k !== i));
-            plates.forEach((p) => p.classList.toggle('is-taken', Number(p.dataset.plate) === i));
-            if (count) count.textContent = String(i + 1).padStart(2, '0');
+        const stage = altar.querySelector<HTMLElement>('[data-altar-stage]');
+        let current = 0;
+        const show = (i: number, focus = false) => {
+          current = (i + shots.length) % shots.length;
+          shots.forEach((s, k) => s.classList.toggle('is-on', k === current));
+          captions.forEach((c, k) => (c.hidden = k !== current));
+          plates.forEach((p, k) => {
+            p.setAttribute('aria-selected', String(k === current));
+            p.tabIndex = k === current ? 0 : -1;
+          });
+          if (count) count.textContent = String(current + 1).padStart(2, '0');
+          plates[current]?.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
+          if (focus) plates[current]?.focus({ preventScroll: true });
+        };
+        plates.forEach((plate, k) => {
+          plate.addEventListener('click', () => show(k));
+          plate.addEventListener('keydown', (e) => {
+            const step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+            if (!step) return;
+            e.preventDefault();
+            show(current + step, true);
+          });
+        });
+        altar.querySelectorAll<HTMLButtonElement>('[data-altar-step]').forEach((btn) =>
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            show(current + Number(btn.dataset.altarStep));
           }),
+        );
+        let downX = 0;
+        let swiped = false;
+        stage?.addEventListener('pointerdown', (e) => {
+          downX = e.clientX;
+          swiped = false;
+        });
+        stage?.addEventListener('pointerup', (e) => {
+          const dx = e.clientX - downX;
+          if (e.pointerType !== 'mouse' && Math.abs(dx) > 40) {
+            swiped = true;
+            show(current + (dx < 0 ? 1 : -1));
+          }
+        });
+        stage?.addEventListener(
+          'click',
+          (e) => {
+            if (!swiped) return;
+            swiped = false;
+            e.stopPropagation();
+            e.preventDefault();
+          },
+          true,
         );
       }
 

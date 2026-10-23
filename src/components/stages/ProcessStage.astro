@@ -20,7 +20,7 @@ interface Props {
   next: CollectionEntry<'projects'>;
 }
 const { project, next } = Astro.props;
-const { title, subtitle, description, year, roles, category, client, cover, coverAlt, gallery, accentFrom, accentTo, videos, links, release } = project.data;
+const { title, subtitle, description, story, year, roles, category, client, cover, coverAlt, gallery, accentFrom, accentTo, videos, links, release } = project.data;
 const releaseDate = release?.date.split('-').reverse().join('.');
 const youtubeUrl = release && `https://www.youtube.com/watch?v=${release.youtube}`;
 const glow = vividOf(accentFrom, accentTo);
@@ -100,7 +100,15 @@ const pollen = Array.from({ length: 26 }, (_, i) => ({
       <p class="pr-hero-subtitle">
         <I18nText en={subtitle.en} fr={subtitle.fr} zh={subtitle.zh} />
       </p>
+      {story && (
+        <p class="pr-hero-story">
+          <I18nText en={story.en} fr={story.fr} zh={story.zh} />
+        </p>
+      )}
       <p class="pr-hero-desc">
+        {story && (
+          <span class="pr-hero-desc-label"><I18nText en="my part" fr="mon rôle" zh="我的工作" /></span>
+        )}
         <I18nText en={description.en} fr={description.fr} zh={description.zh} />
       </p>
       {youtubeUrl && (
@@ -432,7 +440,7 @@ const pollen = Array.from({ length: 26 }, (_, i) => ({
     bottom: 0;
     padding: 0.2em 0.55em;
     font-family: var(--font-sans);
-    font-size: 0.68rem;
+    font-size: var(--text-2xs);
     font-weight: 700;
     color: #141414;
     background: #f8f6ee;
@@ -548,6 +556,27 @@ const pollen = Array.from({ length: 26 }, (_, i) => ({
     transform: translateY(-2px);
   }
 
+  .pr-hero-story {
+    max-width: 40ch;
+    margin-top: var(--space-3);
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    font-style: italic;
+    line-height: 1.35;
+    color: var(--bone);
+    text-shadow: 0 1px 12px rgb(0 0 0 / 70%);
+  }
+
+  .pr-hero-desc-label {
+    display: block;
+    margin-bottom: 0.3em;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--sunflower);
+  }
+
   .pr-hero-desc {
     font-size: var(--text-base);
     color: color-mix(in srgb, var(--bone) 92%, transparent);
@@ -587,7 +616,7 @@ const pollen = Array.from({ length: 26 }, (_, i) => ({
   }
 
   .pr-hero-credit figcaption {
-    font-size: 0.68rem;
+    font-size: var(--text-2xs);
     line-height: 1.4;
     color: rgb(255 255 255 / 55%);
   }

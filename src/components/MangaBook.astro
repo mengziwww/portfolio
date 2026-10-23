@@ -71,8 +71,13 @@ const helpId = `manga-help-${projectId}`;
     width: 100%;
     aspect-ratio: 3 / 2;
     max-height: 86vh;
+    z-index: 1;
     outline: none;
     border-radius: 6px;
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .mb-stage::before {
@@ -89,18 +94,18 @@ const helpId = `manga-help-${projectId}`;
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--gold) 70%, transparent);
   }
 
+  /* bleeds past the stage so a page lifted mid-turn is not cut off; the
+     stage itself takes the pointer, so the bleed never covers the text
+     around it */
   .mb-canvas {
     position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
+    inset: -14% -4%;
+    width: 108%;
+    height: 128%;
     display: block;
     opacity: 0;
+    pointer-events: none;
     transition: opacity 0.9s ease;
-    touch-action: pan-y;
-    user-select: none;
-    -webkit-user-select: none;
-    -webkit-tap-highlight-color: transparent;
   }
 
   .mb.is-ready .mb-canvas {

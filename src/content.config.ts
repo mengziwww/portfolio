@@ -42,8 +42,9 @@ const projects = defineCollection({
     client: z.string().optional(),
     subtitle: localized,
     description: localized,
-    // used by the "atmosphere" stage: the story, told one sentence per
-    // picture as you scroll (falls back to the description)
+    // the plot, kept apart from my part in it. The "atmosphere" stage tells
+    // it one sentence per picture (falls back to the description); the
+    // "process" stage shows it above the description.
     story: localized.optional(),
     cover: z.string(), // filename in src/assets/projects/<id>/
     coverAlt: localized,
@@ -97,6 +98,19 @@ const projects = defineCollection({
           chapter: z.string(),
           display: z.enum(['lineup', 'hand', 'polaroids', 'festival', 'calendar', 'strip']),
           note: localized,
+        })
+      )
+      .optional(),
+    // used by the "collection" stage: the tabs along the top. Each shelf
+    // shows one part at a time; a part is a pile's chapter.en, or
+    // '@videos' / '@storyboards' for every clip / every storyboard.
+    // The first shelf is the one open on arrival.
+    shelves: z
+      .array(
+        z.object({
+          id: z.string(),
+          label: localized,
+          parts: z.array(z.string()),
         })
       )
       .optional(),

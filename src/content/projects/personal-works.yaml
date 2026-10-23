@@ -55,35 +55,60 @@ piles:
       en: Practice, style tests, and a few drawings just for me.
       fr: De l'entraînement, des essais de style, et quelques dessins juste pour moi.
       zh: 练习、风格测试，还有一些只是画给自己的。
+shelves:
+  - id: daily
+    label:
+      en: Daily Inspirations
+      fr: Inspirations du quotidien
+      zh: 日常灵感
+    parts: [Sketchbook]
+  - id: storyboards
+    label:
+      en: Storyboards
+      fr: Storyboards
+      zh: 分镜
+    parts: ['@storyboards']
+  - id: motion
+    label:
+      en: In Motion
+      fr: En mouvement
+      zh: 动画
+    parts: ['@videos', Since Tomorrow]
+  - id: paintings
+    label:
+      en: Digital Paintings
+      fr: Peintures numériques
+      zh: 数字绘画
+    parts: [Card game, Commissions, Spring Festival, 24 solar terms]
 storyboards:
   - title:
-      en: Untitled Storyboard Project I
-      fr: Untitled Storyboard Project I
-      zh: Untitled Storyboard Project I
+      en: The Desert and the Cat
+      fr: Le Désert et le Chat
+      zh: 沙漠与猫
     note:
-      en: Placeholder. I'll write a few words about this storyboard later.
-      fr: Texte provisoire. J'écrirai quelques mots sur ce storyboard plus tard.
-      zh: 说明先空着，之后再写这份分镜。
+      en: "A little cat is stranded in the desert with no food and no water. About to faint, he still holds on to his pocket watch. In a daze he dreams of water and fish. Far away, his owner finally wakes up and rushes home to save her hungry cat. Inside the pocket watch is a photo of the two of them."
+      fr: "Un petit chat est perdu dans le désert, sans eau ni nourriture. Sur le point de s'évanouir, il serre encore sa montre à gousset. À demi conscient, il rêve d'eau et de poissons. Loin de là, sa maîtresse se réveille enfin et rentre en courant sauver son chat affamé. Dans la montre, il y a une photo d'eux deux."
+      zh: 小猫在沙漠没有了食物和水源，快要晕厥的时候，还是珍惜着自己的怀表。恍惚间他梦见了水和鱼，而另一侧，他的主人终于醒来，匆忙回到家拯救没有食物的小猫。一侧的怀表正是她和小猫的合影。
     look: sand
     pages: [storyboard-1-01.jpg, storyboard-1-02.jpg, storyboard-1-03.jpg, storyboard-1-04.jpg, storyboard-1-05.jpg, storyboard-1-06.jpg, storyboard-1-07.jpg, storyboard-1-08.jpg, storyboard-1-09.jpg]
   - title:
-      en: Untitled Storyboard Project II
-      fr: Untitled Storyboard Project II
-      zh: Untitled Storyboard Project II
+      en: Tooth
+      fr: Tooth
+      zh: Tooth
     note:
-      en: Placeholder. I'll write about this one later too.
-      fr: Texte provisoire. J'écrirai sur celui-ci plus tard aussi.
-      zh: 说明先空着，之后再写。
+      en: "A story about growing up. A boy who has just moved from the countryside can't get used to life in the city. His classmates laugh at him, his mother has no time for him, and only the kid who shares his desk is kind to him. One night, a little cat turns into a tiger and comes to take the boy away..."
+      fr: "Une histoire sur le fait de grandir. Un garçon tout juste arrivé de la campagne n'arrive pas à se faire à la vie en ville. Ses camarades se moquent de lui, sa mère n'a pas le temps de s'occuper de lui, et seul son voisin de table est gentil avec lui. Un soir, un petit chat se change en tigre et vient chercher le garçon..."
+      zh: 这是一个关于成长的故事，刚从乡下来到城市的男孩总是不习惯城市的生活。同学们嘲笑他，母亲没时间管他，只有同桌对他释放善意。这一天晚上，小猫化做了老虎接男孩离开……
     look: wall
     pages: [storyboard-2-01.jpg, storyboard-2-02.jpg, storyboard-2-03.jpg, storyboard-2-04.jpg, storyboard-2-05.jpg, storyboard-2-06.jpg, storyboard-2-07.jpg, storyboard-2-08.jpg, storyboard-2-09.jpg, storyboard-2-10.jpg, storyboard-2-11.jpg, storyboard-2-12.jpg, storyboard-2-13.jpg, storyboard-2-14.jpg, storyboard-2-15.jpg, storyboard-2-16.jpg, storyboard-2-17.jpg, storyboard-2-18.jpg, storyboard-2-19.jpg, storyboard-2-20.jpg, storyboard-2-21.jpg, storyboard-2-22.jpg]
   - title:
-      en: Untitled Storyboard Project III
-      fr: Untitled Storyboard Project III
-      zh: Untitled Storyboard Project III
+      en: Mother
+      fr: Mère
+      zh: 母亲
     note:
-      en: Placeholder. A few words about this storyboard will go here.
-      fr: Texte provisoire. Quelques mots sur ce storyboard viendront ici.
-      zh: 这里之后会写几句关于这份分镜的话。
+      en: One day, while a girl is fast asleep, a little deer steps out of a painting and leads her to her mother.
+      fr: Un jour, pendant qu'une fille dort profondément, un petit faon sort d'un tableau et la guide jusqu'à sa mère.
+      zh: 这一天，在女孩熟睡时，一只小鹿从画中走出，将女孩引向了母亲。
     look: night
     pages: [storyboard-3-01.jpg, storyboard-3-02.jpg, storyboard-3-03.jpg, storyboard-3-04.jpg, storyboard-3-05.jpg, storyboard-3-06.jpg, storyboard-3-07.jpg, storyboard-3-08.jpg]
 cover: cover.png
@@ -247,9 +272,13 @@ gallery:
       fr: Fête du printemps
       zh: 春节
     alt:
-      en: Placeholder. I'll describe this image later.
-      fr: Texte provisoire. Je décrirai cette image plus tard.
-      zh: 说明先空着，之后再写。
+      en: The story of Nian, the New Year beast.
+      fr: L'histoire du Nian, la bête du nouvel an.
+      zh: 关于年兽的故事。
+    caption:
+      en: The story of Nian, the New Year beast.
+      fr: L'histoire du Nian, la bête du nouvel an.
+      zh: 关于年兽的故事。
   - file: spring-festival-02.jpg
     chapter:
       en: Spring Festival

@@ -24,7 +24,7 @@ const poppy =
   '<circle cx="20" cy="20" r="4.5" fill="#1a1410"/><g stroke="#1a1410" stroke-width="1.2"><path d="M20 13v-2M27 20h2M20 27v2M13 20h-2M25 15l1.5-1.5M15 25l-1.5 1.5M25 25l1.5 1.5M15 15l-1.5-1.5"/></g>';
 ---
 
-<div class:list={['film-frame', `skin-${skin}`, className]} data-video-player data-skin={skin} data-saber={skin === 'saber' ? 'light' : undefined} tabindex="-1">
+<div class:list={['film-frame', `skin-${skin}`, className]} data-video-player data-skin={skin} data-saber={skin === 'saber' ? 'dark' : undefined} tabindex="-1">
   {film && <span class="sprockets" aria-hidden="true"></span>}
   {skin === 'temple' && (
     <span class="vp-roof" aria-hidden="true">
@@ -59,7 +59,7 @@ const poppy =
         <span class="vp-np-kicker">now playing</span>
         {label && <span class="vp-np-title">{label}</span>}
       </span>
-      <button type="button" class="vp-side" data-vp-side aria-pressed="false">
+      <button type="button" class="vp-side" data-vp-side aria-pressed="true">
         <span class="vp-side-light">light side</span>
         <span class="vp-side-dark">dark side</span>
       </button>
@@ -785,6 +785,7 @@ const poppy =
 
   .skin-road .vp-progress {
     height: 2rem;
+    margin-inline: 1.4rem;
   }
 
   .skin-road .vp-track {
@@ -1047,7 +1048,7 @@ const poppy =
   }
 
   .vp-np-kicker {
-    font-size: 0.62rem;
+    font-size: var(--text-2xs);
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: rgb(255 255 255 / 55%);
@@ -1062,7 +1063,7 @@ const poppy =
     margin-left: auto;
     padding: 0.35em 0.9em;
     font-family: var(--font-mono);
-    font-size: 0.66rem;
+    font-size: var(--text-2xs);
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--saber);

@@ -5,15 +5,25 @@
 // [data-lb-group] can be paged through with the arrows.
 ---
 
-<div class="lightbox" data-lightbox hidden>
+<div class="lightbox" data-lightbox data-lenis-prevent hidden>
   <div class="lightbox-bar">
     <span class="lightbox-count" data-lb-count hidden></span>
-    <button type="button" data-lb-out aria-label="Zoom out">−</button>
-    <button type="button" data-lb-in aria-label="Zoom in">+</button>
-    <button type="button" data-lb-close aria-label="Close">×</button>
+    <button type="button" data-lb-out aria-label="Zoom out">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h12" /></svg>
+    </button>
+    <button type="button" data-lb-in aria-label="Zoom in">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h12M12 6v12" /></svg>
+    </button>
+    <button type="button" data-lb-close aria-label="Close">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17" /></svg>
+    </button>
   </div>
-  <button type="button" class="lightbox-nav is-prev" data-lb-prev aria-label="Previous" hidden>‹</button>
-  <button type="button" class="lightbox-nav is-next" data-lb-next aria-label="Next" hidden>›</button>
+  <button type="button" class="lightbox-nav is-prev" data-lb-prev aria-label="Previous" hidden>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+  </button>
+  <button type="button" class="lightbox-nav is-next" data-lb-next aria-label="Next" hidden>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+  </button>
   <div class="lightbox-stage" data-lb-stage>
     <img data-lb-img alt="" draggable="false" />
   </div>
@@ -26,6 +36,8 @@
     z-index: 800;
     background: rgb(9 8 10 / 94%);
     display: grid;
+    overscroll-behavior: contain;
+    touch-action: none;
   }
 
   .lightbox[hidden] {
@@ -52,26 +64,41 @@
 
   .lightbox-bar button,
   .lightbox-nav {
-    width: 2.4rem;
-    height: 2.4rem;
+    display: grid;
+    place-items: center;
+    width: 2.6rem;
+    height: 2.6rem;
+    padding: 0;
     border: 1px solid var(--void-line);
     border-radius: 999px;
     background: rgb(9 8 10 / 72%);
     color: var(--bone);
-    font-family: var(--font-mono);
-    font-size: 1.15rem;
-    line-height: 1;
     cursor: pointer;
+  }
+
+  .lightbox-bar svg,
+  .lightbox-nav svg {
+    width: 1.1rem;
+    height: 1.1rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
 
   .lightbox-nav {
     position: absolute;
     top: 50%;
     z-index: 2;
-    width: 3rem;
-    height: 3rem;
-    font-size: 1.6rem;
+    width: 3.2rem;
+    height: 3.2rem;
     transform: translateY(-50%);
+  }
+
+  .lightbox-nav svg {
+    width: 1.4rem;
+    height: 1.4rem;
   }
 
   .lightbox-nav[hidden] {
@@ -118,6 +145,8 @@
 </style>
 
 <script>
+  const lenis = () => (window as any).__lenis as { stop(): void; start(): void } | undefined;
+
   function initLightbox() {
     const root = document.querySelector<HTMLElement>('[data-lightbox]');
     if (!root || root.dataset.lbReady === '1') return;
@@ -170,6 +199,7 @@
       show(source);
       root.hidden = false;
       document.documentElement.style.overflow = 'hidden';
+      lenis()?.stop();
       btnClose.focus();
     };
 
@@ -183,7 +213,9 @@
       root.hidden = true;
       img.removeAttribute('src');
       group = [];
+      pointers.clear();
       document.documentElement.style.overflow = '';
+      lenis()?.start();
     };
 
     const zoomBy = (factor: number) => {
@@ -222,32 +254,63 @@
     btnPrev.addEventListener('click', () => step(-1));
     btnNext.addEventListener('click', () => step(1));
 
-    stage.addEventListener(
+    // the whole overlay swallows the wheel (and trackpad pinch, which
+    // arrives as ctrl+wheel), so the page underneath never moves
+    root.addEventListener(
       'wheel',
       (event) => {
         if (root.hidden) return;
         event.preventDefault();
-        zoomBy(event.deltaY < 0 ? 1.12 : 0.9);
+        event.stopPropagation();
+        const strength = event.ctrlKey ? 0.01 : 0.0015;
+        zoomBy(Math.exp(-event.deltaY * strength));
       },
       { passive: false }
     );
+    root.addEventListener('touchmove', (event) => event.preventDefault(), { passive: false });
 
+    const pointers = new Map<number, { x: number; y: number }>();
+    let pinchFrom = 0;
+    let pinchScale = 1;
     let dragging = false;
     let lastX = 0;
     let lastY = 0;
     let swipeX = 0;
 
+    const spread = () => {
+      const [a, b] = [...pointers.values()];
+      return Math.hypot(a.x - b.x, a.y - b.y);
+    };
+
     stage.addEventListener('pointerdown', (event) => {
+      pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      stage.setPointerCapture(event.pointerId);
+      if (pointers.size === 2) {
+        dragging = false;
+        pinchFrom = spread();
+        pinchScale = scale;
+        return;
+      }
       swipeX = event.clientX;
-      if (scale <= 1 || event.target === btnClose) return;
+      if (scale <= 1) return;
       dragging = true;
       lastX = event.clientX;
       lastY = event.clientY;
       stage.classList.add('is-dragging');
-      stage.setPointerCapture(event.pointerId);
     });
 
     stage.addEventListener('pointermove', (event) => {
+      if (!pointers.has(event.pointerId)) return;
+      pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      if (pointers.size === 2 && pinchFrom > 0) {
+        scale = clampScale(pinchScale * (spread() / pinchFrom));
+        if (scale === 1) {
+          x = 0;
+          y = 0;
+        }
+        paint();
+        return;
+      }
       if (!dragging) return;
       x += event.clientX - lastX;
       y += event.clientY - lastY;
@@ -256,15 +319,18 @@
       paint();
     });
 
-    const endDrag = () => {
+    const endDrag = (event: PointerEvent) => {
+      pointers.delete(event.pointerId);
+      if (pointers.size < 2) pinchFrom = 0;
       dragging = false;
       stage.classList.remove('is-dragging');
     };
     let swiped = false;
     stage.addEventListener('pointerup', (event) => {
-      swiped = !dragging && scale <= 1 && group.length > 1 && Math.abs(event.clientX - swipeX) > 50;
+      const wasPinch = pinchFrom > 0 || pointers.size > 1;
+      swiped = !wasPinch && !dragging && scale <= 1 && group.length > 1 && Math.abs(event.clientX - swipeX) > 50;
       if (swiped) step(event.clientX < swipeX ? 1 : -1);
-      endDrag();
+      endDrag(event);
     });
     stage.addEventListener('pointercancel', endDrag);
 

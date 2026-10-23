@@ -87,21 +87,21 @@ gallery:
       en: A form the new world is taking
       fr: Une forme que prend le monde d'après
       zh: 新世界正在长成的样子
-  - file: extra-21.png
-    alt:
-      en: Placeholder. I'll describe this image later.
-      fr: Texte provisoire. Je décrirai cette image plus tard.
-      zh: 说明先空着，之后再写。
   - file: extra-22.jpg
     alt:
-      en: Placeholder. I'll describe this image later.
-      fr: Texte provisoire. Je décrirai cette image plus tard.
-      zh: 说明先空着，之后再写。
+      en: A character study for the world.
+      fr: Une étude de personnage pour cet univers.
+      zh: 这个世界的角色设定。
   - file: extra-23.png
     alt:
-      en: Placeholder. I'll describe this image later.
-      fr: Texte provisoire. Je décrirai cette image plus tard.
-      zh: 说明先空着，之后再写。
+      en: A character study for the world.
+      fr: Une étude de personnage pour cet univers.
+      zh: 这个世界的角色设定。
+  - file: extra-21.png
+    alt:
+      en: A character study for the world.
+      fr: Une étude de personnage pour cet univers.
+      zh: 这个世界的角色设定。
   - file: extra-50.jpg
     alt: &w07
       en: So the messenger takes her to see the end of the world.
