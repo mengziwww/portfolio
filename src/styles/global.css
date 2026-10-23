@@ -397,38 +397,16 @@ html:not([data-density='full']) [data-short='hide'] {
   display: none !important;
 }
 
-/* in notes mode she sees every text, the folded ones faded, with a badge
-   to choose what short mode keeps */
+/* in notes mode she sees every text, the optional ones faded and dashed;
+   the comment box of a text is where she changes it */
 html:not([data-density='full']) .is-notes-page [data-short='hide'] {
   display: revert !important;
+}
+
+.is-notes-page [data-short='hide'] {
+  opacity: 0.5;
   outline: 1px dashed #e8c07d;
   outline-offset: 4px;
-}
-
-.is-notes-page [data-short='hide'] > :not(.short-badge) {
-  opacity: 0.45;
-}
-
-.short-badge {
-  display: inline-block;
-  margin: 0.4em 0 0 0.6em;
-  padding: 0.2em 0.7em;
-  font-family: var(--font-mono);
-  font-size: var(--text-2xs);
-  font-style: normal;
-  letter-spacing: 0.04em;
-  text-transform: none;
-  color: #1d0d07;
-  background: #e8c07d;
-  border: 0;
-  border-radius: 999px;
-  cursor: pointer;
-  vertical-align: middle;
-  opacity: 1;
-}
-
-[data-short='keep'] > .short-badge {
-  background: #9fd3a8;
 }
 
 html[data-text='xl'] {

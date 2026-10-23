@@ -6,26 +6,35 @@ interface Props {
   title: string;
   description: string;
   image?: string;
+  imageAlt?: string;
   type?: 'website' | 'article';
 }
-const { path, title, description, image, type = 'website' } = Astro.props;
+const { path, title, description, image, imageAlt, type = 'website' } = Astro.props;
 
 const siteUrl = Astro.site ?? new URL('https://mengziwww.github.io');
 const canonicalUrl = new URL(withBase(path), siteUrl).toString();
 const ogImage = image ? new URL(image, siteUrl).toString() : new URL(withBase('/og-default.jpg'), siteUrl).toString();
+const alt = imageAlt ?? 'Illustration by Menghan LI: a woman with black hair asleep among red flowers';
 ---
 
 <title>{title}</title>
 <meta name="description" content={description} />
+<meta name="author" content="Menghan LI" />
 <link rel="canonical" href={canonicalUrl} />
 
+<meta property="og:site_name" content="Menghan LI" />
 <meta property="og:type" content={type} />
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
 <meta property="og:url" content={canonicalUrl} />
 <meta property="og:image" content={ogImage} />
+<meta property="og:image:alt" content={alt} />
+<meta property="og:locale" content="en_US" />
+<meta property="og:locale:alternate" content="fr_FR" />
+<meta property="og:locale:alternate" content="zh_CN" />
 
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content={title} />
 <meta name="twitter:description" content={description} />
 <meta name="twitter:image" content={ogImage} />
+<meta name="twitter:image:alt" content={alt} />

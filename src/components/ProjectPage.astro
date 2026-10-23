@@ -12,6 +12,7 @@ import ProcessStage from '@/components/stages/ProcessStage.astro';
 import CollectionStage from '@/components/stages/CollectionStage.astro';
 import { getProjectImage } from '@/lib/images';
 import { getImage } from 'astro:assets';
+import { projectPath } from '@/lib/projects';
 import NotesMode from '@/components/NotesMode.astro';
 
 interface Props {
@@ -20,18 +21,71 @@ interface Props {
   notes?: boolean;
 }
 const { project, next, notes = false } = Astro.props;
-const { title, subtitle, description, cover } = project.data;
+const { title, subtitle, description, cover, coverAlt, roles, year, release } = project.data;
 
 const ogSource = getProjectImage(project.id, cover);
 const ogImg = await getImage({ src: ogSource, width: 1200, height: 630 });
+
+// search snippets stop around 160 characters: cut on a word, never mid-word
+const clip = (text: string, max = 160) => {
+  if (text.length <= max) return text;
+  const cut = text.slice(0, max - 1);
+  return `${cut.slice(0, cut.lastIndexOf(' ')).replace(/[\s,.;:]+$/, '')}…`;
+};
+const subLine = subtitle.en.replace(/[.\s]+$/, '');
+const metaDescription = clip(`${title}: ${subLine}. ${description.en}`);
+const pageTitle = `${title} · Menghan LI, 2D animator`;
+
+const site = Astro.site ?? new URL('https://mengziwww.github.io');
+const home = new URL(import.meta.env.BASE_URL, site).toString();
+const pageUrl = new URL(projectPath(project.id), site).toString();
+const schema: Record<string, unknown>[] = [
+  {
+    '@type': 'CreativeWork',
+    '@id': `${pageUrl}#work`,
+    name: title,
+    url: pageUrl,
+    headline: `${title}, ${subLine}`,
+    description: description.en,
+    image: new URL(ogImg.src, site).toString(),
+    dateCreated: String(year),
+    keywords: roles.en.join(', '),
+    creator: { '@id': `${home}#person` },
+    isPartOf: { '@id': `${home}#website` },
+  },
+  {
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Menghan LI', item: home },
+      { '@type': 'ListItem', position: 2, name: title, item: pageUrl },
+    ],
+  },
+  ...(release
+    ? [
+        {
+          '@type': 'VideoObject',
+          name: title,
+          description: description.en,
+          thumbnailUrl: `https://i.ytimg.com/vi/${release.youtube}/hqdefault.jpg`,
+          uploadDate: release.date,
+          embedUrl: `https://www.youtube.com/embed/${release.youtube}`,
+          url: `https://www.youtube.com/watch?v=${release.youtube}`,
+          creator: { '@id': `${home}#person` },
+        },
+      ]
+    : []),
+];
 ---
 
 <Base
   path={notes ? `/notes/works/${project.id}` : `/works/${project.id}`}
-  title={`${title}, Menghan LI`}
-  description={`${subtitle.en} ${description.en}`.slice(0, 200)}
+  title={pageTitle}
+  description={metaDescription}
   ogImage={ogImg.src}
+  ogImageAlt={coverAlt.en}
+  ogType="article"
   noindex={notes}
+  schema={schema}
 >
   {notes && <NotesMode />}
   {project.data.template === 'journey' && <JourneyStage project={project} next={next} />}

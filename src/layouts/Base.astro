@@ -20,10 +20,42 @@ interface Props {
   title: string;
   description: string;
   ogImage?: string;
+  ogImageAlt?: string;
+  ogType?: 'website' | 'article';
   bodyClass?: string;
   noindex?: boolean;
+  /** extra schema.org nodes for this page, joined to the site graph */
+  schema?: Record<string, unknown>[];
 }
-const { path, title, description, ogImage, bodyClass, noindex = false } = Astro.props;
+const { path, title, description, ogImage, ogImageAlt, ogType, bodyClass, noindex = false, schema = [] } = Astro.props;
+
+const home = new URL(import.meta.env.BASE_URL, Astro.site ?? 'https://mengziwww.github.io').toString();
+const graph = [
+  {
+    '@type': 'Person',
+    '@id': `${home}#person`,
+    name: 'Menghan LI',
+    jobTitle: '2D visual development artist and animator',
+    knowsAbout: ['2D animation', 'Character design', 'Storyboard', 'Concept art', 'Visual development'],
+    alumniOf: { '@type': 'CollegeOrUniversity', name: 'Gobelins, l’école de l’image' },
+    url: home,
+    image: new URL('og-default.jpg', home).toString(),
+    sameAs: [
+      'https://www.instagram.com/mengziwww/',
+      'https://space.bilibili.com/333172997',
+      'https://www.linkedin.com/in/menghan-li-0522b5339/',
+    ],
+  },
+  {
+    '@type': 'WebSite',
+    '@id': `${home}#website`,
+    name: 'Menghan LI',
+    url: home,
+    inLanguage: ['en', 'fr', 'zh'],
+    author: { '@id': `${home}#person` },
+  },
+  ...schema,
+];
 ---
 
 <!doctype html>
@@ -35,20 +67,11 @@ const { path, title, description, ogImage, bodyClass, noindex = false } = Astro.
     <meta name="robots" content={noindex ? 'noindex, noai, noimageai' : 'noai, noimageai'} />
     <meta name="tdm-reservation" content="1" />
     <link rel="icon" href={`${import.meta.env.BASE_URL}favicon.svg`} type="image/svg+xml" />
-    <SEO path={path} title={title} description={description} image={ogImage} />
-    <script type="application/ld+json" is:inline set:html={JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'Person',
-      name: 'Menghan LI',
-      jobTitle: '2D visual development artist and animator',
-      alumniOf: { '@type': 'CollegeOrUniversity', name: 'Gobelins, l’école de l’image' },
-      url: new URL(import.meta.env.BASE_URL, Astro.site ?? 'https://mengziwww.github.io').toString(),
-      sameAs: [
-        'https://www.instagram.com/mengziwww/',
-        'https://space.bilibili.com/333172997',
-        'https://www.linkedin.com/in/menghan-li-0522b5339/',
-      ],
-    })} />
+    <SEO path={path} title={title} description={description} image={ogImage} imageAlt={ogImageAlt} type={ogType} />
+    <link rel="apple-touch-icon" href={`${import.meta.env.BASE_URL}apple-touch-icon.png`} />
+    {!noindex && (
+      <script type="application/ld+json" is:inline set:html={JSON.stringify({ '@context': 'https://schema.org', '@graph': graph })} />
+    )}
     <ClientRouter />
     <script is:inline>
       // Runs before paint, on every navigation (Astro re-executes inline

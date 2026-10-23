@@ -37,7 +37,15 @@
 
   <form class="notes-pop" data-notes-pop hidden>
     <p class="notes-pop-where" data-notes-where></p>
-    <textarea data-notes-input rows="4" required></textarea>
+    <textarea data-notes-input rows="4"></textarea>
+    <label class="notes-pop-short" data-notes-short hidden>
+      <input type="checkbox" data-notes-short-input />
+      <span>
+        <span data-lang="en">optional text, hidden when descriptions are short</span>
+        <span data-lang="fr">texte optionnel, masqué quand les descriptions sont courtes</span>
+        <span data-lang="zh">可选文字，简短模式下隐藏</span>
+      </span>
+    </label>
     <div class="notes-pop-actions">
       <button type="submit">
         <span data-lang="en">save</span>
@@ -172,6 +180,25 @@
     font: inherit;
   }
 
+  .notes-pop-short {
+    display: flex;
+    gap: 0.45rem;
+    align-items: flex-start;
+    margin-top: 0.45rem;
+    color: var(--bone-soft);
+    cursor: pointer;
+  }
+
+  .notes-pop-short[hidden] {
+    display: none;
+  }
+
+  .notes-pop-short input {
+    flex: none;
+    margin-top: 0.2em;
+    accent-color: var(--gold);
+  }
+
   .notes-pop-actions {
     display: flex;
     flex-wrap: wrap;
@@ -226,7 +253,7 @@
 </style>
 
 <script>
-  import { readLocalShort } from '@/lib/short-text';
+  import { readLocalShort, setShortChoice, shortBlockOf } from '@/lib/short-text';
   const STORAGE = 'menghan-review-notes';
   const ORDER_KEY = 'menghan-review-order';
   const MODE = 'menghan-notes-mode';
@@ -239,6 +266,7 @@
     tag: string;
     text: string;
     comment: string;
+    short?: 'keep' | 'hide';
     updatedAt: string;
   };
 
@@ -363,12 +391,14 @@
     const input = root.querySelector<HTMLTextAreaElement>('[data-notes-input]');
     const deleteBtn = root.querySelector<HTMLButtonElement>('[data-notes-delete]');
     const cancelBtn = root.querySelector<HTMLButtonElement>('[data-notes-cancel]');
-    if (!annotateBtn || !browseBtn || !countBtn || !countEl || !exportBtn || !list || !listBody || !pop || !where || !input || !deleteBtn || !cancelBtn) return;
+    const shortRow = root.querySelector<HTMLElement>('[data-notes-short]');
+    const shortInput = root.querySelector<HTMLInputElement>('[data-notes-short-input]');
+    if (!annotateBtn || !browseBtn || !countBtn || !countEl || !exportBtn || !list || !listBody || !pop || !where || !input || !deleteBtn || !cancelBtn || !shortRow || !shortInput) return;
 
     rewriteLinks();
 
     let annotating = sessionStorage.getItem(MODE) === 'annotate';
-    let current: { el: HTMLElement; selector: string } | null = null;
+    let current: { el: HTMLElement; selector: string; block: HTMLElement | null } | null = null;
     let hoverEl: HTMLElement | null = null;
 
     const paintModes = () => {
@@ -446,11 +476,14 @@
 
     const openFor = (el: HTMLElement) => {
       const selector = cssPath(el);
-      current = { el, selector };
+      const block = shortBlockOf(el);
+      current = { el, selector, block };
       const existing = readNotes().find((note) => note.page === location.pathname && note.selector === selector);
       where.textContent = excerpt(el) || el.tagName.toLowerCase();
       input.value = existing?.comment ?? '';
       deleteBtn.hidden = !existing;
+      shortRow.hidden = !block;
+      shortInput.checked = block?.dataset.short === 'hide';
       const box = el.getBoundingClientRect();
       const left = Math.min(window.innerWidth - 300, Math.max(12, box.left));
       const top = Math.min(window.innerHeight - 220, box.bottom + 8);
@@ -487,7 +520,12 @@
       event.preventDefault();
       if (!current) return;
       const comment = input.value.trim();
-      if (!comment) return;
+      const short = current.block ? (shortInput.checked ? 'hide' : 'keep') : undefined;
+      if (current.block && short !== current.block.dataset.short) setShortChoice(current.block, short!);
+      if (!comment) {
+        closePop();
+        return;
+      }
       const notes = readNotes().filter((note) => !(note.page === location.pathname && note.selector === current!.selector));
       notes.push({
         id: crypto.randomUUID(),
@@ -496,6 +534,7 @@
         tag: current.el.tagName.toLowerCase(),
         text: excerpt(current.el),
         comment,
+        ...(short ? { short } : {}),
         updatedAt: new Date().toISOString(),
       });
       writeNotes(notes);
@@ -507,7 +546,7 @@
       const notes = readNotes();
       const orders = readOrders().filter((entry) => entry.ids?.length);
       const payload = {
-        for: 'Apply each comment to the real portfolio, the pages without /notes. Match the element with page + selector, and use text if the selector misses. orders is the image sequence she chose, per page and group. short lists, per text key, whether that text stays (keep) or folds away (hide) in short mode; copy it into src/data/short-text.json.',
+        for: 'Apply each comment to the real portfolio, the pages without /notes. Match the element with page + selector, and use text if the selector misses. orders is the image sequence she chose, per page and group. short lists, per text key, whether that text stays (keep) or folds away (hide) in short mode; copy it into src/data/short-text.json. A comment can carry a short field too: if the comment rewrites the text, the key changes with it, so bake the choice under the key of the new English text.',
         exportedAt: new Date().toISOString(),
         count: notes.length,
         comments: notes,
@@ -538,7 +577,7 @@
         'click',
         (event) => {
           if (sessionStorage.getItem(MODE) !== 'annotate') return;
-          if (event.target instanceof Element && event.target.closest('[data-notes-order], [data-short-badge]')) return;
+          if (event.target instanceof Element && event.target.closest('[data-notes-order]')) return;
           const el = candidate(event.target);
           if (!el) return;
           event.preventDefault();
