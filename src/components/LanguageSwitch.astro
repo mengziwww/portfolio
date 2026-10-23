@@ -24,9 +24,16 @@ const { class: className } = Astro.props;
   }
 
   .lang-switch button {
+    position: relative;
     color: var(--bone-faint);
     transition: color var(--dur-fast);
     white-space: nowrap;
+  }
+
+  .lang-switch button::after {
+    content: '';
+    position: absolute;
+    inset: -0.45rem -0.2rem;
   }
 
   .lang-switch button:hover {

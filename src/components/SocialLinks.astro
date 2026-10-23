@@ -62,9 +62,16 @@
   }
 
   .social {
+    position: relative;
     display: grid;
     color: var(--bone);
     line-height: 0;
+  }
+
+  .social::after {
+    content: '';
+    position: absolute;
+    inset: -0.35rem;
   }
 
   .social svg {

@@ -206,12 +206,19 @@ const groups: Group[] = [
 
 <style>
   .gear {
+    position: relative;
     display: grid;
     place-items: center;
     width: 1.7rem;
     height: 1.7rem;
     color: var(--bone);
     background: transparent;
+  }
+
+  .gear::after {
+    content: '';
+    position: absolute;
+    inset: -0.3rem;
   }
 
   .gear svg {

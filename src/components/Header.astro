@@ -113,6 +113,21 @@ import SiteSettings from './SiteSettings.astro';
     .site-header:not(.is-scrolled) :global(.lang-switch) {
       gap: 0.45rem;
     }
+
+    /* the socials stay in the footer and in the scrolled rail */
+    .site-header:not(.is-scrolled) :global(.socials) {
+      display: none;
+    }
+  }
+
+  @media (max-width: 350px) {
+    .site-header {
+      padding-inline: 0.85rem;
+    }
+
+    .site-header:not(.is-scrolled) :global(.lang-switch) {
+      gap: 0.3rem;
+    }
   }
 
   @keyframes rail-in {

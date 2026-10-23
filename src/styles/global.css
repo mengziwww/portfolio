@@ -219,8 +219,8 @@ p {
   position: fixed;
   top: 0;
   left: 0;
-  /* Keep the pointer above full-screen overlays. */
-  z-index: 600;
+  /* Keep the pointer above full-screen overlays, the lightbox (800) included. */
+  z-index: 1000;
   pointer-events: none;
   will-change: transform;
   opacity: 0;
@@ -292,7 +292,7 @@ p {
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 599;
+  z-index: 999;
   width: 1.05rem;
   height: 1.05rem;
   margin: -0.525rem 0 0 -0.525rem;

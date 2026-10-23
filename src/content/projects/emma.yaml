@@ -6,6 +6,10 @@ order: 7
 size: wide
 accentFrom: "#8C3A32"
 accentTo: "#1E3324"
+posterCredit:
+  en: I'm still working on it
+  fr: j'y travaille encore
+  zh: 我还在做
 roles:
   en: [Personal piece]
   fr: [Travail personnel]

@@ -324,7 +324,7 @@ const ui = {
 
   .dm-theatre {
     display: grid;
-    grid-template-columns: var(--proj) var(--throw) min(58vw, 56rem, (100svh - 20rem) * 1.6);
+    grid-template-columns: var(--proj) var(--throw) max(min(58vw, 56rem, (100svh - 20rem) * 1.6), min(58vw, 26rem));
     grid-template-areas:
       '. . marquee'
       'proj . frame'

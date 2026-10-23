@@ -449,7 +449,7 @@ const slides = trackItems.map((item, i) => {
   /* the window and, under it, room for the line that goes with the
      picture: the words sit below the image now, never on top of it */
   .eotw-frame {
-    --fw: min(80vw, 58rem, (100svh - 15rem) * 1.6);
+    --fw: min(80vw, 58rem, max((100svh - 15rem) * 1.6, 26rem));
     --ph: calc(var(--fw) * 0.625);
     position: relative;
     width: var(--fw);
@@ -525,12 +525,19 @@ const slides = trackItems.map((item, i) => {
   }
 
   .eotw-tick {
+    position: relative;
     width: 7px;
     height: 7px;
     padding: 0;
     border-radius: 50%;
     background: color-mix(in srgb, var(--bone) 35%, transparent);
     transition: background 0.3s, transform 0.3s;
+  }
+
+  .eotw-tick::after {
+    content: '';
+    position: absolute;
+    inset: -0.6rem -0.22rem;
   }
 
   .eotw-tick.is-active {

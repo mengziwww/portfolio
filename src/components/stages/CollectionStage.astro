@@ -274,7 +274,12 @@ const fanDrop = (i: number, n: number) => (Math.abs(i - (n - 1) / 2) ** 2 * 0.5)
                       <span class="pw-grains" aria-hidden="true"></span>
                     </>
                   )}
-                  {board.look === 'night' && <span class="pw-stars" aria-hidden="true"></span>}
+                  {board.look === 'night' && (
+                    <>
+                      <span class="pw-stars" aria-hidden="true"></span>
+                      <span class="pw-glow" aria-hidden="true"></span>
+                    </>
+                  )}
                   <div class="pw-board-info">
                     <p class="pw-board-num">{roman[bi] ?? bi + 1}</p>
                     <h2 class="pw-board-title"><I18nText en={board.title.en} fr={board.title.fr} zh={board.title.zh} /></h2>
@@ -286,28 +291,12 @@ const fanDrop = (i: number, n: number) => (Math.abs(i - (n - 1) / 2) ** 2 * 0.5)
                       <I18nText en="open full size" fr="ouvrir en grand" zh="打开大图" />
                     </button>
                   </div>
-                  {board.look === 'wall' ? (
-                    <div class="pw-wall" data-lb-group data-pw-sheets>
-                      {sheets[bi].map((sheet, si) => (
-                        <figure class="pw-sheet" style={`--tilt:${tilt(si)}deg;`} data-artwork data-note-id={`${project.id}:${sheet.file}`}>
-                          <span class="pw-pin" aria-hidden="true"></span>
-                          <Image
-                            src={sheet.src}
-                            alt={`${board.title.en}, page ${si + 1}`}
-                            data-full={sheet.full}
-                            widths={[280, 440]}
-                            sizes="(max-width: 700px) 40vw, 11rem"
-                            loading="lazy"
-                          />
-                          <figcaption>{String(si + 1).padStart(2, '0')}</figcaption>
-                        </figure>
-                      ))}
-                    </div>
-                  ) : (
+                  {(
                     <div class="pw-reader" data-pw-reader tabindex="0">
                       <div class="pw-reader-stage" data-lb-group data-pw-sheets>
                         {sheets[bi].map((sheet, si) => (
-                          <figure class:list={['pw-sheet', { 'is-on': si === 0 }]} data-pw-page={si} data-artwork data-note-id={`${project.id}:${sheet.file}`}>
+                          <figure class:list={['pw-sheet', { 'is-on': si === 0 }]} style={`--tilt:${tilt(si)}deg;`} data-pw-page={si} data-artwork data-note-id={`${project.id}:${sheet.file}`}>
+                            {board.look === 'wall' && <span class="pw-pin" aria-hidden="true"></span>}
                             <Image
                               src={sheet.src}
                               alt={`${board.title.en}, page ${si + 1}`}
@@ -1285,63 +1274,59 @@ const fanDrop = (i: number, n: number) => (Math.abs(i - (n - 1) / 2) ** 2 * 0.5)
     color: #fbf6ec;
   }
 
-  .pw-wall {
+  .look-wall .pw-sheet {
     position: relative;
-    z-index: 1;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(clamp(7.5rem, 10vw, 10rem), 1fr));
-    gap: clamp(1rem, 2vw, 1.8rem) clamp(0.8rem, 1.6vw, 1.4rem);
-    padding-top: 0.6rem;
   }
 
-  .pw-wall .pw-sheet {
-    position: relative;
-    rotate: var(--tilt);
-    transition: rotate 0.35s var(--ease-out-expo), scale 0.35s var(--ease-out-expo);
-  }
-
-  .pw-wall .pw-sheet:hover {
-    z-index: 2;
-    rotate: 0deg;
-    scale: 1.06;
-  }
-
-  .pw-wall .pw-sheet :global(img) {
-    width: 100%;
-    height: auto;
+  .look-wall .pw-sheet :global(img) {
+    height: min(72svh, 44rem);
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
     background: #fff;
-    box-shadow: 0 0.7rem 1.2rem -0.6rem rgb(0 0 0 / 60%);
+    rotate: var(--tilt);
+    box-shadow: 0 1.2rem 2rem -1rem rgb(0 0 0 / 60%);
+  }
+
+  /* a turned page comes off its pin and drops */
+  .look-wall .pw-sheet.is-gone {
+    transform: translateY(10%) rotate(9deg);
+  }
+
+  .look-wall .pw-sheet.is-on {
+    transform: none;
+  }
+
+  .look-wall .pw-turn {
+    color: #2a2420;
+    background: #fbf6ec;
+    border: 1px solid #2a2420;
+  }
+
+  .look-wall .pw-turn:hover,
+  .look-wall .pw-turn:focus-visible {
+    background: #2a2420;
+    color: #fbf6ec;
+  }
+
+  .look-wall .pw-reader-count {
+    padding: 0.2em 0.6em;
+    color: #2a2420;
+    background: #fbf6ec;
   }
 
   .pw-pin {
     position: absolute;
-    top: -0.35rem;
+    top: -0.45rem;
     left: 50%;
     z-index: 1;
-    width: 0.8rem;
-    height: 0.8rem;
+    width: 0.95rem;
+    height: 0.95rem;
     translate: -50% 0;
     border-radius: 50%;
     background: radial-gradient(circle at 35% 30%, #ff8a7a, #c0291c 60%, #6e120b);
     box-shadow: 0 2px 3px rgb(0 0 0 / 45%);
   }
-
-  .pw-wall .pw-sheet:nth-child(3n + 2) .pw-pin {
-    width: 2.6rem;
-    height: 0.9rem;
-    border-radius: 1px;
-    background: rgb(240 232 200 / 78%);
-    box-shadow: 0 1px 2px rgb(0 0 0 / 20%);
-    rotate: -6deg;
-  }
-
-  .pw-wall figcaption {
-    margin-top: 0.3rem;
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    color: #2a1a0e;
-  }
-
   /* III. night: wide spreads in a dark room, the deer's glow behind */
   .look-night {
     background:
@@ -1363,6 +1348,25 @@ const fanDrop = (i: number, n: number) => (Math.abs(i - (n - 1) / 2) ** 2 * 0.5)
 
   @keyframes stars-twinkle {
     to { opacity: 0.25; }
+  }
+
+  /* the deer's light, wandering slowly behind the pages */
+  .pw-glow {
+    position: absolute;
+    left: 55%;
+    top: 30%;
+    width: clamp(14rem, 34vw, 30rem);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgb(170 140 255 / 42%), rgb(120 90 255 / 14%) 45%, transparent 70%);
+    pointer-events: none;
+    animation: deer-glow 16s ease-in-out infinite alternate;
+  }
+
+  @keyframes deer-glow {
+    0% { translate: 0 0; scale: 0.85; opacity: 0.7; }
+    50% { translate: -30% 20%; scale: 1.15; opacity: 1; }
+    100% { translate: -60% -10%; scale: 0.95; opacity: 0.75; }
   }
 
   .look-night .pw-board-num,
@@ -1591,13 +1595,15 @@ const fanDrop = (i: number, n: number) => (Math.abs(i - (n - 1) / 2) ** 2 * 0.5)
       animation: none;
     }
     .pw-grains,
-    .pw-stars {
+    .pw-stars,
+    .pw-glow {
       animation: none;
     }
   }
 
   :global(html[data-motion='still']) .pw-grains,
   :global(html[data-motion='still']) .pw-stars,
+  :global(html[data-motion='still']) .pw-glow,
   :global(html[data-motion='quiet']) .pw-grains {
     animation: none;
   }
