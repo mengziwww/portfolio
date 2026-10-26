@@ -1,0 +1,11 @@
+---
+import Base from '@/layouts/Base.astro';
+import HomeContent from '@/components/home/HomeContent.astro';
+import Loader from '@/components/Loader.astro';
+import { ui } from '@/i18n/ui';
+---
+
+<Base path="/" title={ui.en['meta.title']} description={ui.en['meta.description']}>
+  <Loader />
+  <HomeContent />
+</Base>

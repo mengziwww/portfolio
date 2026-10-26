@@ -1,0 +1,752 @@
+---
+// A small gear. It opens display and accessibility options.
+// If this device cannot keep a steady frame rate, a short prompt offers
+// to quiet the motion. The choice is remembered on this browser.
+type Text = { en: string; fr: string; zh: string };
+type Option = Text & { value: string };
+type Group = Text & { name: string; hint: Text; options: Option[] };
+
+const groups: Group[] = [
+  {
+    name: 'motion', en: 'Motion', fr: 'Mouvement', zh: '动态',
+    hint: {
+      en: 'Reduced hides the drifting backgrounds. Off stops every animation and the smooth scrolling. The page reloads.',
+      fr: 'Réduit retire les fonds qui bougent. Aucun arrête toutes les animations et le défilement fluide. La page se recharge.',
+      zh: '减少：去掉会飘动的背景。关闭：停止所有动画和平滑滚动。页面会刷新。',
+    },
+    options: [
+      { value: 'full', en: 'Normal', fr: 'Normal', zh: '正常' },
+      { value: 'quiet', en: 'Reduced', fr: 'Réduit', zh: '减少' },
+      { value: 'still', en: 'Off', fr: 'Aucun', zh: '关闭' },
+    ],
+  },
+  {
+    name: 'text', en: 'Text size', fr: 'Taille du texte', zh: '文字大小',
+    hint: { en: 'Makes all the text on the site bigger.', fr: 'Agrandit tout le texte du site.', zh: '放大网站上所有的文字。' },
+    options: [
+      { value: 'md', en: 'Normal', fr: 'Normale', zh: '正常' },
+      { value: 'lg', en: 'Large', fr: 'Grande', zh: '大' },
+      { value: 'xl', en: 'Larger', fr: 'Plus grande', zh: '更大' },
+    ],
+  },
+  {
+    name: 'density', en: 'Descriptions', fr: 'Descriptions', zh: '文字说明',
+    hint: {
+      en: 'Short keeps the project pages light. Full shows every description.',
+      fr: 'Court allège les pages des projets. Complet affiche toutes les descriptions.',
+      zh: '简短：项目页面更清爽。完整：显示所有的文字说明。',
+    },
+    options: [
+      { value: 'short', en: 'Short', fr: 'Court', zh: '简短' },
+      { value: 'full', en: 'Full', fr: 'Complet', zh: '完整' },
+    ],
+  },
+  {
+    name: 'contrast', en: 'Contrast', fr: 'Contraste', zh: '对比度',
+    hint: {
+      en: 'White text and brighter lines on a pure black background.',
+      fr: 'Du texte blanc et des traits plus clairs sur un fond noir pur.',
+      zh: '纯黑背景，白色文字，线条更亮。',
+    },
+    options: [
+      { value: 'off', en: 'Normal', fr: 'Normal', zh: '正常' },
+      { value: 'high', en: 'High', fr: 'Élevé', zh: '高' },
+    ],
+  },
+  {
+    name: 'space', en: 'Spacing', fr: 'Espacement', zh: '间距',
+    hint: {
+      en: 'More room between lines, letters and words.',
+      fr: "Plus d'espace entre les lignes, les lettres et les mots.",
+      zh: '行距、字距和词距更大。',
+    },
+    options: [
+      { value: 'normal', en: 'Normal', fr: 'Normal', zh: '正常' },
+      { value: 'relaxed', en: 'Relaxed', fr: 'Aéré', zh: '宽松' },
+    ],
+  },
+  {
+    name: 'transparent', en: 'Transparency', fr: 'Transparence', zh: '透明',
+    hint: {
+      en: 'Text panels get a solid background instead of a see-through one.',
+      fr: "Les panneaux de texte ont un fond plein au lieu d'un fond transparent.",
+      zh: '文字面板改用实色背景，不再透明。',
+    },
+    options: [
+      { value: 'normal', en: 'Normal', fr: 'Normale', zh: '正常' },
+      { value: 'solid', en: 'Solid panels', fr: 'Panneaux opaques', zh: '不透明' },
+    ],
+  },
+  {
+    name: 'focus', en: 'Focus', fr: 'Focus', zh: '焦点',
+    hint: {
+      en: 'A bright yellow outline shows where the keyboard is.',
+      fr: 'Un contour jaune vif montre où se trouve le clavier.',
+      zh: '用明亮的黄色边框标出键盘选中的位置。',
+    },
+    options: [
+      { value: 'off', en: 'Normal', fr: 'Normal', zh: '正常' },
+      { value: 'strong', en: 'Always visible', fr: 'Toujours visible', zh: '始终可见' },
+    ],
+  },
+  {
+    name: 'cursor', en: 'Pointer', fr: 'Pointeur', zh: '指针',
+    hint: {
+      en: "Your computer's own pointer instead of the drawn one. The page reloads.",
+      fr: 'Le pointeur de ton ordinateur au lieu de celui du site. La page se recharge.',
+      zh: '用电脑自己的指针，不用网站画的那个。页面会刷新。',
+    },
+    options: [
+      { value: 'custom', en: 'Site cursor', fr: 'Curseur du site', zh: '网站光标' },
+      { value: 'system', en: 'System cursor', fr: 'Curseur du système', zh: '系统光标' },
+    ],
+  },
+];
+---
+<button type="button" class="gear" data-settings-open aria-haspopup="dialog" aria-expanded="false">
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path
+      d="M10.10 5.16 L10.33 2.55 L13.67 2.55 L13.90 5.16 A7.1 7.1 0 0 1 15.50 5.82 L17.51 4.14 L19.86 6.49 L18.18 8.50 A7.1 7.1 0 0 1 18.84 10.10 L21.45 10.33 L21.45 13.67 L18.84 13.90 A7.1 7.1 0 0 1 18.18 15.50 L19.86 17.51 L17.51 19.86 L15.50 18.18 A7.1 7.1 0 0 1 13.90 18.84 L13.67 21.45 L10.33 21.45 L10.10 18.84 A7.1 7.1 0 0 1 8.50 18.18 L6.49 19.86 L4.14 17.51 L5.82 15.50 A7.1 7.1 0 0 1 5.16 13.90 L2.55 13.67 L2.55 10.33 L5.16 10.10 A7.1 7.1 0 0 1 5.82 8.50 L4.14 6.49 L6.49 4.14 L8.50 5.82 A7.1 7.1 0 0 1 10.10 5.16Z"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.5"
+      stroke-linejoin="round"
+    />
+    <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.5" />
+  </svg>
+  <span class="visually-hidden">
+    <span data-lang="en">Display settings</span>
+    <span data-lang="fr">Réglages d'affichage</span>
+    <span data-lang="zh">显示设置</span>
+  </span>
+</button>
+
+<dialog class="settings" data-settings-dialog aria-labelledby="settings-title" data-lenis-prevent>
+  <div class="settings-card">
+    <header class="settings-head">
+      <div>
+        <h2 id="settings-title" class="settings-title">
+          <span data-lang="en">Display</span>
+          <span data-lang="fr">Affichage</span>
+          <span data-lang="zh">显示</span>
+        </h2>
+        <p class="settings-note">
+          <span data-lang="en">Saved in this browser.</span>
+          <span data-lang="fr">Enregistré dans ce navigateur.</span>
+          <span data-lang="zh">保存在这个浏览器里。</span>
+        </p>
+      </div>
+      <button type="button" class="settings-close" data-settings-close>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6.5 6.5l11 11M17.5 6.5l-11 11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+        </svg>
+        <span class="visually-hidden">
+          <span data-lang="en">Close</span>
+          <span data-lang="fr">Fermer</span>
+          <span data-lang="zh">关闭</span>
+        </span>
+      </button>
+    </header>
+
+    <div class="settings-body">
+      {groups.map((group) => (
+        <fieldset class="settings-row">
+          <legend>
+            <span data-lang="en">{group.en}</span>
+            <span data-lang="fr">{group.fr}</span>
+            <span data-lang="zh">{group.zh}</span>
+          </legend>
+          <div class="seg">
+            {group.options.map((option) => (
+              <label>
+                <input type="radio" name={group.name} value={option.value} />
+                <span data-lang="en">{option.en}</span>
+                <span data-lang="fr">{option.fr}</span>
+                <span data-lang="zh">{option.zh}</span>
+              </label>
+            ))}
+          </div>
+          <p class="settings-hint">
+            <span data-lang="en">{group.hint.en}</span>
+            <span data-lang="fr">{group.hint.fr}</span>
+            <span data-lang="zh">{group.hint.zh}</span>
+          </p>
+        </fieldset>
+      ))}
+    </div>
+    <footer class="settings-foot">
+      <button type="button" class="settings-reset" data-settings-reset>
+        <span data-lang="en">Reset everything</span>
+        <span data-lang="fr">Tout remettre par défaut</span>
+        <span data-lang="zh">全部恢复默认</span>
+      </button>
+    </footer>
+  </div>
+</dialog>
+
+<dialog class="perf" data-perf-dialog>
+  <p>
+    <span data-lang="en">This device is having trouble keeping up. I can quiet the moving parts.</span>
+    <span data-lang="fr">Cet appareil a du mal à suivre. Je peux calmer les animations.</span>
+    <span data-lang="zh">这台设备有点跟不上。我可以把动画减弱。</span>
+  </p>
+  <div class="perf-actions">
+    <button type="button" data-perf-quiet>
+      <span data-lang="en">Quiet them</span>
+      <span data-lang="fr">Les calmer</span>
+      <span data-lang="zh">减弱</span>
+    </button>
+    <button type="button" data-perf-keep>
+      <span data-lang="en">Leave them</span>
+      <span data-lang="fr">Les laisser</span>
+      <span data-lang="zh">保持</span>
+    </button>
+  </div>
+</dialog>
+
+<style>
+  .gear {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 1.7rem;
+    height: 1.7rem;
+    color: var(--bone);
+    background: transparent;
+  }
+
+  .gear::after {
+    content: '';
+    position: absolute;
+    inset: -0.3rem;
+  }
+
+  .gear svg {
+    width: 1.15rem;
+    height: 1.15rem;
+    transition: transform 0.6s var(--ease-out-expo);
+  }
+
+  .gear:hover,
+  .gear[aria-expanded='true'] {
+    color: var(--gold);
+  }
+
+  .gear:hover svg,
+  .gear[aria-expanded='true'] svg {
+    transform: rotate(45deg);
+  }
+
+  /* the global reset zeroes every margin, which is what centers a modal
+     dialog, so both dialogs put it back */
+  .settings,
+  .perf {
+    margin: auto;
+    border: 1px solid var(--void-line);
+    border-radius: 14px;
+    background: var(--void-raised);
+    color: var(--bone);
+    box-shadow: 0 2rem 5rem -1rem rgb(0 0 0 / 70%), 0 0 0 1px rgb(0 0 0 / 40%);
+  }
+
+  .settings {
+    width: min(34rem, calc(100vw - 2rem));
+    max-height: calc(100dvh - 2rem);
+    padding: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+
+  .settings[open] {
+    animation: settings-in 0.38s var(--ease-out-expo);
+  }
+
+  .settings.is-closing {
+    animation: settings-out 0.18s ease-in forwards;
+  }
+
+  .settings::backdrop,
+  .perf::backdrop {
+    background: rgb(6 5 6 / 55%);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+  }
+
+  .settings[open]::backdrop {
+    animation: backdrop-in 0.38s var(--ease-out-expo);
+  }
+
+  .settings.is-closing::backdrop {
+    animation: backdrop-out 0.18s ease-in forwards;
+  }
+
+  @keyframes settings-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.8rem) scale(0.97);
+    }
+  }
+
+  @keyframes settings-out {
+    to {
+      opacity: 0;
+      transform: translateY(0.4rem) scale(0.98);
+    }
+  }
+
+  @keyframes backdrop-in {
+    from { opacity: 0; }
+  }
+
+  @keyframes backdrop-out {
+    to { opacity: 0; }
+  }
+
+  .settings-card {
+    padding: var(--space-3) var(--space-3) var(--space-2);
+  }
+
+  .settings-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-2);
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--void-line);
+  }
+
+  .settings-title {
+    font-size: var(--text-lg);
+    line-height: 1.1;
+  }
+
+  .settings-note {
+    margin-top: 0.35rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--bone-faint);
+  }
+
+  .settings-close {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 2.2rem;
+    height: 2.2rem;
+    margin: -0.3rem -0.4rem 0 0;
+    border-radius: 50%;
+    color: var(--bone-soft);
+    transition: color var(--dur-fast), background-color var(--dur-fast);
+  }
+
+  .settings-close svg {
+    width: 1.15rem;
+    height: 1.15rem;
+  }
+
+  .settings-close:hover {
+    color: var(--bone);
+    background: var(--void-line);
+  }
+
+  .settings-row {
+    display: grid;
+    grid-template-columns: 8.5rem minmax(0, 1fr);
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0.85rem 0;
+    border: 0;
+    border-bottom: 1px solid var(--void-line);
+  }
+
+  .settings-row:last-child {
+    border-bottom: 0;
+  }
+
+  .settings-hint {
+    grid-column: 1 / -1;
+    margin: -0.15rem 0 0;
+    font-size: var(--text-xs);
+    line-height: 1.5;
+    color: var(--bone-faint);
+  }
+
+  .settings-foot {
+    display: flex;
+    justify-content: flex-end;
+    padding: var(--space-2) 0 var(--space-1);
+    border-top: 1px solid var(--void-line);
+  }
+
+  .settings-reset {
+    padding: 0.5em 1.1em;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--bone-soft);
+    border: 1px solid var(--void-line);
+    border-radius: 999px;
+    transition: color var(--dur-fast), border-color var(--dur-fast);
+  }
+
+  .settings-reset:hover,
+  .settings-reset:focus-visible {
+    color: var(--gold);
+    border-color: var(--gold);
+  }
+
+  /* a floated legend stops being the fieldset's special legend box and
+     becomes an ordinary grid item */
+  .settings-row legend {
+    float: left;
+    padding: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--bone-soft);
+  }
+
+  :lang(zh) .settings-row legend {
+    letter-spacing: 0.04em;
+  }
+
+  .seg {
+    display: flex;
+    gap: 2px;
+    padding: 3px;
+    border: 1px solid var(--void-line);
+    border-radius: 999px;
+    background: var(--void);
+  }
+
+  .seg label {
+    position: relative;
+    flex: 1 1 0;
+    min-width: 0;
+    display: grid;
+    place-items: center;
+    padding: 0.42em 0.6em;
+    border-radius: 999px;
+    font-size: var(--text-sm);
+    line-height: 1.2;
+    text-align: center;
+    color: var(--bone-soft);
+    cursor: pointer;
+    transition: color var(--dur-fast), background-color var(--dur-fast);
+  }
+
+  .seg label:hover {
+    color: var(--bone);
+    background: var(--void-line);
+  }
+
+  .seg input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .seg label:has(input:checked) {
+    background: var(--gold);
+    color: var(--void);
+  }
+
+  .seg label:has(input:focus-visible) {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 520px) {
+    .settings-row {
+      grid-template-columns: 1fr;
+      gap: 0.5rem;
+    }
+  }
+
+  .perf {
+    padding: var(--space-3);
+    max-width: min(22rem, calc(100vw - 2rem));
+  }
+
+  .perf p {
+    margin: 0 0 var(--space-3);
+    max-width: 28ch;
+  }
+
+  .perf-actions {
+    display: flex;
+    gap: 0.6rem;
+  }
+
+  .perf-actions button {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border: 1px solid var(--void-line);
+    border-radius: 999px;
+    padding: 0.55em 0.9em;
+    color: var(--bone);
+  }
+
+  .perf-actions button[data-perf-quiet] {
+    background: var(--gold);
+    color: var(--void);
+    border-color: var(--gold);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .settings[open],
+    .settings[open]::backdrop,
+    .settings.is-closing,
+    .settings.is-closing::backdrop {
+      animation: none;
+    }
+    .gear svg {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import { markShortTexts } from '@/lib/short-text';
+
+  const MOTION_KEY = 'menghan-motion';
+  const CURSOR_KEY = 'menghan-cursor';
+  const ASKED_KEY = 'menghan-motion-asked';
+
+  function motionValue(): string {
+    return document.documentElement.dataset.motion || 'full';
+  }
+
+  function cursorValue(): string {
+    try {
+      return localStorage.getItem(CURSOR_KEY) === 'system' ? 'system' : 'custom';
+    } catch {
+      return 'custom';
+    }
+  }
+
+  function stored(name: string, fallback: string): string {
+    const value = document.documentElement.dataset[name];
+    return value || fallback;
+  }
+
+  function paint(dialog: HTMLElement) {
+    const current: Record<string, string> = {
+      motion: motionValue(),
+      cursor: cursorValue(),
+      text: stored('text', 'md'),
+      density: stored('density', 'short'),
+      contrast: stored('contrast', 'off'),
+      space: stored('space', 'normal'),
+      transparent: stored('transparent', 'normal'),
+      focus: stored('focus', 'off'),
+    };
+    for (const [name, value] of Object.entries(current)) {
+      dialog.querySelectorAll<HTMLInputElement>(`input[name="${name}"]`).forEach((input) => {
+        input.checked = input.value === value;
+      });
+    }
+  }
+
+  function saveVisual(name: string, value: string, off: string) {
+    const key = `menghan-${name}`;
+    try {
+      if (value === off) localStorage.removeItem(key);
+      else localStorage.setItem(key, value);
+    } catch {
+      /* private mode */
+    }
+    if (value === off) delete document.documentElement.dataset[name];
+    else document.documentElement.dataset[name] = value;
+    if (name === 'transparent') paintSolid();
+  }
+
+  // Solid panels: any element holding text on a see-through background
+  // gets that colour composited over the page's dark ground, made opaque.
+  // Elements holding pictures are left alone so overlays never cover art.
+  const GROUND = [9, 8, 10];
+  function parseColor(value: string): [number, number, number, number] | null {
+    const rgb = value.match(/^rgba\(([\d.]+), ([\d.]+), ([\d.]+), ([\d.]+)\)$/);
+    if (rgb) return [Number(rgb[1]), Number(rgb[2]), Number(rgb[3]), Number(rgb[4])];
+    const srgb = value.match(/^color\(srgb ([\d.e-]+) ([\d.e-]+) ([\d.e-]+) \/ ([\d.e-]+)\)$/);
+    if (srgb) return [Number(srgb[1]) * 255, Number(srgb[2]) * 255, Number(srgb[3]) * 255, Number(srgb[4])];
+    return null;
+  }
+  function paintSolid() {
+    const on = document.documentElement.dataset.transparent === 'solid';
+    document.querySelectorAll<HTMLElement>('[data-solid-prev]').forEach((el) => {
+      el.style.backgroundColor = el.dataset.solidPrev ?? '';
+      delete el.dataset.solidPrev;
+    });
+    if (!on) return;
+    document.querySelectorAll<HTMLElement>('main *, .site-header *, body > [class*="tip"], body > [class*="nudge"]').forEach((el) => {
+      const rgba = parseColor(getComputedStyle(el).backgroundColor);
+      if (!rgba) return;
+      const [r, g, b, a] = rgba;
+      if (a <= 0.02 || a >= 0.97) return;
+      if (!el.textContent?.trim() || el.querySelector('img, video, canvas, picture')) return;
+      const mix = [r, g, b].map((c, i) => Math.round(c * a + GROUND[i] * (1 - a)));
+      el.dataset.solidPrev = el.style.backgroundColor;
+      el.style.backgroundColor = `rgb(${mix.join(' ')})`;
+    });
+  }
+
+  function resetAll() {
+    try {
+      ['motion', 'cursor', 'text', 'density', 'contrast', 'space', 'transparent', 'focus', 'motion-asked'].forEach((k) =>
+        localStorage.removeItem(`menghan-${k}`),
+      );
+    } catch {
+      /* private mode */
+    }
+    location.reload();
+  }
+
+  function saveMotion(value: string) {
+    try {
+      if (value === 'full') localStorage.removeItem(MOTION_KEY);
+      else localStorage.setItem(MOTION_KEY, value);
+      localStorage.setItem(ASKED_KEY, '1');
+    } catch {
+      /* private mode */
+    }
+    location.reload();
+  }
+
+  function saveCursor(value: string) {
+    try {
+      if (value === 'custom') localStorage.removeItem(CURSOR_KEY);
+      else localStorage.setItem(CURSOR_KEY, value);
+    } catch {
+      /* private mode */
+    }
+    location.reload();
+  }
+
+  function sampleFps(ms: number): Promise<number> {
+    return new Promise((resolve) => {
+      let frames = 0;
+      const start = performance.now();
+      function tick(now: number) {
+        frames += 1;
+        if (now - start < ms) requestAnimationFrame(tick);
+        else resolve((frames * 1000) / (now - start));
+      }
+      requestAnimationFrame(tick);
+    });
+  }
+
+  function initSettings() {
+    markShortTexts();
+    if (document.documentElement.dataset.transparent === 'solid') window.setTimeout(paintSolid, 300);
+    const openBtn = document.querySelector<HTMLButtonElement>('[data-settings-open]');
+    const dialog = document.querySelector<HTMLDialogElement>('[data-settings-dialog]');
+    const perf = document.querySelector<HTMLDialogElement>('[data-perf-dialog]');
+    if (!openBtn || !dialog || openBtn.dataset.settingsBound === '1') return;
+    openBtn.dataset.settingsBound = '1';
+
+    const lenis = () => (window as any).__lenis as { stop(): void; start(): void } | undefined;
+    const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let closing = 0;
+
+    function closeSettings() {
+      if (!dialog || !dialog.open || closing) return;
+      if (reduced()) {
+        dialog.close();
+        return;
+      }
+      dialog.classList.add('is-closing');
+      closing = window.setTimeout(() => {
+        closing = 0;
+        dialog.classList.remove('is-closing');
+        dialog.close();
+      }, 180);
+    }
+
+    openBtn.addEventListener('click', () => {
+      paint(dialog);
+      dialog.showModal();
+      openBtn.setAttribute('aria-expanded', 'true');
+      lenis()?.stop();
+    });
+    dialog.addEventListener('close', () => {
+      openBtn.setAttribute('aria-expanded', 'false');
+      lenis()?.start();
+    });
+    dialog.addEventListener('cancel', (e) => {
+      e.preventDefault();
+      closeSettings();
+    });
+    dialog.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+      e.preventDefault();
+      closeSettings();
+    });
+    dialog.querySelector('[data-settings-close]')?.addEventListener('click', closeSettings);
+    dialog.querySelector('[data-settings-reset]')?.addEventListener('click', resetAll);
+    // a click on the dialog element itself, not on anything inside the
+    // card, is a click on the backdrop around it
+    dialog.addEventListener('click', (e) => {
+      if (e.target === dialog) closeSettings();
+    });
+
+    dialog.querySelectorAll<HTMLInputElement>('input[name="motion"]').forEach((input) => {
+      input.addEventListener('change', () => {
+        if (input.checked) saveMotion(input.value);
+      });
+    });
+    dialog.querySelectorAll<HTMLInputElement>('input[name="cursor"]').forEach((input) => {
+      input.addEventListener('change', () => {
+        if (input.checked) saveCursor(input.value);
+      });
+    });
+    const visualOff: Record<string, string> = {
+      text: 'md',
+      density: 'short',
+      contrast: 'off',
+      space: 'normal',
+      transparent: 'normal',
+      focus: 'off',
+    };
+    for (const name of Object.keys(visualOff)) {
+      dialog.querySelectorAll<HTMLInputElement>(`input[name="${name}"]`).forEach((input) => {
+        input.addEventListener('change', () => {
+          if (input.checked) saveVisual(name, input.value, visualOff[name]);
+        });
+      });
+    }
+
+    perf?.querySelector('[data-perf-quiet]')?.addEventListener('click', () => saveMotion('quiet'));
+    perf?.querySelector('[data-perf-keep]')?.addEventListener('click', () => {
+      try {
+        localStorage.setItem(ASKED_KEY, '1');
+      } catch {
+        /* private mode */
+      }
+      perf.close();
+    });
+
+    if (!perf || motionValue() !== 'full' || document.hidden) return;
+    try {
+      if (localStorage.getItem(ASKED_KEY) === '1') return;
+    } catch {
+      return;
+    }
+    window.setTimeout(() => {
+      if (document.hidden || motionValue() !== 'full' || perf.open) return;
+      sampleFps(1200).then((fps) => {
+        if (fps >= 30 || perf.open || document.hidden) return;
+        perf.showModal();
+      });
+    }, 2200);
+  }
+
+  document.addEventListener('astro:page-load', initSettings);
+</script>

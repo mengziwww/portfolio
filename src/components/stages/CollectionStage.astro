@@ -1,0 +1,1748 @@
+---
+// Smaller pieces that don't belong to one film. Same paper and pins as the
+// sketchbook, but each pile is laid out like the thing it is: a band
+// lineup, a hand of cards, polaroids, New Year prints, a calendar page,
+// a pinned strip, storyboard sheets. The piles sit on shelves (the
+// `shelves` list in the yaml): one shelf is open at a time, picked from
+// the tabs at the top, and a shelf with several parts shows one part at a
+// time with its own row of tabs. Nothing to scroll past to find a pile.
+import { Image, getImage } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { getProjectImage, responsiveWidths } from '@/lib/images';
+import ProjectFooter from './ProjectFooter.astro';
+import I18nText from '@/components/I18nText.astro';
+import { trAll } from '@/i18n/ui';
+import { vividOf } from '@/lib/color';
+import { charReveal } from '@/lib/reveal-text';
+import ProjectIntro from '@/components/ProjectIntro.astro';
+import VideoPlayer from '@/components/VideoPlayer.astro';
+import ScrollCue from '@/components/ScrollCue.astro';
+import '@fontsource-variable/caveat';
+import { langOf } from '@/lib/lang';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+  next: CollectionEntry<'projects'>;
+}
+const { project, next } = Astro.props;
+const { title, subtitle, description, year, roles, category, cover, coverAlt, gallery, accentFrom, accentTo, links, videos, piles = [], storyboards = [] } = project.data;const glow = vividOf(accentFrom, accentTo);
+const coverImg = getProjectImage(project.id, cover);
+const categoryLabel = trAll(`category.${category}` as const);
+
+type Item = (typeof gallery)[number];
+type Pile = { id: string; label: NonNullable<Item['chapter']>; items: Item[]; display: (typeof piles)[number]['display']; note?: (typeof piles)[number]['note'] };
+
+const groups: Pile[] = [];
+for (const item of gallery) {
+  if (!item.chapter) continue;
+  const last = groups[groups.length - 1];
+  if (last && last.label.en === item.chapter.en) {
+    last.items.push(item);
+  } else {
+    const meta = piles.find((p) => p.chapter === item.chapter!.en);
+    groups.push({ id: `pile-${groups.length + 1}`, label: item.chapter, items: [item], display: meta?.display ?? 'strip', note: meta?.note });
+  }
+}
+
+const sheets = await Promise.all(
+  storyboards.map(async (board) =>
+    Promise.all(
+      board.pages.map(async (file) => {
+        const src = getProjectImage(project.id, file);
+        const full = await getImage({ src, width: Math.min(src.width, 1800) });
+        return { file, src, full: full.src };
+      })
+    )
+  )
+);
+const roman = ['I', 'II', 'III', 'IV', 'V', 'VI'];
+
+type Localized = { en: string; fr: string; zh: string };
+type Part =
+  | { kind: 'video'; key: string; label: Localized; clip: NonNullable<typeof videos>[number] }
+  | { kind: 'pile'; key: string; label: Localized; group: Pile }
+  | { kind: 'board'; key: string; label: Localized; index: number };
+type Shelf = { id: string; label: Localized; parts: Part[]; count: number };
+
+const partsFor = (name: string): Part[] => {
+  if (name === '@videos') return (videos ?? []).map((clip, i) => ({ kind: 'video', key: `video-${i}`, label: clip.label, clip }));
+  if (name === '@storyboards') return storyboards.map((board, i) => ({ kind: 'board', key: `board-${i}`, label: board.title, index: i }));
+  const group = groups.find((g) => g.label.en === name);
+  return group ? [{ kind: 'pile', key: group.id, label: group.label, group }] : [];
+};
+const sizeOf = (part: Part) => (part.kind === 'pile' ? part.group.items.length : 1);
+const shelfList: Shelf[] = (
+  project.data.shelves ??
+  groups.map((g) => ({ id: g.id, label: g.label, parts: [g.label.en] }))
+)
+  .map((s) => {
+    const parts = s.parts.flatMap(partsFor);
+    return { id: s.id, label: s.label, parts, count: parts.reduce((n, p) => n + sizeOf(p), 0) };
+  })
+  .filter((s) => s.parts.length > 0);
+
+const tilt = (i: number) => ((((i * 53 + 7) % 9) - 4) * 0.8).toFixed(2);
+const isGif = (file: string) => file.endsWith('.gif');
+const fanAngle = (i: number, n: number) => ((i - (n - 1) / 2) * (n > 4 ? 7 : 9)).toFixed(2);
+const fanDrop = (i: number, n: number) => (Math.abs(i - (n - 1) / 2) ** 2 * 0.5).toFixed(2);
+const pageLang = langOf(Astro.url);
+---
+
+<article class="collection" style={`--mood-a:${accentFrom}; --mood-b:${accentTo}; --mood-glow:${glow};`} data-collection data-reveal-root>
+  <header class="pw-hero">
+    <div class="pw-hero-cover">
+      <span class="pw-nail" aria-hidden="true"></span>
+      <div class="pw-cover-frame">
+        <Image
+          src={coverImg}
+          alt={coverAlt[pageLang]}
+          widths={responsiveWidths(coverImg, [320, 480, 640])}
+          sizes="(max-width: 700px) 62vw, 21rem"
+          loading="eager"
+          fetchpriority="high"
+          transition:name={`project-cover-${project.id}`}
+        />
+      </div>
+    </div>
+    <div class="pw-hero-copy">
+      <p class="hero-eyebrow eyebrow">
+        <I18nText {...categoryLabel} /> · {year}
+      </p>
+      <h1 class="pw-hero-title" transition:name={`project-title-${project.id}`} set:html={charReveal(title, 120, 22)} />
+      <p class="pw-hero-subtitle">
+        <I18nText en={subtitle.en} fr={subtitle.fr} zh={subtitle.zh} />
+      </p>
+      <ProjectIntro description={description} links={links} />
+      <ul class="hero-roles">
+        {roles.en.map((_, i) => (
+          <li>
+            <I18nText en={roles.en[i]} fr={roles.fr[i]} zh={roles.zh[i]} />
+          </li>
+        ))}
+      </ul>
+    </div>
+    <div class="pw-hero-cue">
+      <ScrollCue />
+    </div>
+  </header>
+
+  <nav class="pw-shelves" aria-label="Collection" data-pw-tabs>
+    <div class="pw-shelves-row" role="tablist" style={`--shelves:${shelfList.length};`}>
+      {shelfList.map((shelf, si) => (
+        <button
+          type="button"
+          class="pw-shelf-tab"
+          role="tab"
+          id={`tab-${shelf.id}`}
+          aria-controls={`shelf-${shelf.id}`}
+          aria-selected={si === 0 ? 'true' : 'false'}
+          tabindex={si === 0 ? 0 : -1}
+          data-pw-tab={shelf.id}
+          style={`--i:${si};`}
+        >
+          <span class="pw-shelf-num">{String(si + 1).padStart(2, '0')}</span>
+          <span class="pw-shelf-name"><I18nText en={shelf.label.en} fr={shelf.label.fr} zh={shelf.label.zh} /></span>
+          <span class="pw-shelf-count">{shelf.count}</span>
+        </button>
+      ))}
+    </div>
+  </nav>
+
+  <div class="pw-room">
+    {shelfList.map((shelf, si) => (
+      <section
+        class="pw-shelf"
+        id={`shelf-${shelf.id}`}
+        role="tabpanel"
+        aria-labelledby={`tab-${shelf.id}`}
+        data-pw-shelf={shelf.id}
+        hidden={si !== 0}
+      >
+        {shelf.parts.length > 1 && (
+          <div class="pw-subtabs" role="tablist" data-pw-subtabs>
+            {shelf.parts.map((part, pi) => (
+              <button
+                type="button"
+                class="pw-subtab"
+                role="tab"
+                id={`subtab-${shelf.id}-${part.key}`}
+                aria-controls={`part-${shelf.id}-${part.key}`}
+                aria-selected={pi === 0 ? 'true' : 'false'}
+                tabindex={pi === 0 ? 0 : -1}
+                data-pw-subtab={part.key}
+              >
+                {part.kind === 'board' && <span class="pw-subtab-num">{roman[part.index] ?? part.index + 1}</span>}
+                <I18nText en={part.label.en} fr={part.label.fr} zh={part.label.zh} />
+              </button>
+            ))}
+          </div>
+        )}
+
+        {shelf.parts.map((part, pi) => (
+          <div
+            class:list={['pw-part', `is-${part.kind}`]}
+            id={`part-${shelf.id}-${part.key}`}
+            role={shelf.parts.length > 1 ? 'tabpanel' : undefined}
+            aria-labelledby={shelf.parts.length > 1 ? `subtab-${shelf.id}-${part.key}` : undefined}
+            data-pw-part={part.key}
+            hidden={pi !== 0}
+          >
+            {part.kind === 'video' && (
+              <section class="pw-motion">
+                <div class="pw-motion-player">
+                  <VideoPlayer src={`/videos/${project.id}/${part.clip.file}`} skin="saber" label="Anakin · Mustafar" />
+                </div>
+                <div class="pw-motion-copy">
+                  <h2 class="pw-pile-title"><I18nText en={part.clip.label.en} fr={part.clip.label.fr} zh={part.clip.label.zh} /></h2>
+                  <p class="pw-pile-note">
+                    <I18nText
+                      en="A fan animation of Anakin Skywalker on Mustafar."
+                      fr="Une fan animation d'Anakin Skywalker sur Mustafar."
+                      zh="一段同人动画：穆斯塔法星上的安纳金·天行者。"
+                    />
+                  </p>
+                </div>
+              </section>
+            )}
+
+            {part.kind === 'pile' && (
+              <section class:list={['pw-pile', `is-${part.group.display}`]} style={`--count:${part.group.items.length};`}>
+                <header class="pw-pile-head">
+                  <h2 class="pw-pile-title visually-hidden">
+                    <I18nText en={part.group.label.en} fr={part.group.label.fr} zh={part.group.label.zh} />
+                  </h2>
+                  {part.group.note && (
+                    <p class="pw-pile-note">
+                      <I18nText en={part.group.note.en} fr={part.group.note.fr} zh={part.group.note.zh} />
+                    </p>
+                  )}
+                </header>
+                <div class="pw-pile-body" data-lb-group>
+                  {part.group.items.map((item, i) => {
+                    const img = getProjectImage(project.id, item.file);
+                    const text = item.caption ?? item.alt;
+                    const n = part.group.items.length;
+                    return (
+                      <figure
+                        class="pw-piece"
+                        style={`--tilt:${tilt(i)}deg; --fan:${fanAngle(i, n)}deg; --drop:${fanDrop(i, n)}rem; --i:${i}; --off:${(n - 1) / 2 - i};`}
+                        data-artwork
+                        data-pw-piece
+                        tabindex={part.group.display === 'hand' ? 0 : undefined}
+                      >
+                        <span class="pw-frame">
+                          {isGif(item.file) ? (
+                            <img src={img.src} alt={item.alt[pageLang]} width={img.width} height={img.height} loading="lazy" />
+                          ) : (
+                            <Image src={img} alt={item.alt[pageLang]} widths={responsiveWidths(img, [480, 800, 1200])} sizes="(max-width: 700px) 86vw, 34rem" loading="lazy" />
+                          )}
+                          {part.group.display === 'hand' && (
+                            <>
+                              <span class="pw-pip is-top" aria-hidden="true">{String(i + 1).padStart(2, '0')}<i>✦</i></span>
+                              <span class="pw-pip is-bottom" aria-hidden="true">{String(i + 1).padStart(2, '0')}<i>✦</i></span>
+                              <span class="pw-back" aria-hidden="true"><i>✦</i></span>
+                            </>
+                          )}
+                        </span>
+                        <figcaption>
+                          <I18nText en={text.en} fr={text.fr} zh={text.zh} />
+                        </figcaption>
+                      </figure>
+                    );
+                  })}
+                </div>
+                {part.group.display === 'hand' && (
+                  <div class="pw-hand-foot">
+                    <p class="pw-hand-caption" aria-live="polite" data-pw-hand-caption>
+                      <I18nText en="Hover a card to read it." fr="Survole une carte pour la lire." zh="把鼠标移到卡牌上看说明。" />
+                    </p>
+                    <button type="button" class="pw-deal" data-pw-deal>
+                      <I18nText en="deal again" fr="redistribuer" zh="重新发牌" />
+                    </button>
+                  </div>
+                )}
+              </section>
+            )}
+
+            {part.kind === 'board' && (() => {
+              const bi = part.index;
+              const board = storyboards[bi];
+              return (
+                <div class={`pw-board look-${board.look}`}>
+                  {board.look === 'sand' && (
+                    <>
+                      <span class="pw-sun" aria-hidden="true"></span>
+                      <span class="pw-grains" aria-hidden="true"></span>
+                    </>
+                  )}
+                  {board.look === 'night' && (
+                    <>
+                      <span class="pw-stars" aria-hidden="true"></span>
+                      <span class="pw-glow" aria-hidden="true"></span>
+                    </>
+                  )}
+                  <div class="pw-board-info">
+                    <p class="pw-board-num">{roman[bi] ?? bi + 1}</p>
+                    <h2 class="pw-board-title"><I18nText en={board.title.en} fr={board.title.fr} zh={board.title.zh} /></h2>
+                    <p class="pw-pile-note"><I18nText en={board.note.en} fr={board.note.fr} zh={board.note.zh} /></p>
+                    <p class="pw-board-meta">
+                      <I18nText en={`${board.pages.length} pages`} fr={`${board.pages.length} pages`} zh={`${board.pages.length} 页`} />
+                    </p>
+                    <button type="button" class="pw-board-read" data-pw-read data-cursor-hover>
+                      <I18nText en="open full size" fr="ouvrir en grand" zh="打开大图" />
+                    </button>
+                  </div>
+                  {(
+                    <div class="pw-reader" data-pw-reader tabindex="0">
+                      <div class="pw-reader-stage" data-lb-group data-pw-sheets>
+                        {sheets[bi].map((sheet, si) => (
+                          <figure class:list={['pw-sheet', { 'is-on': si === 0 }]} style={`--tilt:${tilt(si)}deg;`} data-pw-page={si} data-artwork>
+                            {board.look === 'wall' && <span class="pw-pin" aria-hidden="true"></span>}
+                            <Image
+                              src={sheet.src}
+                              alt={pageLang === 'zh' ? `${board.title.zh}，第 ${si + 1} 页` : `${board.title[pageLang]}, page ${si + 1}`}
+                              data-full={sheet.full}
+                              widths={[480, 800, 1200]}
+                              sizes={board.look === 'night' ? '(max-width: 700px) 92vw, 52rem' : '(max-width: 700px) 86vw, 30rem'}
+                              loading={si < 2 ? 'eager' : 'lazy'}
+                            />
+                          </figure>
+                        ))}
+                      </div>
+                      <div class="pw-reader-nav">
+                        <button type="button" class="pw-turn" data-pw-turn="-1" aria-label="Previous page">
+                          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+                        </button>
+                        <span class="pw-reader-count"><span data-pw-count>01</span> / {String(board.pages.length).padStart(2, '0')}</span>
+                        <button type="button" class="pw-turn" data-pw-turn="1" aria-label="Next page">
+                          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+          </div>
+        ))}
+      </section>
+    ))}
+  </div>
+
+  <ProjectFooter project={project} next={next} />
+</article>
+
+<style>
+  .collection {
+    background:
+      repeating-linear-gradient(0deg, transparent 0 39px, color-mix(in srgb, var(--mood-a) 14%, transparent) 39px 40px),
+      color-mix(in srgb, var(--void) 88%, var(--mood-a) 12%);
+  }
+
+  /* ---- hero ---- */
+  .pw-hero {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(2rem, 6vw, 5rem);
+    min-height: 76svh;
+    padding: var(--space-6) var(--edge) var(--space-5);
+  }
+
+  .pw-hero-cue {
+    position: absolute;
+    left: var(--edge);
+    bottom: var(--space-3);
+  }
+
+  .pw-hero-cover {
+    position: relative;
+    flex: none;
+    width: clamp(12rem, 22vw, 21rem);
+  }
+
+  .pw-cover-frame {
+    overflow: hidden;
+    border-radius: 2px;
+    border: 8px solid var(--bone);
+    box-shadow: 0 1.5rem 3.5rem -1rem rgb(0 0 0 / 65%), 0 0 3rem 0.2rem color-mix(in srgb, var(--mood-glow) 25%, transparent);
+    transform: rotate(-2deg);
+  }
+
+  .pw-cover-frame :global(img) {
+    width: 100%;
+    display: block;
+  }
+
+  .pw-nail {
+    position: absolute;
+    left: 50%;
+    top: -0.5rem;
+    z-index: 1;
+    width: 0.9rem;
+    height: 0.9rem;
+    margin-left: -0.45rem;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, var(--bone), var(--mood-b) 70%);
+    box-shadow: 0 0.3rem 0.4rem rgb(0 0 0 / 45%);
+  }
+
+  .pw-hero-copy {
+    flex: 1 1 24rem;
+    max-width: 34rem;
+  }
+
+  .hero-eyebrow {
+    color: var(--gold);
+    margin-bottom: var(--space-2);
+  }
+
+  .pw-hero-title {
+    font-size: var(--text-2xl);
+    line-height: 0.96;
+  }
+
+  .pw-hero-subtitle {
+    font-size: var(--text-lg);
+    color: var(--bone-soft);
+    margin-top: var(--space-2);
+  }
+
+  .hero-roles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    list-style: none;
+    margin-top: var(--space-3);
+    padding: 0;
+  }
+
+  .hero-roles li {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    border: 1px solid var(--void-line);
+    padding: 0.4em 0.85em;
+    border-radius: 999px;
+  }
+
+  /* ---- shelves: big paper folder tabs, the open one joins its sheet ---- */
+  .pw-shelves {
+    position: relative;
+    z-index: 2;
+    padding: 0 var(--edge);
+    scroll-margin-top: 4.5rem;
+  }
+
+  .pw-shelves-row {
+    display: grid;
+    grid-template-columns: repeat(var(--shelves, 4), minmax(0, 1fr));
+    gap: 0.6rem;
+    max-width: 78rem;
+    margin-inline: auto;
+  }
+
+  .pw-shelf-tab {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: baseline;
+    gap: 0.7rem;
+    min-height: 4.4rem;
+    padding: 1rem 1.2rem 1.1rem;
+    text-align: left;
+    color: var(--bone);
+    background: color-mix(in srgb, var(--void) 70%, var(--mood-a) 30%);
+    border: 1px solid color-mix(in srgb, var(--bone) 16%, transparent);
+    border-bottom: 0;
+    border-radius: 14px 14px 0 0;
+    transform: translateY(0.5rem);
+    transition: transform 0.4s var(--ease-out-expo), background 0.3s, color 0.3s;
+    cursor: pointer;
+  }
+
+  .pw-shelf-tab:hover,
+  .pw-shelf-tab:focus-visible {
+    transform: translateY(0.15rem);
+    background: color-mix(in srgb, var(--void) 55%, var(--mood-a) 45%);
+  }
+
+  .pw-shelf-tab[aria-selected='true'] {
+    z-index: 1;
+    color: #241a12;
+    background: #f3ece0;
+    transform: none;
+    box-shadow: 0 -0.8rem 1.6rem -1rem rgb(0 0 0 / 60%);
+  }
+
+  .pw-shelf-num {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: var(--gold);
+  }
+
+  .pw-shelf-tab[aria-selected='true'] .pw-shelf-num {
+    color: #8c1d14;
+  }
+
+  .pw-shelf-name {
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    line-height: 1.1;
+  }
+
+  .pw-shelf-count {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    opacity: 0.6;
+  }
+
+  /* the open shelf: one sheet of paper the tabs grow out of */
+  .pw-room {
+    position: relative;
+    width: min(100% - 2 * var(--edge), 78rem);
+    margin: 0 auto var(--space-6);
+    padding: clamp(1.4rem, 3.5vw, 3rem);
+    min-height: 70svh;
+    background: color-mix(in srgb, var(--void) 82%, var(--mood-a) 18%);
+    border-top: 3px solid #f3ece0;
+    border-radius: 0 0 14px 14px;
+    box-shadow: 0 2rem 4rem -2rem rgb(0 0 0 / 70%);
+  }
+
+  .pw-shelf[hidden],
+  .pw-part[hidden] {
+    display: none;
+  }
+
+  .pw-shelf:not([hidden]) {
+    animation: shelf-in 0.5s var(--ease-out-expo);
+  }
+
+  @keyframes shelf-in {
+    from { opacity: 0; translate: 0 0.8rem; }
+  }
+
+  .pw-subtabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: var(--space-4);
+  }
+
+  .pw-subtab {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.5em;
+    min-height: 2.9rem;
+    padding: 0.7em 1.3em;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--bone);
+    border: 1px solid color-mix(in srgb, var(--bone) 30%, transparent);
+    border-radius: 999px;
+    transition: background 0.25s, color 0.25s, border-color 0.25s;
+    cursor: pointer;
+  }
+
+  :lang(zh) .pw-subtab {
+    text-transform: none;
+  }
+
+  .pw-subtab:hover,
+  .pw-subtab:focus-visible {
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+
+  .pw-subtab[aria-selected='true'] {
+    color: var(--void);
+    background: var(--gold);
+    border-color: var(--gold);
+  }
+
+  .pw-subtab-num {
+    font-family: var(--font-display);
+    opacity: 0.7;
+  }
+
+  /* ---- shared pile parts ---- */
+  .pw-pile-title {
+    font-size: var(--text-xl);
+    line-height: 1.05;
+  }
+
+  .pw-pile-note {
+    margin-top: var(--space-2);
+    max-width: 42ch;
+    font-size: var(--text-sm);
+    line-height: 1.6;
+    color: var(--bone-soft);
+  }
+
+  .pw-kicker {
+    color: var(--gold);
+    margin-bottom: var(--space-2);
+  }
+
+  .pw-pile-head {
+    margin-bottom: var(--space-4);
+  }
+
+  .pw-pile-body {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: clamp(1rem, 2.5vw, 2rem);
+  }
+
+  .pw-piece {
+    position: relative;
+    margin: 0;
+  }
+
+  .pw-frame {
+    display: block;
+    overflow: hidden;
+  }
+
+  .pw-frame :global(img) {
+    display: block;
+    height: var(--h, 16rem);
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+  }
+
+  .pw-piece figcaption {
+    margin-top: 0.6rem;
+    max-width: 24ch;
+    font-family: 'Caveat Variable', cursive;
+    font-size: clamp(1.1rem, 1rem + 0.4vw, 1.35rem);
+    line-height: 1.2;
+    color: var(--bone);
+  }
+
+  :lang(zh) .pw-piece figcaption {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: var(--text-sm);
+  }
+
+  /* ---- lineup: one portrait per band member, like a gig poster ---- */
+  .is-lineup .pw-pile-body {
+    flex-wrap: nowrap;
+    gap: clamp(0.75rem, 1.8vw, 1.5rem);
+    max-width: 62rem;
+    margin-inline: auto;
+  }
+
+  .is-lineup .pw-piece {
+    flex: 1 1 0;
+    min-width: 0;
+    transform: rotate(var(--tilt));
+    transition: transform 0.45s var(--ease-out-expo);
+  }
+
+  .is-lineup .pw-piece:hover {
+    transform: rotate(0deg) translateY(-0.4rem);
+  }
+
+  .is-lineup .pw-frame {
+    border: 6px solid var(--bone);
+    box-shadow: 0 1.2rem 2.5rem -1rem rgb(0 0 0 / 60%);
+  }
+
+  .is-lineup .pw-frame :global(img) {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+  }
+
+  .is-lineup figcaption {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.06em;
+    color: var(--bone-soft);
+  }
+
+  :lang(zh) .is-lineup figcaption {
+    font-family: var(--font-mono);
+    font-style: normal;
+    font-size: var(--text-xs);
+  }
+
+  /* ---- hand: the cards fanned out, the hovered one is lifted ---- */
+  .is-hand {
+    text-align: center;
+  }
+
+  .is-hand .pw-pile-head {
+    text-align: left;
+  }
+
+  /* a felt card table; the cards wait face down in one pile at the
+     centre (.is-waiting, set by the script) and are dealt into a fan */
+  .is-hand .pw-pile-body {
+    --card-w: clamp(11rem, 19vw, 18.5rem);
+    --card-m: clamp(-3.4rem, -2.6vw, -1.4rem);
+    flex-wrap: nowrap;
+    justify-content: center;
+    gap: 0;
+    padding: clamp(2.4rem, 5vw, 4rem) clamp(1rem, 3vw, 3rem) clamp(3rem, 6vw, 5rem);
+    border-radius: 14rem / 5rem;
+    background:
+      radial-gradient(ellipse 60% 55% at 50% 40%, rgb(255 255 255 / 9%), transparent 70%),
+      repeating-linear-gradient(45deg, rgb(0 0 0 / 5%) 0 2px, transparent 2px 4px),
+      #1f4a36;
+    box-shadow:
+      inset 0 0 0 0.55rem #4a2a17,
+      inset 0 0 0 0.7rem #b98a4a,
+      inset 0 0 0 1.2rem #3a2112,
+      inset 0 0 4rem 1.4rem rgb(0 0 0 / 55%),
+      0 2rem 4rem -1.5rem rgb(0 0 0 / 70%);
+    perspective: 1600px;
+  }
+
+  .is-hand .pw-piece {
+    flex: none;
+    width: var(--card-w);
+    margin-inline: var(--card-m);
+    transform-origin: 50% 120%;
+    transform: rotate(var(--fan)) translateY(var(--drop));
+    transition: transform 0.7s var(--ease-out-expo);
+    transition-delay: calc(var(--i) * 0.11s);
+    outline: none;
+  }
+
+  .is-hand.is-waiting .pw-piece {
+    transform: translateX(calc(var(--off) * (var(--card-w) + 2 * var(--card-m)))) translateY(-1rem) rotate(calc(var(--off) * 1.5deg));
+    transition-delay: 0s;
+  }
+
+  .is-hand .pw-piece:hover,
+  .is-hand .pw-piece:focus-visible {
+    z-index: 5;
+    transform: rotate(0deg) translateY(-2.2rem) scale(1.12);
+    transition-delay: 0s;
+  }
+
+  .is-hand .pw-frame {
+    position: relative;
+    aspect-ratio: 5 / 7;
+    padding: 0.5rem;
+    overflow: visible;
+    border-radius: 0.7rem;
+    background: linear-gradient(160deg, #f7efe2, #e6d9c3);
+    box-shadow:
+      inset 0 0 0 1px #b98a4a,
+      inset 0 0 0 5px #f7efe2,
+      inset 0 0 0 6px color-mix(in srgb, #b98a4a 70%, transparent),
+      0 1.4rem 2.4rem -1rem rgb(0 0 0 / 70%);
+    transform-style: preserve-3d;
+    transition: transform 0.8s var(--ease-out-expo);
+    transition-delay: calc(var(--i) * 0.11s + 0.25s);
+  }
+
+  .is-hand.is-waiting .pw-frame {
+    transform: rotateY(180deg);
+    transition-delay: 0s;
+  }
+
+  .is-hand .pw-frame :global(img) {
+    width: 100%;
+    height: 100%;
+    border-radius: 0.4rem;
+    object-fit: contain;
+    background: #fbf6ee;
+    backface-visibility: hidden;
+  }
+
+  .pw-pip {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: var(--font-display);
+    font-size: var(--text-sm);
+    line-height: 1;
+    color: #8c1d14;
+    backface-visibility: hidden;
+    pointer-events: none;
+  }
+
+  .pw-pip i {
+    font-style: normal;
+    font-size: 0.8em;
+    color: #b98a4a;
+  }
+
+  .pw-pip.is-top {
+    top: 0.85rem;
+    left: 0.85rem;
+  }
+
+  .pw-pip.is-bottom {
+    right: 0.85rem;
+    bottom: 0.85rem;
+    rotate: 180deg;
+  }
+
+  .pw-back {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    border-radius: 0.7rem;
+    background:
+      radial-gradient(circle at 50% 50%, transparent 22%, rgb(0 0 0 / 25%) 23% 24%, transparent 25%),
+      repeating-linear-gradient(45deg, #6e1610 0 6px, #861c14 6px 12px);
+    box-shadow: inset 0 0 0 0.45rem #f7efe2, inset 0 0 0 0.55rem #b98a4a;
+    transform: rotateY(180deg) translateZ(1px);
+    backface-visibility: hidden;
+  }
+
+  .pw-back i {
+    font-style: normal;
+    font-size: clamp(2rem, 4vw, 3.4rem);
+    color: #e9c27a;
+  }
+
+  .is-hand .pw-piece:focus-visible .pw-frame {
+    box-shadow:
+      inset 0 0 0 2px var(--gold),
+      0 0 0 3px var(--gold),
+      0 1.4rem 2.4rem -1rem rgb(0 0 0 / 70%);
+  }
+
+  .pw-hand-foot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.6rem 1.4rem;
+    margin-top: var(--space-2);
+  }
+
+  .pw-deal {
+    padding: 0.55em 1.2em;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    border-radius: 999px;
+    transition: background 0.25s, color 0.25s;
+  }
+
+  .pw-deal:hover,
+  .pw-deal:focus-visible {
+    background: var(--gold);
+    color: var(--void);
+  }
+
+  .is-hand figcaption {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .pw-hand-caption {
+    min-height: 2.6em;
+    margin: 0;
+    font-family: 'Caveat Variable', cursive;
+    font-size: clamp(1.2rem, 1rem + 0.6vw, 1.6rem);
+    color: var(--bone);
+  }
+
+  :lang(zh) .pw-hand-caption {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: var(--text-base);
+  }
+
+  /* ---- polaroids ---- */
+  .is-polaroids .pw-pile-body {
+    display: grid;
+    grid-template-columns: repeat(var(--count), minmax(0, 1fr));
+  }
+
+  .is-polaroids .pw-piece {
+    padding: 0.6rem 0.6rem 0;
+    background: #f3ece0;
+    box-shadow: 0 1.2rem 2.4rem -1rem rgb(0 0 0 / 65%);
+    transform: rotate(var(--tilt));
+    transition: transform 0.45s var(--ease-out-expo);
+  }
+
+  .is-polaroids .pw-piece::before {
+    content: '';
+    position: absolute;
+    top: -0.55rem;
+    left: 50%;
+    width: 3rem;
+    height: 1.1rem;
+    transform: translateX(-50%) rotate(-4deg);
+    background: color-mix(in srgb, var(--bone) 55%, transparent);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 25%);
+  }
+
+  .is-polaroids .pw-piece:hover {
+    z-index: 2;
+    transform: rotate(0deg) translateY(-0.3rem);
+  }
+
+  .is-polaroids .pw-pile-body {
+    max-width: 66rem;
+    margin-inline: auto;
+  }
+
+  .is-polaroids .pw-frame :global(img) {
+    width: 100%;
+    height: auto;
+    max-height: 30rem;
+  }
+
+  .is-polaroids figcaption {
+    padding: 0.4rem 0.2rem 0.8rem;
+    margin: 0;
+    color: #2a2420;
+  }
+
+  /* ---- festival: New Year prints on red paper with a gold rule ---- */
+  .is-festival .pw-pile-body {
+    padding: clamp(1rem, 2vw, 1.6rem);
+    background:
+      radial-gradient(circle at 20% 15%, rgb(255 210 120 / 16%), transparent 45%),
+      #8e1c1a;
+    box-shadow: inset 0 0 0 2px #d9a441, inset 0 0 0 6px #8e1c1a, inset 0 0 0 7px rgb(217 164 65 / 60%), 0 1.4rem 3rem -1rem rgb(0 0 0 / 65%);
+    justify-content: center;
+  }
+
+  .is-festival .pw-piece {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .is-festival .pw-frame {
+    box-shadow: 0 0 0 2px #d9a441;
+  }
+
+  .is-festival .pw-pile-body {
+    max-width: 64rem;
+    margin-inline: auto;
+  }
+
+  .is-festival .pw-frame :global(img) {
+    width: 100%;
+    height: clamp(16rem, 30vw, 30rem);
+    object-fit: contain;
+    background: #6e1514;
+  }
+
+  .is-festival figcaption {
+    color: #f6dca0;
+  }
+
+  /* ---- calendar: one torn-off page of the solar terms ---- */
+  .is-calendar .pw-pile-body {
+    justify-content: center;
+  }
+
+  .is-calendar .pw-piece {
+    position: relative;
+    width: min(100%, 26rem);
+    padding: 1.6rem 0.8rem 0.8rem;
+    background: #f3ece0;
+    box-shadow: 0 1.4rem 2.8rem -1rem rgb(0 0 0 / 65%);
+    transform: rotate(1.5deg);
+  }
+
+  .is-calendar .pw-piece::before {
+    content: '';
+    position: absolute;
+    top: 0.45rem;
+    left: 12%;
+    right: 12%;
+    height: 0.7rem;
+    background: radial-gradient(circle, #2a2420 0 0.22rem, transparent 0.26rem) 0 50% / 1.6rem 0.7rem repeat-x;
+  }
+
+  .is-calendar .pw-frame :global(img) {
+    width: 100%;
+    height: auto;
+  }
+
+  .is-calendar figcaption {
+    max-width: none;
+    color: #2a2420;
+  }
+
+  /* ---- strip: pinned in a row, all at one height ---- */
+  .is-strip .pw-piece {
+    transform: rotate(var(--tilt));
+    transition: transform 0.45s var(--ease-out-expo);
+  }
+
+  .is-strip .pw-piece:hover {
+    z-index: 2;
+    transform: rotate(0deg) translateY(-0.3rem);
+  }
+
+  .is-strip .pw-frame {
+    border: 6px solid var(--bone);
+    box-shadow: 0 1.2rem 2.5rem -1rem rgb(0 0 0 / 60%);
+  }
+
+  .is-strip .pw-pile-body {
+    justify-content: center;
+    gap: clamp(1.4rem, 3vw, 2.6rem);
+  }
+
+  .is-strip .pw-frame :global(img) {
+    --h: clamp(16rem, 26vw, 26rem);
+  }
+
+  /* ---- Anakin: the moving piece gets a stage of its own ---- */
+  .pw-motion {
+    display: grid;
+    grid-template-columns: minmax(0, 26rem) minmax(0, 18rem);
+    justify-content: center;
+    align-items: end;
+    gap: clamp(1.5rem, 4vw, 3rem);
+  }
+
+  .pw-motion-player :global(.film-frame) {
+    margin-inline: auto;
+  }
+
+  .pw-motion .pw-pile-title {
+    font-size: var(--text-lg);
+  }
+
+  .pw-motion .pw-pile-note {
+    font-size: var(--text-sm);
+  }
+
+  /* ---- storyboards ---- */
+  .pw-board {
+    display: grid;
+    grid-template-columns: minmax(14rem, 19rem) minmax(0, 1fr);
+    gap: clamp(1.5rem, 3vw, 3rem);
+  }
+
+  .pw-board-num {
+    font-family: var(--font-display);
+    font-size: var(--text-2xl);
+    line-height: 1;
+    color: var(--gold);
+  }
+
+  .pw-board-title {
+    margin-top: var(--space-2);
+    font-size: var(--text-lg);
+    line-height: 1.15;
+  }
+
+  .pw-board-meta {
+    margin-top: var(--space-2);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--bone-faint);
+  }
+
+  .pw-board-read {
+    margin-top: var(--space-3);
+    padding: 0.65em 1.2em;
+    border: 1px solid var(--gold);
+    border-radius: 999px;
+    background: none;
+    color: var(--gold);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.3s, color 0.3s;
+  }
+
+  .pw-board-read:hover,
+  .pw-board-read:focus-visible {
+    background: var(--gold);
+    color: var(--void);
+  }
+
+  .pw-board {
+    position: relative;
+    overflow: hidden;
+    margin-top: var(--space-4);
+    padding: clamp(1.5rem, 4vw, 3.5rem);
+    border-radius: 6px;
+    align-items: center;
+  }
+
+  .pw-board-info {
+    position: relative;
+    z-index: 1;
+  }
+
+  .pw-sheet {
+    margin: 0;
+  }
+
+  .pw-sheet :global(img) {
+    display: block;
+    cursor: zoom-in;
+  }
+
+  /* reader: one page at a time, turned with the arrows */
+  .pw-reader {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.9rem;
+    outline: none;
+  }
+
+  .pw-reader-stage {
+    display: grid;
+    width: 100%;
+    justify-items: center;
+  }
+
+  .pw-reader .pw-sheet {
+    grid-area: 1 / 1;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease, transform 0.6s var(--ease-out-expo);
+  }
+
+  .pw-reader .pw-sheet.is-on {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .pw-reader-nav {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+  }
+
+  .pw-turn {
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    padding: 0;
+    border-radius: 50%;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .pw-turn svg {
+    width: 1.3rem;
+    height: 1.3rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* I. sand: a desert page, a low sun, grains blowing across; a turned
+     page is carried off by the wind */
+  .look-sand {
+    background:
+      radial-gradient(ellipse 80% 50% at 50% 115%, #d9a25b, transparent 70%),
+      linear-gradient(180deg, #f4dcb0, #e7b877 60%, #c98a4a);
+    color: #3a2412;
+  }
+
+  .look-sand .pw-board-num,
+  .look-sand .pw-board-title,
+  .look-sand .pw-pile-note,
+  .look-sand .pw-board-meta {
+    color: #3a2412;
+  }
+
+  .look-sand .pw-board-read,
+  .look-sand .pw-turn {
+    color: #3a2412;
+    border: 1px solid #3a2412;
+  }
+
+  .look-sand .pw-board-read:hover,
+  .look-sand .pw-board-read:focus-visible,
+  .look-sand .pw-turn:hover,
+  .look-sand .pw-turn:focus-visible {
+    background: #3a2412;
+    color: #f4dcb0;
+  }
+
+  .pw-sun {
+    position: absolute;
+    top: 9%;
+    right: 8%;
+    width: clamp(4rem, 9vw, 8rem);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle, #ffb13b 55%, rgb(255 177 59 / 0%) 72%);
+  }
+
+  .pw-grains {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle, rgb(120 70 30 / 45%) 1px, transparent 1.6px) 0 0 / 37px 29px,
+      radial-gradient(circle, rgb(255 240 210 / 60%) 1px, transparent 1.6px) 11px 7px / 53px 41px;
+    animation: grains-blow 9s linear infinite;
+    pointer-events: none;
+  }
+
+  @keyframes grains-blow {
+    to { background-position: -370px 58px, -530px 82px; }
+  }
+
+  .look-sand .pw-sheet :global(img) {
+    height: min(72svh, 44rem);
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+    background: #fff;
+    box-shadow: 0 1.6rem 3rem -1.2rem rgb(80 40 10 / 60%);
+  }
+
+  .look-sand .pw-sheet.is-gone {
+    transform: translate(-40%, -8%) rotate(-14deg);
+  }
+
+  .look-sand .pw-sheet.is-on {
+    transform: none;
+  }
+
+  /* II. wall: the pages pinned up on a studio board, the way a
+     storyboard is reviewed */
+  .look-wall {
+    background:
+      radial-gradient(circle, rgb(0 0 0 / 14%) 1px, transparent 1.5px) 0 0 / 7px 7px,
+      radial-gradient(circle, rgb(255 255 255 / 10%) 1px, transparent 1.5px) 3px 4px / 9px 9px,
+      #a9794a;
+    box-shadow: inset 0 0 0 0.8rem #5b3b22, inset 0 0 3rem rgb(0 0 0 / 35%);
+  }
+
+  .look-wall .pw-board-info {
+    align-self: start;
+    padding: 1.2rem 1.3rem 1.4rem;
+    background: #fbf6ec;
+    color: #2a2420;
+    rotate: -1.5deg;
+    box-shadow: 0 1rem 2rem -1rem rgb(0 0 0 / 55%);
+  }
+
+  .look-wall .pw-board-title,
+  .look-wall .pw-pile-note,
+  .look-wall .pw-board-meta {
+    color: #2a2420;
+  }
+
+  .look-wall .pw-board-num {
+    color: #8c1d14;
+  }
+
+  .look-wall .pw-board-read {
+    color: #2a2420;
+    border-color: #2a2420;
+  }
+
+  .look-wall .pw-board-read:hover,
+  .look-wall .pw-board-read:focus-visible {
+    background: #2a2420;
+    color: #fbf6ec;
+  }
+
+  .look-wall .pw-sheet {
+    position: relative;
+  }
+
+  .look-wall .pw-sheet :global(img) {
+    height: min(72svh, 44rem);
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+    background: #fff;
+    rotate: var(--tilt);
+    box-shadow: 0 1.2rem 2rem -1rem rgb(0 0 0 / 60%);
+  }
+
+  /* a turned page comes off its pin and drops */
+  .look-wall .pw-sheet.is-gone {
+    transform: translateY(10%) rotate(9deg);
+  }
+
+  .look-wall .pw-sheet.is-on {
+    transform: none;
+  }
+
+  .look-wall .pw-turn {
+    color: #2a2420;
+    background: #fbf6ec;
+    border: 1px solid #2a2420;
+  }
+
+  .look-wall .pw-turn:hover,
+  .look-wall .pw-turn:focus-visible {
+    background: #2a2420;
+    color: #fbf6ec;
+  }
+
+  .look-wall .pw-reader-count {
+    padding: 0.2em 0.6em;
+    color: #2a2420;
+    background: #fbf6ec;
+  }
+
+  .pw-pin {
+    position: absolute;
+    top: -0.45rem;
+    left: 50%;
+    z-index: 1;
+    width: 0.95rem;
+    height: 0.95rem;
+    translate: -50% 0;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #ff8a7a, #c0291c 60%, #6e120b);
+    box-shadow: 0 2px 3px rgb(0 0 0 / 45%);
+  }
+  /* III. night: wide spreads in a dark room, the deer's glow behind */
+  .look-night {
+    background:
+      radial-gradient(ellipse 45% 50% at 72% 60%, rgb(120 90 255 / 28%), transparent 70%),
+      radial-gradient(ellipse 30% 30% at 80% 40%, rgb(255 255 255 / 10%), transparent 70%),
+      linear-gradient(180deg, #0b0a2a, #160c32 70%, #2a0f2a);
+  }
+
+  .pw-stars {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle, #fff 1px, transparent 1.5px) 0 0 / 97px 83px,
+      radial-gradient(circle, rgb(190 170 255 / 80%) 1px, transparent 1.5px) 41px 29px / 131px 109px;
+    opacity: 0.6;
+    animation: stars-twinkle 4s ease-in-out infinite alternate;
+    pointer-events: none;
+  }
+
+  @keyframes stars-twinkle {
+    to { opacity: 0.25; }
+  }
+
+  /* the deer's light, wandering slowly behind the pages */
+  .pw-glow {
+    position: absolute;
+    left: 55%;
+    top: 30%;
+    width: clamp(14rem, 34vw, 30rem);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgb(170 140 255 / 42%), rgb(120 90 255 / 14%) 45%, transparent 70%);
+    pointer-events: none;
+    animation: deer-glow 16s ease-in-out infinite alternate;
+  }
+
+  @keyframes deer-glow {
+    0% { translate: 0 0; scale: 0.85; opacity: 0.7; }
+    50% { translate: -30% 20%; scale: 1.15; opacity: 1; }
+    100% { translate: -60% -10%; scale: 0.95; opacity: 0.75; }
+  }
+
+  .look-night .pw-board-num,
+  .look-night .pw-board-meta {
+    color: #c9b8ff;
+  }
+
+  .look-night .pw-board-read,
+  .look-night .pw-turn {
+    color: #e8e0ff;
+    border: 1px solid #c9b8ff;
+  }
+
+  .look-night .pw-board-read:hover,
+  .look-night .pw-board-read:focus-visible,
+  .look-night .pw-turn:hover,
+  .look-night .pw-turn:focus-visible {
+    background: #c9b8ff;
+    color: #0b0a2a;
+  }
+
+  .look-night .pw-sheet :global(img) {
+    width: auto;
+    max-width: 100%;
+    max-height: 70svh;
+    height: auto;
+    object-fit: contain;
+    background: #fff;
+    box-shadow: 0 0 0 1px rgb(201 184 255 / 40%), 0 0 4rem -0.5rem rgb(140 110 255 / 55%);
+  }
+
+  .look-night .pw-sheet {
+    transform: scale(0.97);
+  }
+
+  .look-night .pw-sheet.is-on {
+    transform: none;
+  }
+
+  /* ---- smaller screens ---- */
+  @media (max-width: 1100px) {
+    .pw-shelf-tab {
+      grid-template-columns: auto 1fr;
+    }
+
+    .pw-shelf-count {
+      display: none;
+    }
+  }
+
+  @media (max-width: 1000px) {
+    .pw-board {
+      grid-template-columns: 1fr;
+    }
+
+    .is-hand .pw-pile-body {
+      --card-w: 20vw;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .pw-hero {
+      flex-direction: column;
+      text-align: center;
+      min-height: auto;
+      padding-top: 6.5rem;
+    }
+
+    .pw-hero-copy {
+      flex: none;
+      width: 100%;
+    }
+
+    .pw-hero-copy :global(.project-desc) {
+      margin-inline: auto;
+    }
+
+    .pw-hero-copy :global(.project-links) {
+      justify-content: center;
+    }
+
+    .hero-roles {
+      justify-content: center;
+    }
+
+    .pw-shelves-row {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.4rem;
+    }
+
+    .pw-shelf-tab {
+      grid-template-columns: auto 1fr;
+      min-height: 3.8rem;
+      padding: 0.8rem 0.9rem;
+      gap: 0.2rem 0.5rem;
+      border-radius: 12px;
+      border-bottom: 1px solid color-mix(in srgb, var(--bone) 16%, transparent);
+      transform: none;
+    }
+
+    .pw-shelf-tab:hover,
+    .pw-shelf-tab:focus-visible {
+      transform: none;
+    }
+
+    .pw-shelf-name {
+      font-size: var(--text-base);
+    }
+
+    .pw-shelf-count {
+      display: none;
+    }
+
+    .pw-room {
+      width: calc(100% - 2 * var(--edge));
+      margin-top: 0.8rem;
+      padding: 1.1rem 0.9rem 1.6rem;
+      border-top-width: 1px;
+      border-radius: 14px;
+    }
+
+    .pw-subtabs {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      margin-inline: -0.9rem;
+      padding: 0 0.9rem 0.3rem;
+      scrollbar-width: none;
+    }
+
+    .pw-subtab {
+      flex: none;
+    }
+
+    .pw-motion {
+      grid-template-columns: 1fr;
+      text-align: center;
+    }
+
+    .pw-motion .pw-pile-note {
+      margin-inline: auto;
+    }
+
+    /* the fan and the lineup become swipeable rows on a phone */
+    .is-lineup .pw-pile-body,
+    .is-hand .pw-pile-body {
+      justify-content: flex-start;
+      gap: 1rem;
+      overflow-x: auto;
+      padding: 1.6rem 0.4rem 1rem;
+      scroll-snap-type: x mandatory;
+    }
+
+    .is-lineup .pw-piece {
+      flex: none;
+      width: 68vw;
+      scroll-snap-align: center;
+    }
+
+    .is-hand .pw-pile-body {
+      padding: 1.8rem 1.2rem 2.2rem;
+      border-radius: 1.5rem;
+    }
+
+    .is-hand .pw-piece,
+    .is-hand.is-waiting .pw-piece {
+      width: 62vw;
+      margin-inline: 0;
+      transform: none;
+      scroll-snap-align: center;
+    }
+
+    .is-hand .pw-piece:hover,
+    .is-hand .pw-piece:focus-visible {
+      transform: none;
+    }
+
+    .look-sand .pw-sheet :global(img) {
+      width: 100%;
+      height: auto;
+    }
+
+    .is-hand figcaption {
+      position: static;
+      width: auto;
+      height: auto;
+      clip-path: none;
+    }
+
+    .pw-hand-caption {
+      display: none;
+    }
+
+    .is-polaroids .pw-pile-body {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .is-strip .pw-pile-body {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      padding: 0.6rem 0.4rem 1rem;
+      scroll-snap-type: x mandatory;
+    }
+
+    .is-strip .pw-piece {
+      flex: none;
+      scroll-snap-align: center;
+    }
+
+    .is-strip .pw-frame :global(img) {
+      --h: 15rem;
+      max-width: 80vw;
+    }
+
+    .is-festival .pw-pile-body {
+      flex-direction: column;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pw-piece,
+    .pw-shelf-tab,
+    .pw-sheet :global(img) {
+      transition: none;
+    }
+    .pw-shelf:not([hidden]) {
+      animation: none;
+    }
+    .pw-grains,
+    .pw-stars,
+    .pw-glow {
+      animation: none;
+    }
+  }
+
+  :global(html[data-motion='still']) .pw-grains,
+  :global(html[data-motion='still']) .pw-stars,
+  :global(html[data-motion='still']) .pw-glow,
+  :global(html[data-motion='quiet']) .pw-grains {
+    animation: none;
+  }
+</style>
+
+<script>
+  function initCollection() {
+    const root = document.querySelector<HTMLElement>('[data-collection]');
+    if (!root || root.dataset.pwInit === '1') return;
+    root.dataset.pwInit = '1';
+
+    // one tab list drives one set of panels; panels that close stop their videos
+    const wireTabs = (tabs: HTMLButtonElement[], panelOf: (tab: HTMLButtonElement) => HTMLElement | null, onChange?: (tab: HTMLButtonElement) => void) => {
+      const select = (tab: HTMLButtonElement, focus = false) => {
+        tabs.forEach((t) => {
+          const on = t === tab;
+          t.setAttribute('aria-selected', String(on));
+          t.tabIndex = on ? 0 : -1;
+          const panel = panelOf(t);
+          if (!panel) return;
+          if (!on) panel.querySelectorAll('video').forEach((v) => v.pause());
+          panel.hidden = !on;
+        });
+        if (focus) tab.focus();
+        onChange?.(tab);
+        window.dispatchEvent(new Event('resize'));
+      };
+      tabs.forEach((tab, i) => {
+        tab.addEventListener('click', () => select(tab));
+        tab.addEventListener('keydown', (e) => {
+          const step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+          if (!step) return;
+          e.preventDefault();
+          select(tabs[(i + step + tabs.length) % tabs.length], true);
+        });
+      });
+      return select;
+    };
+
+    root.querySelectorAll<HTMLElement>('[data-pw-shelf]').forEach((shelf) => {
+      const subtabs = Array.from(shelf.querySelectorAll<HTMLButtonElement>('[data-pw-subtab]'));
+      if (subtabs.length < 2) return;
+      wireTabs(subtabs, (t) => shelf.querySelector<HTMLElement>(`[data-pw-part="${t.dataset.pwSubtab}"]`));
+    });
+
+    const shelfTabs = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-pw-tab]'));
+    const openShelf = wireTabs(
+      shelfTabs,
+      (t) => root.querySelector<HTMLElement>(`[data-pw-shelf="${t.dataset.pwTab}"]`),
+      (t) => history.replaceState(history.state, '', `#${t.dataset.pwTab}`),
+    );
+    const wanted = shelfTabs.find((t) => `#${t.dataset.pwTab}` === location.hash);
+    if (wanted) openShelf(wanted);
+
+    root.querySelectorAll<HTMLButtonElement>('[data-pw-read]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const board = button.closest('.pw-board');
+        const img = board?.querySelector<HTMLImageElement>('.pw-sheet.is-on img') ?? board?.querySelector<HTMLImageElement>('[data-pw-sheets] img');
+        img?.click();
+      });
+    });
+
+    root.querySelectorAll<HTMLElement>('[data-pw-reader]').forEach((reader) => {
+      const pages = Array.from(reader.querySelectorAll<HTMLElement>('[data-pw-page]'));
+      const count = reader.querySelector<HTMLElement>('[data-pw-count]');
+      let current = 0;
+      const turn = (dir: number) => {
+        const next = (current + dir + pages.length) % pages.length;
+        pages[current].classList.remove('is-on');
+        if (dir > 0) pages[current].classList.add('is-gone');
+        pages[next].classList.remove('is-gone');
+        pages[next].classList.add('is-on');
+        current = next;
+        if (count) count.textContent = String(current + 1).padStart(2, '0');
+        if (current === 0) pages.forEach((p) => p.classList.remove('is-gone'));
+      };
+      reader.querySelectorAll<HTMLButtonElement>('[data-pw-turn]').forEach((b) =>
+        b.addEventListener('click', () => turn(Number(b.dataset.pwTurn))),
+      );
+      reader.addEventListener('keydown', (e) => {
+        if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+        e.preventDefault();
+        turn(e.key === 'ArrowRight' ? 1 : -1);
+      });
+    });
+
+    const motion = document.documentElement.dataset.motion;
+    const calm = motion === 'still' || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    root.querySelectorAll<HTMLElement>('.is-hand').forEach((pile) => {
+      const deal = () => pile.classList.remove('is-waiting');
+      if (!calm) {
+        pile.classList.add('is-waiting');
+        dealObserver = new IntersectionObserver(
+          ([entry]) => {
+            if (!entry.isIntersecting) return;
+            deal();
+            dealObserver?.disconnect();
+          },
+          { threshold: 0.35 },
+        );
+        dealObserver.observe(pile);
+      }
+      pile.querySelector<HTMLButtonElement>('[data-pw-deal]')?.addEventListener('click', () => {
+        if (calm) return;
+        pile.classList.add('is-waiting');
+        window.setTimeout(deal, 650);
+      });
+    });
+
+    root.querySelectorAll<HTMLElement>('.is-hand').forEach((pile) => {
+      const caption = pile.querySelector<HTMLElement>('[data-pw-hand-caption]');
+      if (!caption) return;
+      const initial = caption.innerHTML;
+      pile.querySelectorAll<HTMLElement>('[data-pw-piece]').forEach((card) => {
+        const show = () => {
+          const text = card.querySelector('figcaption');
+          if (text) caption.innerHTML = text.innerHTML;
+        };
+        card.addEventListener('mouseenter', show);
+        card.addEventListener('focus', show);
+        card.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            card.querySelector('img')?.click();
+          }
+        });
+      });
+      pile.querySelector('.pw-pile-body')?.addEventListener('mouseleave', () => {
+        caption.innerHTML = initial;
+      });
+    });
+  }
+
+  let dealObserver: IntersectionObserver | undefined;
+
+  document.addEventListener('astro:page-load', initCollection);
+  document.addEventListener('astro:before-swap', () => {
+    dealObserver?.disconnect();
+    dealObserver = undefined;
+  });
+</script>

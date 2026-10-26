@@ -1,0 +1,18 @@
+---
+import Base from '@/layouts/Base.astro';
+import HomeContent from '@/components/home/HomeContent.astro';
+import Loader from '@/components/Loader.astro';
+import { ui } from '@/i18n/ui';
+import { PREFIXED, type Lang } from '@/lib/lang';
+
+export function getStaticPaths() {
+  return PREFIXED.map((lang) => ({ params: { lang } }));
+}
+
+const lang = Astro.params.lang as Lang;
+---
+
+<Base path="/" lang={lang} title={ui[lang]['meta.title']} description={ui[lang]['meta.description']}>
+  <Loader />
+  <HomeContent />
+</Base>

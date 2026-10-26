@@ -1,0 +1,16 @@
+---
+import Base from '@/layouts/Base.astro';
+import RightsNotice from '@/components/RightsNotice.astro';
+import { ui } from '@/i18n/ui';
+import { PREFIXED, type Lang } from '@/lib/lang';
+
+export function getStaticPaths() {
+  return PREFIXED.map((lang) => ({ params: { lang } }));
+}
+
+const lang = Astro.params.lang as Lang;
+---
+
+<Base path="/rights" lang={lang} title={ui[lang]['meta.rightsTitle']} description={ui[lang]['meta.rightsDescription']}>
+  <RightsNotice />
+</Base>

@@ -1,0 +1,111 @@
+title: Bajiajiang
+year: 2025
+category: school
+template: breakdown
+order: 3
+size: wide
+accentFrom: "#C47A12"
+accentTo: "#152020"
+client: Gobelins
+roles:
+  en: [Concept, Color Script, Character Design, Storyboard]
+  fr: [Concept, Color Script, Character Design, Storyboard]
+  zh: [概念设计, 色彩脚本, 角色设计, 分镜]
+posterCredit:
+  en: early-stage design
+  fr: design de pré-production
+  zh: 前期设计
+posterGenre:
+  en: Gobelins 2025, pipeline exercise
+  fr: Gobelins 2025, exercice de pipeline
+  zh: 高布兰 2025，流程练习
+subtitle:
+  en: from concept to storyboard
+  fr: du concept au storyboard
+  zh: 从概念到分镜
+description:
+  en: >-
+    A pipeline exercise at Gobelins: the early stage of a film, from the
+    concept to the storyboard. Everything but the animation.
+    I went to Fujian for a traditional parade where people walk with
+    their gods. Their lives don't look especially protected. They are
+    happy anyway. Faith gives them room to breathe, and a life that is
+    their own. The story follows a 14 year old boy. He is restless, and
+    he wants a thrill. With no parents looking after him, he lives with
+    the older boys from the hall. They train and parade as Bajiajiang.
+    Then one day, just before the New Year parade, that simple happiness
+    seems to be ending.
+  fr: >-
+    Un exercice de pipeline aux Gobelins : tout le début d'un film, du
+    concept au storyboard, sans l'animation. Je suis allée dans le
+    Fujian pour une procession traditionnelle où les gens marchent avec
+    leurs dieux. Pourtant, les dieux n'ont pas l'air de les protéger
+    beaucoup. Ils sont heureux quand même. La foi leur donne de l'air,
+    et une vie qui leur appartient. L'histoire suit un garçon de 14 ans,
+    rebelle, qui cherche les sensations fortes. Sans parents pour
+    s'occuper de lui, il vit surtout avec les grands de sa troupe.
+    Ensemble, ils s'entraînent et défilent en Bajiajiang. Mais un jour,
+    juste avant la procession du Nouvel An, cette vie simple et joyeuse
+    semble toucher à sa fin.
+  zh: 这是在高布兰做的一次流程练习：一部片子的前期，从概念一直做到分镜。除了动画，其他都有。我曾经去过中国福建，参加传统游神。那里的人与神同行，生活看起来却并不被护佑。即便如此，他们仍然快乐。信仰让他们在现实里有了喘息的地方，也带给他们不一样的生活。故事的主人公是一个14岁的初中男孩。他叛逆，也需要刺激。没有父母管教，他更多和堂口的兄弟们一起生活。大家经常做八家将的游神训练和活动。可有一天，春节游神之前，这样简单快乐的生活似乎走到了尽头。
+cover: concept-styleframe.png
+coverAlt:
+  en: A style frame rendered in the same warm lantern palette as the color script
+  fr: Un style frame dans les mêmes tons chauds de lanternes que le color script
+  zh: 与色彩脚本同一暖色灯笼色调的风格定稿
+gallery:
+  - file: concept-colorscript.png
+    chapter:
+      en: Color script
+      fr: Color script
+      zh: 色彩脚本
+    alt:
+      en: An eight-panel color script, lantern light, temple smoke, a guardian lion and a wall of fire
+      fr: "Un color script en huit plans : la lumière des lanternes, la fumée d'encens, un lion gardien et un mur de flammes"
+      zh: 八格色彩脚本，灯笼光影、庙宇香烟、护法石狮与一面烈焰之墙
+  - file: concept-character.png
+    chapter:
+      en: Characters
+      fr: Personnages
+      zh: 角色
+    alt:
+      en: "The hero's character sheet: a turnaround in his school tracksuit, his hands, his necklace and earring, and the proportions of his head"
+      fr: "La fiche du héros : un turnaround en survêtement d'école, ses mains, son collier, sa boucle d'oreille et les proportions de sa tête"
+      zh: 主角的角色设定：穿校服的转面图、手、项链和耳环，还有头部比例
+  - file: concept-keypose.png
+    chapter:
+      en: Key poses
+      fr: Poses clés
+      zh: 关键动作
+    alt:
+      en: The protagonist training and fooling around, to show who he is
+      fr: Le héros qui s'entraîne et fait le pitre, pour montrer son caractère
+      zh: 主角练功和搞怪的样子，突出主角的个性
+  - file: concept-styleframe.png
+    chapter:
+      en: Style frame
+      fr: Style frame
+      zh: 风格帧
+    alt:
+      en: A more realistic color treatment
+      fr: Un traitement des couleurs plus réaliste
+      zh: 更现实的色调处理
+  - file: still-temple.jpg
+    chapter:
+      en: more from this project
+      fr: encore de ce projet
+      zh: 这个项目的其他画面
+    alt:
+      en: A background test.
+      fr: Un essai de décor.
+      zh: 一张背景测试。
+  - file: still-figure.jpg
+    chapter:
+      en: more from this project
+      fr: encore de ce projet
+      zh: 这个项目的其他画面
+    alt:
+      en: Expressions.
+      fr: Expressions.
+      zh: 表情。
+video: /videos/bajiajiang/storyboard.mp4

@@ -1,0 +1,242 @@
+title: Direction les champs
+year: 2026
+category: school
+template: process
+order: 0
+size: large
+accentFrom: "#8A4E12"
+accentTo: "#6E2438"
+posterCredit:
+  en: 2026 graduate project
+  fr: projet de diplôme 2026
+  zh: 2026 毕业创作
+posterGenre:
+  en: Gobelins 2026, CRFA
+  fr: Gobelins 2026, CRFA
+  zh: 高布兰 2026，CRFA
+roles:
+  en: [Character Design, Lead Animation, Layout, Compositing, Storyboard, Concept]
+  fr: [Character Design, Animation principale, Layout, Compositing, Storyboard, Concept]
+  zh: [角色设计, 主要动画, Layout, 合成, 分镜, 概念设计]
+subtitle:
+  en: our Gobelins graduate film
+  fr: notre film de fin d'études aux Gobelins
+  zh: 我们在高布兰的毕业短片
+story:
+  en: Sophie heads out to cheer her brother Benoit up. He's been in a bad place.
+  fr: Sophie prend la route pour rendre le sourire à son frère Benoit, qui traverse une mauvaise passe.
+  zh: 苏菲上路，想让哥哥博努瓦重新高兴起来。他最近很不好。
+description:
+  en: >-
+    I was the character designer: Sophie, Benoit, Thomas and the
+    others, plus the free-flowing lasso designs. In production I did
+    layout posing, then became one of the lead animators. I like small
+    gestures and subtle expressions, they bring the characters to life
+    and push the comedy as far as it goes. In post-production I did the
+    compositing, and at the very start I also tried the storyboard.
+  fr: >-
+    J'étais la character designer du film : Sophie, Benoit, Thomas et
+    les autres, ainsi que les designs « lasso », tout en souplesse. En
+    production, j'ai fait le posing du layout, puis je suis devenue
+    l'une des animatrices principales. J'aime jouer avec les petits
+    gestes et les expressions subtiles : ça donne vie aux personnages et
+    ça pousse leur côté comique le plus loin possible. En
+    post-production, j'ai fait le compositing, et tout au début, j'ai
+    aussi fait des essais de storyboard.
+  zh: 我是这部片子的角色设计：苏菲、博努瓦、托马和其他角色，还有自由流动的「套索」设计。制作阶段我先做 layout 姿态，后来成为主要动画师之一。我喜欢用细小的动作和微妙的表情去表演，让角色活起来，把他们的喜剧感推到最大。后期我做了合成，片子刚开始制作的时候，我也试着画了分镜。
+release:
+  date: '2026-09-30'
+  youtube: i3q_h7ywypE
+cover: style-frame2.png
+coverAlt:
+  en: Benoit and Sophie.
+  fr: Benoit et Sophie.
+  zh: 博努瓦和苏菲。
+gallery:
+  - file: concept1.png
+    chapter:
+      en: concept
+      fr: concept
+      zh: 概念设定
+    alt:
+      en: Brother and sister, the first concept image
+      fr: Le frère et la sœur, la première image de concept
+      zh: 第一张概念图，是哥哥和妹妹
+  - file: concept2.png
+    chapter:
+      en: concept
+      fr: concept
+      zh: 概念设定
+    alt:
+      en: Concept panels of a village street with goats being herded, two kids peering into a round mirror, and a dynamic chase on a scooter
+      fr: "Des planches de concept : une rue de village où passe un troupeau de chèvres, deux enfants penchés sur un miroir rond, et une course-poursuite en scooter"
+      zh: 概念画面：赶羊群的村庄街道、两个孩子望向圆镜、以及一场动感十足的摩托追逐
+  - file: style-frame1.png
+    chapter:
+      en: concept
+      fr: concept
+      zh: 概念设定
+    alt:
+      en: BikingZ. A gathering outside Sophie's house, and the garden seen from Benoit's window
+      fr: Les BikingZ. Une fête devant la maison de Sophie, et le jardin vu depuis la fenêtre de Benoit
+      zh: BikingZ。苏菲家门外的聚会，以及从博努瓦窗口望出去的花园
+  - file: charac1.png
+    chapter:
+      en: character design
+      fr: character design
+      zh: 角色设计
+    alt:
+      en: Sophie's design exploration sheet, outfit-color variants, rough turnarounds and action poses under a hand-drawn "Sophie 101" banner
+      fr: "Des recherches pour Sophie : variantes de couleurs de tenue, turnarounds rapides et poses d'action, sous une bannière « Sophie 101 » écrite à la main"
+      zh: 苏菲的设计探索稿，服装配色变化、快速转面图与动作姿势，手写标题为「Sophie 101」
+  - file: turnsophiefinal.png
+    chapter:
+      en: character design
+      fr: character design
+      zh: 角色设计
+    alt:
+      en: Sophie's final character turnaround, seven angles in full color over the matching construction line-art
+      fr: Le turnaround final de Sophie, sept angles en couleur, avec le tracé de construction correspondant en dessous
+      zh: 苏菲的最终转面定稿，七个角度的彩色定稿，配以对应的结构线稿
+  - file: charac4.png
+    chapter:
+      en: character design
+      fr: character design
+      zh: 角色设计
+    alt:
+      en: Hands and feet, a key pose, and Sophie plus a lasso-style Sophie at different shot sizes
+      fr: Mains et pieds, une key pose, et Sophie au naturel ou façon lasso, à différentes valeurs de plan
+      zh: 手和脚的细节，key pose，以及不同景别的苏菲和套索风格的苏菲
+  - file: benoit.png
+    chapter:
+      en: character design
+      fr: character design
+      zh: 角色设计
+    alt:
+      en: Benoit's character design, rough pose studies, a clean turnaround, and a color close-up riding alongside Sophie
+      fr: "Le character design de Benoit : des études de poses au brouillon, un turnaround propre, et un gros plan en couleur où il roule à côté de Sophie"
+      zh: 博努瓦的角色设计，粗略的姿态研究、一份完整转面图，以及与苏菲并肩骑行的彩色特写
+  - file: side-characters.png
+    chapter:
+      en: character design
+      fr: character design
+      zh: 角色设计
+    alt:
+      en: BikingZ, Sophie's neighbors. Rough sketches above, color designs below
+      fr: BikingZ, les voisins de Sophie. Croquis en haut, couleurs en bas
+      zh: BikingZ，苏菲的邻居。上面是草图，下面是彩色设定
+  - file: lasso.png
+    chapter:
+      en: character design
+      fr: character design
+      zh: 角色设计
+    alt:
+      en: Expression studies for Sophie and her scooter, Lasso. Happy, startled, laughing
+      fr: "Des études d'expressions pour Sophie et son scooter, Lasso : joie, surprise, fou rire"
+      zh: 苏菲和她的小摩托 Lasso 的表情研究。开心、惊讶、大笑
+  - file: test-light.png
+    chapter:
+      en: early tests
+      fr: premiers essais
+      zh: 初期测试
+    alt:
+      en: An early lighting test, a girl watching a small spark of light against a stylized, warm-toned landscape
+      fr: "Un premier test de lumière : une fille regarde une petite étincelle, devant un paysage stylisé aux tons chauds"
+      zh: 早期光效测试，一个女孩望着一点微光，背景是暖色调的风格化风景
+  - file: test-sunflower.png
+    chapter:
+      en: early tests
+      fr: premiers essais
+      zh: 初期测试
+    alt:
+      en: An early render test, a single sunflower in close-up against a blue sky full of clouds
+      fr: Un premier test de rendu, un tournesol en gros plan sur un ciel bleu chargé de nuages
+      zh: 早期渲染测试，蓝天白云下的一朵向日葵特写
+  - file: extra-27.png
+    chapter:
+      en: more from this project
+      fr: encore de ce projet
+      zh: 这个项目的其他画面
+    alt:
+      en: The family and the BikingZ, lined up.
+      fr: La famille et les BikingZ, alignés.
+      zh: 家人和 BikingZ 排成一排。
+  - file: extra-28.jpg
+    chapter:
+      en: more from this project
+      fr: encore de ce projet
+      zh: 这个项目的其他画面
+    alt:
+      en: Lasso design.
+      fr: Design de Lasso.
+      zh: Lasso 的设计。
+  - file: extra-58.png
+    chapter:
+      en: more from this project
+      fr: encore de ce projet
+      zh: 这个项目的其他画面
+    alt:
+      en: Concept of the part where Sophie crashes, at sunset.
+      fr: Concept du passage où Sophie tombe, au coucher du soleil.
+      zh: 苏菲摔倒的那段，日落。
+  - file: extra-59.png
+    chapter:
+      en: more from this project
+      fr: encore de ce projet
+      zh: 这个项目的其他画面
+    alt:
+      en: Concept of Sophie crashing, in the daytime.
+      fr: Concept de la chute de Sophie, en journée.
+      zh: 苏菲摔倒，白天。
+  - file: extra-60.png
+    chapter:
+      en: more from this project
+      fr: encore de ce projet
+      zh: 这个项目的其他画面
+    alt:
+      en: Concept of Sophie crossing the field.
+      fr: "Concept : Sophie traverse le champ."
+      zh: 苏菲穿过田野。
+  - file: extra-62.png
+    chapter:
+      en: more from this project
+      fr: encore de ce projet
+      zh: 这个项目的其他画面
+    alt:
+      en: Concept of Sophie going up through the village.
+      fr: "Concept : Sophie monte à travers le village."
+      zh: 苏菲往村子上面走。
+  - file: extra-63.png
+    chapter:
+      en: more from this project
+      fr: encore de ce projet
+      zh: 这个项目的其他画面
+    alt:
+      en: An early concept of Sophie in her bed at night.
+      fr: Un premier concept de Sophie dans son lit, la nuit.
+      zh: 早期概念，苏菲夜里在床上。
+  - file: extra-64.png
+    chapter:
+      en: more from this project
+      fr: encore de ce projet
+      zh: 这个项目的其他画面
+    alt:
+      en: A color and composition test.
+      fr: Un essai de couleur et de composition.
+      zh: 色彩和构图测试。
+videos:
+  - file: storyboard-reel.mp4
+    label:
+      en: storyboard (early stage)
+      fr: storyboard (première étape)
+      zh: 分镜（早期阶段）
+  - file: animation-reel.mp4
+    label:
+      en: animation
+      fr: animation
+      zh: 动画
+  - file: making-of-reel.mp4
+    label:
+      en: making of. The sound can be turned off.
+      fr: making-of. Le son peut être coupé.
+      zh: 制作过程。声音可以关掉。

@@ -1,0 +1,1233 @@
+---
+// A temple-fair night: red lanterns on a cord, sky lanterns, fireworks,
+// a crowd that thins out on scroll. Single-image chapters hang in a
+// lacquered shrine frame; the multi-image chapter is the gods' offering
+// table, one shrine display above a row of offering plates resting on a
+// painted scroll.
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { getProjectImage, responsiveWidths } from '@/lib/images';
+import ProjectFooter from './ProjectFooter.astro';
+import ScrollCue from '@/components/ScrollCue.astro';
+import I18nText from '@/components/I18nText.astro';
+import { trAll } from '@/i18n/ui';
+import { vividOf } from '@/lib/color';
+import { charReveal } from '@/lib/reveal-text';
+import ProjectIntro from '@/components/ProjectIntro.astro';
+import { langOf } from '@/lib/lang';
+interface Props {
+  project: CollectionEntry<'projects'>;
+  next: CollectionEntry<'projects'>;
+}
+const { project, next } = Astro.props;
+const { title, subtitle, description, year, roles, category, client, cover, coverAlt, gallery, accentFrom, accentTo, links, chapterNotes = [] } = project.data;
+const glow = vividOf(accentFrom, accentTo);
+const coverImg = getProjectImage(project.id, cover);
+const categoryLabel = trAll(`category.${category}` as const);
+const clientLabel = trAll(category === 'commission' ? 'project.client' : 'project.at');
+
+// group the gallery by its `chapter` field, preserving order; projects
+// with no chapter data collapse into one unnamed group automatically
+type GalleryItem = (typeof gallery)[number];
+const chapterGroups: { label: GalleryItem['chapter']; items: GalleryItem[] }[] = [];
+for (const item of gallery) {
+  const prev = chapterGroups[chapterGroups.length - 1];
+  const same = prev && prev.label?.en === item.chapter?.en;
+  if (prev && same) {
+    prev.items.push(item);
+  } else {
+    chapterGroups.push({ label: item.chapter, items: [item] });
+  }
+}
+const noteFor = (label: GalleryItem['chapter']) => chapterNotes.find((n) => n.chapter === label?.en)?.note;
+
+const fireflies = Array.from({ length: 22 }, (_, i) => ({
+  left: `${(i * 41) % 100}%`,
+  top: `${(i * 67) % 100}%`,
+  delay: `${(i % 9) * 0.9}s`,
+  dur: `${7 + (i % 6)}s`,
+  size: 2 + (i % 3),
+}));
+
+const skyLanterns = Array.from({ length: 9 }, (_, i) => ({
+  left: `${(i * 53 + 6) % 100}%`,
+  delay: `${(i % 6) * 2.3}s`,
+  dur: `${18 + (i % 5) * 3}s`,
+  size: 1 + (i % 3) * 0.3,
+}));
+
+// red lanterns hung along one cord that sags across the top of the hero;
+// `top` follows the same curve as the cord's path (M0 1 Q50 11 100 1)
+const hanging = [8, 22, 36, 50, 64, 78, 92].map((x, i) => {
+  const t = x / 100;
+  const y = (1 - t) ** 2 * 1 + 2 * (1 - t) * t * 11 + t ** 2 * 1;
+  return {
+    left: `${x}%`,
+    top: `${(y / 10) * 5.5}rem`,
+    size: i % 3 === 1 ? 2.6 : 2.1,
+    dur: `${3.4 + (i % 4) * 0.5}s`,
+    delay: `${-(i * 0.7)}s`,
+  };
+});
+
+const fireworks = Array.from({ length: 5 }, (_, i) => ({
+  left: `${16 + ((i * 137) % 64)}%`,
+  top: `${6 + ((i * 71) % 26)}%`,
+  delay: `${i * 3.6 + 1.4}s`,
+  gold: i % 2 === 0,
+}));
+
+const crowd = Array.from({ length: 28 }, (_, i) => {
+  const seed = (i * 31 + 11) % 100;
+  return {
+    left: `${(i / 28) * 100 + ((seed % 5) - 2)}%`,
+    h: 0.55 + (seed % 5) * 0.12,
+    w: 0.28 + (seed % 3) * 0.07,
+    dropout: 20 + (seed % 72),
+  };
+});
+
+// jagged temple-roofline silhouette — occasional tall peaked-roof corners
+function rooflinePath(): string {
+  const pts = ['0% 100%'];
+  const steps = 18;
+  for (let i = 0; i <= steps; i++) {
+    const x = (i / steps) * 100;
+    const seed = (i * 53 + 17) % 100;
+    const peak = i % 5 === 2;
+    const y = peak ? 26 + (seed % 12) : 60 + (seed % 26);
+    pts.push(`${x}% ${y}%`);
+  }
+  pts.push('100% 100%');
+  return `polygon(${pts.join(', ')})`;
+}
+const roofline = rooflinePath();
+const pageLang = langOf(Astro.url);
+---
+
+<article class="reel" style={`--mood-a:${accentFrom}; --mood-b:${accentTo}; --mood-glow:${glow};`} data-reel data-reveal-root>
+  <div class="sky" data-sky aria-hidden="true"></div>
+  <div class="fireflies" aria-hidden="true">
+    {fireflies.map((f) => (
+      <span
+        class="firefly"
+        style={`left:${f.left}; top:${f.top}; animation-delay:${f.delay}; animation-duration:${f.dur}; width:${f.size}px; height:${f.size}px;`}
+      ></span>
+    ))}
+  </div>
+  <svg class="ln-defs" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="ln-paper" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#ffe6b0" />
+        <stop offset="0.55" stop-color="#ffab4a" />
+        <stop offset="1" stop-color="#d4521f" />
+      </linearGradient>
+      <radialGradient id="ln-silk" cx="0.42" cy="0.4" r="0.65">
+        <stop offset="0" stop-color="#ff8a4c" />
+        <stop offset="0.55" stop-color="#d2281c" />
+        <stop offset="1" stop-color="#7a0f0c" />
+      </radialGradient>
+      <symbol id="ln-sky" viewBox="0 0 20 30">
+        <path d="M2.5 2.2 Q10 -0.6 17.5 2.2 L15.2 23.4 Q10 25.4 4.8 23.4 Z" fill="url(#ln-paper)" />
+        <path d="M6.6 1.3 L7.6 24.4 M10 0.8 V25 M13.4 1.3 L12.4 24.4" stroke="#b7451c" stroke-opacity="0.35" stroke-width="0.5" fill="none" />
+        <path d="M3.4 9.5 Q10 11 16.6 9.5" stroke="#b7451c" stroke-opacity="0.3" stroke-width="0.5" fill="none" />
+        <ellipse cx="10" cy="24.6" rx="5.2" ry="1.1" fill="#7a2a12" />
+        <ellipse cx="10" cy="26.4" rx="1.3" ry="2" fill="#fff2b0" />
+      </symbol>
+      <symbol id="ln-red" viewBox="0 0 24 44">
+        <line x1="12" y1="0" x2="12" y2="5" stroke="#d9a441" stroke-width="0.8" />
+        <rect x="7" y="4.4" width="10" height="2.8" rx="0.8" fill="#d9a441" />
+        <ellipse cx="12" cy="17.6" rx="11" ry="10.6" fill="url(#ln-silk)" />
+        <g stroke="#5c0a08" stroke-opacity="0.45" stroke-width="0.6" fill="none">
+          <ellipse cx="12" cy="17.6" rx="7.4" ry="10.6" />
+          <ellipse cx="12" cy="17.6" rx="3.6" ry="10.6" />
+          <line x1="12" y1="7" x2="12" y2="28.2" />
+        </g>
+        <rect x="7" y="27.6" width="10" height="2.8" rx="0.8" fill="#d9a441" />
+        <rect x="11.2" y="30.4" width="1.6" height="2" fill="#d9a441" />
+        <path d="M9.8 32.4 h4.4 l0.6 10 h-5.6 Z" fill="#e2b04a" />
+        <path d="M10.6 33 v9 M12 33 v9.2 M13.4 33 v9" stroke="#a8741f" stroke-width="0.35" />
+      </symbol>
+    </defs>
+  </svg>
+  <div class="sky-lanterns" aria-hidden="true">
+    {skyLanterns.map((s) => (
+      <span
+        class="sky-lantern"
+        style={`left:${s.left}; animation-delay:${s.delay}; animation-duration:${s.dur}; --scale:${s.size};`}
+      ><svg viewBox="0 0 20 30"><use href="#ln-sky" /></svg></span>
+    ))}
+  </div>
+  <div class="fireworks" aria-hidden="true">
+    {fireworks.map((f) => (
+      <span class={`firework ${f.gold ? 'is-gold' : ''}`} style={`left:${f.left}; top:${f.top}; animation-delay:${f.delay};`}>
+        {Array.from({ length: 10 }, (_, k) => (
+          <i style={`--a:${(k / 10) * 360}deg`}></i>
+        ))}
+      </span>
+    ))}
+  </div>
+  <div class="roofline" style={`clip-path:${roofline};`} aria-hidden="true"></div>
+
+  <header class="ln-hero">
+    <div class="ln-hero-glow" aria-hidden="true"></div>
+    <div class="ln-string" aria-hidden="true">
+      <svg class="ln-string-cord" viewBox="0 0 100 10" preserveAspectRatio="none"><path d="M0 1 Q50 11 100 1" /></svg>
+      {hanging.map((h) => (
+        <span class="ln-hang" style={`left:${h.left}; top:${h.top}; --size:${h.size}rem; --sway-d:${h.dur}; --sway-delay:${h.delay};`}>
+          <svg viewBox="0 0 24 44"><use href="#ln-red" /></svg>
+        </span>
+      ))}
+    </div>
+    <div class="ln-cover">
+      <span class="lantern-cord" aria-hidden="true"></span>
+      <div class="lantern-frame ln-cover-frame">
+        <Image
+          src={coverImg}
+          alt={coverAlt[pageLang]}
+          widths={responsiveWidths(coverImg, [420, 640, 900])}
+          sizes="(max-width: 700px) 70vw, 22rem"
+          loading="eager"
+          fetchpriority="high"
+          transition:name={`project-cover-${project.id}`}
+        />
+      </div>
+    </div>
+    <div class="ln-copy">
+      <p class="hero-eyebrow eyebrow">
+        <I18nText {...categoryLabel} /> · {year}{client ? (
+          <>
+            {' · '}<I18nText {...clientLabel} /> {client}
+          </>
+        ) : null}
+      </p>
+      <h1 class="ln-title" transition:name={`project-title-${project.id}`} set:html={charReveal(title, 120, 22)} />
+      <p class="ln-subtitle">
+        <I18nText en={subtitle.en} fr={subtitle.fr} zh={subtitle.zh} />
+      </p>
+      <ProjectIntro description={description} links={links} />
+      <ul class="hero-roles">
+        {roles.en.map((_, i) => (
+          <li style={`--i:${i}`}>
+            <I18nText en={roles.en[i]} fr={roles.fr[i]} zh={roles.zh[i]} />
+          </li>
+        ))}
+      </ul>
+    </div>
+    <div class="ln-cue">
+      <ScrollCue />
+    </div>
+
+    <div class="crowd-strip" data-crowd aria-hidden="true">
+      {crowd.map((c) => (
+        <span class="crowd-figure" style={`left:${c.left}; height:${c.h}rem; width:${c.w}rem;`} data-dropout={c.dropout}></span>
+      ))}
+    </div>
+  </header>
+
+  <div class="chapters">
+    {chapterGroups.map((group) => (
+      group.items.length === 1 ? (
+        <section class="chapter chapter-grand">
+          {group.label && (
+            <p class="chapter-banner"><I18nText en={group.label.en} fr={group.label.fr} zh={group.label.zh} /></p>
+          )}
+          {noteFor(group.label) && (
+            <p class="chapter-note"><I18nText {...noteFor(group.label)!} /></p>
+          )}
+          {group.items.map((item) => (
+            <figure class="moon-gate is-grand" data-artwork>
+              <span class="gate-lintel" aria-hidden="true"><i></i></span>
+              <div class="gate-frame">
+                <span class="gate-ring" aria-hidden="true"></span>
+                <div class="gate-opening">
+                  <Image
+                    src={getProjectImage(project.id, item.file)}
+                    alt={item.alt[pageLang]}
+                    widths={responsiveWidths(getProjectImage(project.id, item.file), [480, 720, 1000])}
+                    sizes="(max-width: 700px) 78vw, 30vw"
+                    loading="lazy"
+                  />
+                </div>
+              </div>
+              {item.caption && (
+                <figcaption><I18nText en={item.caption.en} fr={item.caption.fr} zh={item.caption.zh} /></figcaption>
+              )}
+            </figure>
+          ))}
+        </section>
+      ) : (
+        <section class="chapter chapter-path" data-night-row={group.label ? 'true' : undefined} data-altar>
+          {group.label && (
+            <p class="chapter-banner"><I18nText en={group.label.en} fr={group.label.fr} zh={group.label.zh} /></p>
+          )}
+          {noteFor(group.label) && (
+            <p class="chapter-note"><I18nText {...noteFor(group.label)!} /></p>
+          )}
+          <div class="altar">
+            <div class="altar-shrine">
+              <span class="altar-eave" aria-hidden="true"></span>
+              <div class="altar-stage" data-lb-group data-altar-stage>
+                <button type="button" class="altar-step is-prev" data-altar-step="-1" aria-label="Previous offering">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+                </button>
+                <button type="button" class="altar-step is-next" data-altar-step="1" aria-label="Next offering">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+                </button>
+                {group.items.map((item, idx) => (
+                  <figure class:list={['altar-shot', { 'is-on': idx === 0 }]} data-altar-shot={idx} data-artwork>
+                    <Image
+                      src={getProjectImage(project.id, item.file)}
+                      alt={item.alt[pageLang]}
+                      widths={responsiveWidths(getProjectImage(project.id, item.file), [640, 1000, 1400])}
+                      sizes="(max-width: 700px) 92vw, 60vw"
+                      loading={idx === 0 ? 'eager' : 'lazy'}
+                    />
+                  </figure>
+                ))}
+              </div>
+              <div class="altar-plaque" aria-live="polite">
+                <span class="altar-count"><span data-altar-count>01</span> / {String(group.items.length).padStart(2, '0')}</span>
+                {group.items.map((item, idx) => (
+                  <p class="altar-caption" data-altar-caption={idx} hidden={idx !== 0}>
+                    {item.caption && <I18nText en={item.caption.en} fr={item.caption.fr} zh={item.caption.zh} />}
+                  </p>
+                ))}
+              </div>
+            </div>
+
+            <div class="altar-table">
+              <p class="altar-hint">
+                <I18nText en="choose an offering" fr="choisis une offrande" zh="选一盘供品" />
+              </p>
+              <div class="offer-scroll">
+                <span class="offer-roller is-l" aria-hidden="true"></span>
+                <ul class="offer-row" role="tablist" aria-label="Offerings">
+                  {group.items.map((item, idx) => (
+                    <li class="offer-spot" style={`--tilt:${((idx * 37) % 9) - 4}deg;`}>
+                      <button
+                        type="button"
+                        class="plate"
+                        role="tab"
+                        aria-selected={idx === 0 ? 'true' : 'false'}
+                        tabindex={idx === 0 ? 0 : -1}
+                        data-plate={idx}
+                        aria-label={item.alt[pageLang]}
+                      >
+                        <span class="plate-dish" aria-hidden="true"></span>
+                        <span class="plate-food">
+                          <Image src={getProjectImage(project.id, item.file)} alt="" widths={[200, 320]} sizes="9rem" loading="lazy" />
+                        </span>
+                        <span class="plate-num" aria-hidden="true">{String(idx + 1).padStart(2, '0')}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                <span class="offer-roller is-r" aria-hidden="true"></span>
+              </div>
+            </div>
+          </div>
+        </section>
+      )
+    ))}
+  </div>
+
+  <ProjectFooter project={project} next={next} />
+</article>
+
+<style>
+  .reel {
+    position: relative;
+    background: var(--void);
+  }
+
+  .sky {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 70% 40% at 20% 15%, color-mix(in srgb, var(--mood-a) 22%, transparent), transparent 70%),
+      radial-gradient(ellipse 70% 40% at 85% 55%, color-mix(in srgb, var(--mood-b) 14%, transparent), transparent 70%),
+      linear-gradient(180deg, color-mix(in srgb, var(--mood-a) 16%, var(--void)), var(--void) 55%);
+    transition: background 1.5s;
+  }
+
+  .fireflies,
+  .sky-lanterns,
+  .fireworks {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .firefly {
+    position: absolute;
+    border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 6px 1.5px color-mix(in srgb, var(--gold) 75%, transparent);
+    opacity: 0;
+    animation: firefly-drift ease-in-out infinite;
+  }
+
+  @keyframes firefly-drift {
+    0% { opacity: 0; transform: translate(0, 0); }
+    15% { opacity: 0.9; }
+    50% { transform: translate(1.2rem, -1.6rem); }
+    85% { opacity: 0.7; }
+    100% { opacity: 0; transform: translate(-0.6rem, -3rem); }
+  }
+
+  /* small paper sky-lanterns drifting up the whole page, a night-market
+     detail beyond the wire-strung gallery lanterns */
+  .ln-defs {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+  }
+
+  .sky-lantern {
+    position: absolute;
+    bottom: -3rem;
+    display: block;
+    width: 1.1rem;
+    height: 1.65rem;
+    transform: scale(var(--scale, 1));
+    animation: sky-lantern-rise linear infinite;
+  }
+
+  .sky-lantern svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    filter: drop-shadow(0 0 0.5rem rgb(255 160 70 / 55%));
+    animation: ln-sway 3.6s ease-in-out infinite alternate;
+    transform-origin: 50% 90%;
+  }
+
+  @keyframes ln-sway {
+    from { transform: rotate(-5deg); }
+    to { transform: rotate(5deg); }
+  }
+
+  /* ---- the cord of red lanterns across the top of the hero ---- */
+  .ln-string {
+    position: absolute;
+    top: 3.6rem;
+    left: 0;
+    right: 0;
+    height: 9rem;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .ln-string-cord {
+    position: absolute;
+    inset: 0 0 auto;
+    width: 100%;
+    height: 5.5rem;
+    overflow: visible;
+  }
+
+  .ln-string-cord path {
+    fill: none;
+    stroke: color-mix(in srgb, var(--gold) 55%, #3a2a18);
+    stroke-width: 1.2;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .ln-hang {
+    position: absolute;
+    width: var(--size);
+    height: calc(var(--size) * 44 / 24);
+    margin-left: calc(var(--size) / -2);
+    transform-origin: 50% 0;
+    animation: ln-hang-sway var(--sway-d) ease-in-out infinite alternate;
+    animation-delay: var(--sway-delay);
+  }
+
+  .ln-hang svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 0 0.9rem rgb(255 90 50 / 45%));
+  }
+
+  .ln-hang::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 40%;
+    width: 160%;
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: radial-gradient(circle, rgb(255 120 60 / 22%), transparent 65%);
+  }
+
+  @keyframes ln-hang-sway {
+    from { transform: rotate(-4deg); }
+    to { transform: rotate(4deg); }
+  }
+
+  @media (max-width: 700px) {
+    .ln-string {
+      top: 3.2rem;
+    }
+
+    .ln-hang:nth-child(odd of .ln-hang) {
+      display: none;
+    }
+
+    .ln-hang {
+      --size: 1.7rem !important;
+    }
+  }
+
+  @keyframes sky-lantern-rise {
+    0% { transform: translate(0, 0) scale(var(--scale, 1)); opacity: 0; }
+    10% { opacity: 0.85; }
+    50% { transform: translate(1.4rem, -50svh) scale(var(--scale, 1)); }
+    90% { opacity: 0.7; }
+    100% { transform: translate(-1rem, -105svh) scale(var(--scale, 1)); opacity: 0; }
+  }
+
+  /* sparse firework bursts high in the sky */
+  .firework {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    opacity: 0;
+    animation: firework-burst 5.5s ease-out infinite;
+  }
+
+  .firework i {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--mood-a);
+    transform: rotate(var(--a)) translateY(0);
+    animation: firework-spark 5.5s ease-out infinite;
+    animation-delay: inherit;
+  }
+
+  .firework.is-gold i {
+    background: var(--gold);
+  }
+
+  @keyframes firework-burst {
+    0%, 4% { opacity: 0; }
+    5% { opacity: 1; }
+    22% { opacity: 0; }
+    100% { opacity: 0; }
+  }
+
+  @keyframes firework-spark {
+    0%, 4% { transform: rotate(var(--a)) translateY(0); opacity: 0; }
+    5% { opacity: 1; }
+    22% { transform: rotate(var(--a)) translateY(-1.8rem); opacity: 0; }
+    100% { opacity: 0; }
+  }
+
+  /* the mountain/temple skyline stays fixed to the viewport, a backdrop
+     for the whole scroll, gates included, mixed with the project's mood
+     color so it stands out from the void */
+  .roofline {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60vh;
+    z-index: 0;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--mood-b) 48%, #1c1712) 0%,
+      color-mix(in srgb, var(--mood-b) 26%, #0e0b09) 58%,
+      transparent 100%
+    );
+    pointer-events: none;
+  }
+
+  @media (max-width: 700px) {
+    .roofline { display: none; }
+  }
+
+  .crowd-strip {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2.2rem;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .crowd-figure {
+    position: absolute;
+    bottom: 0;
+    border-radius: 50% 50% 15% 15%;
+    background: #08070a;
+    opacity: 0.8;
+    transition: opacity 1.8s ease-out;
+  }
+
+  @media (max-width: 700px) {
+    .crowd-strip { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .firefly { animation: none; opacity: 0.35; }
+    .sky-lantern { animation: none; opacity: 0; }
+    .ln-hang, .sky-lantern svg { animation: none; }
+    .firework, .firework i { animation: none; opacity: 0; }
+  }
+
+  .ln-hero {
+    position: relative;
+    z-index: 2;
+    min-height: 100svh;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(2rem, 6vw, 5rem);
+    padding: var(--space-6) var(--edge) var(--space-5);
+    overflow: hidden;
+  }
+
+  .ln-hero-glow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 45% at 50% 35%, color-mix(in srgb, var(--mood-a) 20%, transparent), transparent 70%);
+    pointer-events: none;
+  }
+
+  .ln-cover {
+    position: relative;
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: clamp(11rem, 22vw, 22rem);
+  }
+
+  .ln-cover-frame {
+    width: 100%;
+  }
+
+  .ln-copy {
+    position: relative;
+    flex: 1 1 24rem;
+    max-width: 32rem;
+  }
+
+  .hero-eyebrow {
+    color: var(--gold);
+    margin-bottom: var(--space-2);
+  }
+
+  .ln-title {
+    font-size: var(--text-2xl);
+    line-height: 0.96;
+  }
+
+  .ln-subtitle {
+    font-size: var(--text-lg);
+    color: var(--bone-soft);
+    margin-top: var(--space-2);
+  }
+
+  .hero-roles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    list-style: none;
+    margin-top: var(--space-3);
+    padding: 0;
+  }
+
+  .hero-roles li {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    border: 1px solid var(--void-line);
+    padding: 0.4em 0.85em;
+    border-radius: 999px;
+  }
+
+  .ln-cue {
+    position: absolute;
+    left: var(--edge);
+    bottom: var(--space-3);
+  }
+
+  .chapters {
+    position: relative;
+    z-index: 2;
+  }
+
+  .chapter {
+    padding: var(--space-5) var(--edge);
+  }
+
+  .chapter-banner {
+    /* both .chapter-feature and .chapter-wall already center their
+       children via flex align-items:center — this used to ALSO carry
+       its own left:50%/translateX(-50%) centering trick (built for a
+       plain block-flow parent), which stacked on top of the flex
+       centering and shoved the banner far to the right */
+    display: inline-block;
+    margin: 0 auto var(--space-3);
+    padding: 0.5em 1.5em;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--bone);
+    background: color-mix(in srgb, #8a1f1f 55%, var(--void-raised));
+    clip-path: polygon(4% 0%, 96% 0%, 100% 50%, 96% 100%, 4% 100%, 0% 50%);
+  }
+
+  .lantern-cord {
+    width: 1px;
+    height: 1.6rem;
+    background: var(--void-line);
+  }
+
+  .lantern-frame {
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+    border-radius: 999px / 12%;
+    box-shadow: 0 1.5rem 3rem -1.2rem rgb(0 0 0 / 65%), 0 0 0 1px rgb(255 255 255 / 6%);
+  }
+
+  .lantern-frame :global(img) {
+    width: 100%;
+    display: block;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    filter: saturate(1.05) brightness(0.96);
+  }
+
+  .chapter-grand,
+  .chapter-path {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .moon-gate {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: min(46rem, 88vw);
+  }
+
+  .moon-gate.is-grand {
+    width: min(54rem, 92vw);
+  }
+
+  .moon-gate.is-grand .gate-opening,
+  .altar-stage {
+    padding: clamp(0.4rem, 1vw, 0.75rem);
+    background:
+      linear-gradient(135deg, #8c1d14, #5a0f0a 60%, #8c1d14);
+    border-radius: 4px;
+    box-shadow:
+      inset 0 0 0 2px #d9a441,
+      inset 0 0 0 5px #5a0f0a,
+      inset 0 0 0 6px color-mix(in srgb, #d9a441 60%, transparent),
+      0 2rem 4rem -1.5rem rgb(0 0 0 / 70%),
+      0 0 5rem -0.5rem rgb(255 140 60 / 30%);
+  }
+
+  .gate-lintel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 1.6rem;
+  }
+
+  .gate-lintel::before {
+    content: '';
+    width: 1px;
+    height: 0.8rem;
+    background: var(--void-line);
+  }
+
+  .gate-lintel i {
+    display: block;
+    width: 0.5rem;
+    height: 0.6rem;
+    border-radius: 30% 30% 40% 40%;
+    background: linear-gradient(180deg, #ffd79a, var(--gold));
+    box-shadow: 0 0 0.5rem 0.1rem color-mix(in srgb, var(--gold) 60%, transparent);
+  }
+
+  .gate-frame {
+    position: relative;
+    width: 100%;
+  }
+
+  .gate-ring {
+    display: none;
+  }
+
+  .gate-opening {
+    position: relative;
+    overflow: hidden;
+    border-radius: 2px;
+    background: rgb(0 0 0 / 35%);
+    box-shadow: 0 1.5rem 3rem -1rem rgb(0 0 0 / 65%);
+  }
+
+  .gate-opening :global(img) {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    cursor: zoom-in;
+  }
+
+  .moon-gate:hover .gate-opening :global(img),
+  .moon-gate:focus-within .gate-opening :global(img) {
+    filter: none;
+  }
+
+  .moon-gate figcaption,
+  .altar-plaque {
+    margin: var(--space-3) auto 0;
+    padding: 0.8em 1.3em;
+    font-size: var(--text-lg);
+    line-height: 1.45;
+    color: #fff6e4;
+    text-align: center;
+    max-width: 40ch;
+    background: linear-gradient(180deg, #2a140d, #1a0c08);
+    border: 1px solid color-mix(in srgb, #d9a441 55%, transparent);
+    border-radius: 3px;
+    box-shadow: 0 1rem 2rem -1rem rgb(0 0 0 / 70%);
+  }
+
+  .chapter-note {
+    max-width: 46ch;
+    margin: calc(var(--space-4) * -1) auto var(--space-5);
+    padding: 0.7em 1.2em;
+    text-align: center;
+    font-size: var(--text-lg);
+    line-height: 1.55;
+    color: #f6ecdc;
+    background: rgb(12 9 8 / 78%);
+    border-radius: 4px;
+  }
+
+  /* ---- the gods' offering table: one shrine display, the plates laid
+     still along a painted scroll ---- */
+  .altar {
+    width: min(64rem, 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .altar-shrine {
+    position: relative;
+    width: min(100%, max((100svh - 16rem) * 1.6, 26rem));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .altar-eave {
+    position: relative;
+    z-index: 1;
+    width: 108%;
+    height: 1.6rem;
+    margin-bottom: -0.4rem;
+    background: linear-gradient(180deg, #3b1c10, #1d0d07);
+    clip-path: polygon(0 100%, 3% 10%, 8% 40%, 92% 40%, 97% 10%, 100% 100%);
+  }
+
+  .altar-stage {
+    position: relative;
+    display: grid;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    cursor: zoom-in;
+  }
+
+  .altar-shot {
+    grid-area: 1 / 1;
+    margin: 0;
+    min-height: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.6s ease;
+    background: #0b0605;
+  }
+
+  .altar-shot.is-on {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .altar-shot :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+
+  .altar-plaque {
+    width: min(100%, 44rem);
+    max-width: none;
+  }
+
+  .altar-count {
+    display: block;
+    margin-bottom: 0.35em;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.14em;
+    color: #d9a441;
+  }
+
+  .altar-caption {
+    margin: 0;
+    animation: altar-in 0.45s ease both;
+  }
+
+  .altar-caption[hidden] {
+    display: none;
+  }
+
+  @keyframes altar-in {
+    from { opacity: 0; transform: translateY(0.3rem); }
+  }
+
+  .altar-table {
+    position: relative;
+    width: min(100%, 64rem);
+    margin-top: var(--space-4);
+  }
+
+  .altar-hint {
+    margin: 0 0 0.7rem;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    letter-spacing: 0.08em;
+    color: #f0d9a8;
+  }
+
+  /* the painted scroll the offerings rest on, held by a roller at each end */
+  .offer-scroll {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: stretch;
+  }
+
+  .offer-roller {
+    width: 1.1rem;
+    border-radius: 0.6rem;
+    background: linear-gradient(90deg, #3b1c10, #a8662f 45%, #3b1c10);
+    box-shadow: 0 0.6rem 1rem -0.4rem rgb(0 0 0 / 70%);
+  }
+
+  .offer-row {
+    display: flex;
+    justify-content: center;
+    gap: clamp(0.8rem, 2vw, 1.8rem);
+    margin: 0.5rem 0;
+    padding: 1.6rem clamp(0.8rem, 2vw, 1.6rem) 2.2rem;
+    list-style: none;
+    background:
+      repeating-linear-gradient(90deg, rgb(140 60 30 / 10%) 0 1px, transparent 1px 3.2rem),
+      linear-gradient(180deg, #e9d6b2, #d9bf91);
+    box-shadow: inset 0 0.5rem 0.8rem -0.5rem rgb(80 40 10 / 55%), inset 0 -0.5rem 0.8rem -0.5rem rgb(80 40 10 / 55%);
+  }
+
+  .offer-spot {
+    flex: none;
+  }
+
+  .plate {
+    --plate: clamp(5.4rem, 8.6vw, 7.6rem);
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: var(--plate);
+    height: var(--plate);
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    rotate: var(--tilt);
+    transition: translate 0.35s var(--ease-out-expo), rotate 0.35s ease, scale 0.35s var(--ease-out-expo);
+  }
+
+  .plate[aria-selected='true'] {
+    translate: 0 -0.7rem;
+    rotate: 0deg;
+    scale: 1.1;
+  }
+
+  .plate[aria-selected='true'] .plate-dish {
+    box-shadow: 0 0 0 3px #d9a441, 0 0 1.6rem 0.3rem rgb(255 190 90 / 55%), 0 1rem 1.4rem -0.4rem rgb(0 0 0 / 65%);
+  }
+
+  .altar-step {
+    position: absolute;
+    top: 50%;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    translate: 0 -50%;
+    color: #f6dca0;
+    background: rgb(20 8 5 / 78%);
+    border: 1px solid #d9a441;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.25s, color 0.25s;
+  }
+
+  .altar-step.is-prev {
+    left: 0.7rem;
+  }
+
+  .altar-step.is-next {
+    right: 0.7rem;
+  }
+
+  .altar-step:hover,
+  .altar-step:focus-visible {
+    color: #1d0d07;
+    background: #d9a441;
+  }
+
+  .altar-step svg {
+    width: 1.3rem;
+    height: 1.3rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .plate-dish {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle, #fbf4e6 54%, #d9a441 55% 58%, #fbf4e6 59% 66%, #b9302a 67% 70%, #fbf4e6 71%);
+    box-shadow: 0 0.8rem 1.2rem -0.4rem rgb(0 0 0 / 65%);
+  }
+
+  .plate-food {
+    position: relative;
+    width: 70%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    overflow: hidden;
+  }
+
+  .plate-food :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .plate-num {
+    position: absolute;
+    bottom: -1.4rem;
+    left: 50%;
+    translate: -50% 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: #6b2a14;
+  }
+
+  .plate[aria-selected='true'] .plate-num {
+    color: #b9302a;
+    font-weight: 700;
+  }
+
+  .plate:hover,
+  .plate:focus-visible {
+    translate: 0 -0.5rem;
+    rotate: 0deg;
+    outline: none;
+  }
+
+  .plate[aria-selected='true']:hover,
+  .plate[aria-selected='true']:focus-visible {
+    translate: 0 -0.7rem;
+  }
+
+  .plate:focus-visible .plate-dish {
+    outline: 2px solid var(--gold);
+    outline-offset: 3px;
+  }
+
+  @media (max-width: 700px) {
+    .moon-gate {
+      width: 88vw;
+    }
+    .moon-gate.is-grand {
+      width: 92vw;
+    }
+    .moon-gate figcaption,
+    .altar-plaque,
+    .chapter-note {
+      font-size: var(--text-base);
+    }
+    .offer-row {
+      justify-content: flex-start;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      padding-inline: 1rem;
+      scrollbar-width: none;
+    }
+    .offer-spot {
+      scroll-snap-align: center;
+    }
+    .plate {
+      --plate: 4.8rem;
+    }
+    .altar-step {
+      width: 2.5rem;
+      height: 2.5rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gate-opening :global(img) {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  function initReel() {
+    const roots = document.querySelectorAll<HTMLElement>('[data-reel]');
+    if (!roots.length) return;
+    gsap.registerPlugin(ScrollTrigger);
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    roots.forEach((root) => {
+      if (root.dataset.reelInit === '1') return;
+      root.dataset.reelInit = '1';
+
+      const altar = root.querySelector<HTMLElement>('[data-altar]');
+      if (altar) {
+        const shots = Array.from(altar.querySelectorAll<HTMLElement>('[data-altar-shot]'));
+        const captions = Array.from(altar.querySelectorAll<HTMLElement>('[data-altar-caption]'));
+        const plates = Array.from(altar.querySelectorAll<HTMLButtonElement>('[data-plate]'));
+        const count = altar.querySelector<HTMLElement>('[data-altar-count]');
+        const stage = altar.querySelector<HTMLElement>('[data-altar-stage]');
+        let current = 0;
+        const show = (i: number, focus = false) => {
+          current = (i + shots.length) % shots.length;
+          shots.forEach((s, k) => s.classList.toggle('is-on', k === current));
+          captions.forEach((c, k) => (c.hidden = k !== current));
+          plates.forEach((p, k) => {
+            p.setAttribute('aria-selected', String(k === current));
+            p.tabIndex = k === current ? 0 : -1;
+          });
+          if (count) count.textContent = String(current + 1).padStart(2, '0');
+          plates[current]?.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
+          if (focus) plates[current]?.focus({ preventScroll: true });
+        };
+        plates.forEach((plate, k) => {
+          plate.addEventListener('click', () => show(k));
+          plate.addEventListener('keydown', (e) => {
+            const step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+            if (!step) return;
+            e.preventDefault();
+            show(current + step, true);
+          });
+        });
+        altar.querySelectorAll<HTMLButtonElement>('[data-altar-step]').forEach((btn) =>
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            show(current + Number(btn.dataset.altarStep));
+          }),
+        );
+        let downX = 0;
+        let swiped = false;
+        stage?.addEventListener('pointerdown', (e) => {
+          downX = e.clientX;
+          swiped = false;
+        });
+        stage?.addEventListener('pointerup', (e) => {
+          const dx = e.clientX - downX;
+          if (e.pointerType !== 'mouse' && Math.abs(dx) > 40) {
+            swiped = true;
+            show(current + (dx < 0 ? 1 : -1));
+          }
+        });
+        stage?.addEventListener(
+          'click',
+          (e) => {
+            if (!swiped) return;
+            swiped = false;
+            e.stopPropagation();
+            e.preventDefault();
+          },
+          true,
+        );
+      }
+
+      const nightRow = root.querySelector<HTMLElement>('[data-night-row]');
+      const crowdFigures = Array.from(root.querySelectorAll<HTMLElement>('[data-crowd] [data-dropout]'));
+
+      if (!nightRow || reduced) {
+        crowdFigures.forEach((el) => {
+          el.style.opacity = '0.35';
+        });
+        return;
+      }
+
+      gsap.to(root, {
+        '--night-progress': 100,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: nightRow,
+          start: 'top 80%',
+          end: 'bottom 40%',
+          scrub: 0.6,
+        },
+        onUpdate: function () {
+          const p = gsap.getProperty(root, '--night-progress') as number;
+          crowdFigures.forEach((el) => {
+            const dropout = Number(el.dataset.dropout ?? 100);
+            el.style.opacity = p > dropout ? '0' : '0.8';
+          });
+        },
+      });
+    });
+  }
+
+  document.addEventListener('astro:page-load', () => {
+    initReel();
+    requestAnimationFrame(() => ScrollTrigger.refresh());
+  });
+
+  document.addEventListener('astro:before-swap', () => {
+    ScrollTrigger.getAll().forEach((t) => t.kill());
+  });
+</script>

@@ -1,0 +1,941 @@
+---
+// A dream cinema: an old projector throws its beam onto one screen in the
+// dark, and my images are the frames of the reel running through it.
+// Picking a frame projects it, its caption shows up like a subtitle, and the
+// reel plays on by itself until touched.
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { getProjectImage, responsiveWidths } from '@/lib/images';
+import ProjectFooter from './ProjectFooter.astro';
+import ScrollCue from '@/components/ScrollCue.astro';
+import I18nText from '@/components/I18nText.astro';
+import { trAll } from '@/i18n/ui';
+import { vividOf } from '@/lib/color';
+import { charReveal } from '@/lib/reveal-text';
+import ProjectIntro from '@/components/ProjectIntro.astro';
+import { langOf } from '@/lib/lang';
+interface Props {
+  project: CollectionEntry<'projects'>;
+  next: CollectionEntry<'projects'>;
+}
+const { project, next } = Astro.props;
+const { title, subtitle, description, year, roles, category, client, cover, coverAlt, gallery, accentFrom, accentTo, links } = project.data;
+const glow = vividOf(accentFrom, accentTo);
+const coverImg = getProjectImage(project.id, cover);
+const categoryLabel = trAll(`category.${category}` as const);
+const clientLabel = trAll(category === 'commission' ? 'project.client' : 'project.at');
+const total = gallery.length;
+const pad = (n: number) => String(n).padStart(2, '0');
+
+const memories = gallery.map((item) => ({ item, img: getProjectImage(project.id, item.file) }));
+const spokes = [0, 72, 144, 216, 288];
+
+const motes = Array.from({ length: 18 }, (_, i) => {
+  const seed = (i * 37 + 5) % 100;
+  return {
+    left: `${(i * 41) % 100}%`,
+    top: `${(i * 29 + 13) % 100}%`,
+    size: 0.25 + (seed % 5) * 0.3,
+    warm: seed % 2 === 0,
+    delay: `${(i % 9) * 1.1}s`,
+    dur: `${16 + (seed % 7) * 2}s`,
+  };
+});
+
+const ui = {
+  now: { en: 'now dreaming', fr: 'en plein rêve', zh: '正在做梦' },
+  pick: {
+    en: 'Pick a frame on the reel to project it.',
+    fr: 'Choisis une image sur la pellicule pour la projeter.',
+    zh: '在胶片上选一格，把它放映出来。',
+  },
+  play: { en: 'let it dream', fr: 'laisser rêver', zh: '继续做梦' },
+  pause: { en: 'wake up', fr: 'se réveiller', zh: '醒来' },
+  prev: { en: 'Previous memory', fr: 'Souvenir précédent', zh: '上一段记忆' },
+  nextMem: { en: 'Next memory', fr: 'Souvenir suivant', zh: '下一段记忆' },
+};
+const pageLang = langOf(Astro.url);
+---
+
+<article class="dream" style={`--mood-a:${accentFrom}; --mood-b:${accentTo}; --mood-glow:${glow};`} data-dream data-reveal-root>
+  <div class="dream-motes" aria-hidden="true">
+    {motes.map((m) => (
+      <span
+        class={`mote ${m.warm ? 'is-warm' : ''}`}
+        style={`left:${m.left}; top:${m.top}; width:${m.size}rem; height:${m.size}rem; animation-delay:${m.delay}; animation-duration:${m.dur};`}
+      ></span>
+    ))}
+  </div>
+
+  <header class="dr-hero">
+    <div class="dr-cover">
+      <Image
+        src={coverImg}
+        alt={coverAlt[pageLang]}
+        widths={responsiveWidths(coverImg, [420, 640, 900])}
+        sizes="(max-width: 700px) 62vw, 20rem"
+        loading="eager"
+        fetchpriority="high"
+        transition:name={`project-cover-${project.id}`}
+      />
+    </div>
+    <div class="dr-copy">
+      <p class="hero-eyebrow eyebrow">
+        <I18nText {...categoryLabel} /> · {year}{client ? (
+          <>
+            {' · '}<I18nText {...clientLabel} /> {client}
+          </>
+        ) : null}
+      </p>
+      <h1 class="dr-title" transition:name={`project-title-${project.id}`} set:html={charReveal(title, 120, 22)} />
+      <p class="dr-subtitle">
+        <I18nText en={subtitle.en} fr={subtitle.fr} zh={subtitle.zh} />
+      </p>
+      <ProjectIntro description={description} links={links} />
+      <ul class="hero-roles">
+        {roles.en.map((_, i) => (
+          <li style={`--i:${i}`}>
+            <I18nText en={roles.en[i]} fr={roles.fr[i]} zh={roles.zh[i]} />
+          </li>
+        ))}
+      </ul>
+    </div>
+    <div class="dr-cue">
+      <ScrollCue />
+    </div>
+  </header>
+
+  <section class="dm-cinema" data-dm aria-roledescription="carousel">
+    <div class="dm-theatre">
+      <p class="dm-marquee">
+        <span class="dm-dot" aria-hidden="true"></span>
+        <I18nText {...ui.now} />
+        <span class="dm-count"><span data-dm-count>01</span> / {pad(total)}</span>
+        <button type="button" class="dm-play" data-dm-play aria-pressed="true">
+          <span class="dm-play-on"><I18nText {...ui.pause} /></span>
+          <span class="dm-play-off"><I18nText {...ui.play} /></span>
+        </button>
+      </p>
+
+      <svg class="dm-projector" viewBox="0 0 224 172" aria-hidden="true">
+        {[{ x: 66, y: 48, r: 42 }, { x: 150, y: 56, r: 34 }].map((reel) => (
+          <g class="dm-reel" style={`transform-origin:${reel.x}px ${reel.y}px;`}>
+            <circle class="dm-reel-rim" cx={reel.x} cy={reel.y} r={reel.r} />
+            {spokes.map((a) => (
+              <circle
+                class="dm-reel-hole"
+                cx={reel.x + Math.cos((a * Math.PI) / 180) * reel.r * 0.55}
+                cy={reel.y + Math.sin((a * Math.PI) / 180) * reel.r * 0.55}
+                r={reel.r * 0.22}
+              />
+            ))}
+            <circle class="dm-reel-hub" cx={reel.x} cy={reel.y} r={reel.r * 0.14} />
+          </g>
+        ))}
+        <path class="dm-film-line" d="M66 90 L98 108 M150 90 L128 108" />
+        <rect class="dm-body" x="26" y="106" width="156" height="46" rx="8" />
+        <rect class="dm-body-panel" x="40" y="118" width="62" height="22" rx="3" />
+        <rect class="dm-lens" x="182" y="115" width="30" height="28" rx="4" />
+        <circle class="dm-lens-glass" cx="214" cy="129" r="9" />
+        <path class="dm-legs" d="M58 152 L46 170 M150 152 L162 170" />
+      </svg>
+
+      <div class="dm-frame">
+        <span class="dm-beam" aria-hidden="true"></span>
+        <figure class="dm-screen" data-dm-screen data-lb-group>
+          {memories.map((m, i) => (
+            <div
+              class:list={['dm-shot', { 'is-on': i === 0 }]}
+              data-dm-shot={i}
+              data-artwork
+            >
+              <Image
+                src={m.img}
+                alt={m.item.alt[pageLang]}
+                widths={responsiveWidths(m.img, [640, 960, 1400])}
+                sizes="(max-width: 760px) 94vw, 56vw"
+                loading={i === 0 ? 'eager' : 'lazy'}
+              />
+            </div>
+          ))}
+          <span class="dm-flicker" aria-hidden="true"></span>
+        </figure>
+      </div>
+
+      <div class="dm-subs" aria-live="polite">
+        {memories.map((m, i) => (
+          <p class="dm-sub" data-dm-sub={i} hidden={i !== 0}>
+            {m.item.caption && <I18nText en={m.item.caption.en} fr={m.item.caption.fr} zh={m.item.caption.zh} />}
+          </p>
+        ))}
+      </div>
+    </div>
+
+    <div class="dm-strip">
+      <button type="button" class="dm-step" data-dm-step="-1">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+        <span class="sr-only"><I18nText {...ui.prev} /></span>
+      </button>
+      <ul class="dm-film" role="tablist" aria-label="Reel" data-dm-film>
+        {memories.map((m, i) => (
+          <li>
+            <button
+              type="button"
+              class="dm-cell"
+              role="tab"
+              aria-selected={i === 0 ? 'true' : 'false'}
+              tabindex={i === 0 ? 0 : -1}
+              data-dm-cell={i}
+              aria-label={`${pad(i + 1)} ${m.item.alt[pageLang]}`}
+            >
+              <span class="dm-cell-pic">
+                <Image src={m.img} alt="" widths={[200, 320]} sizes="9rem" loading="lazy" />
+              </span>
+              <span class="dm-cell-num" aria-hidden="true">{pad(i + 1)}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+      <button type="button" class="dm-step" data-dm-step="1">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+        <span class="sr-only"><I18nText {...ui.nextMem} /></span>
+      </button>
+    </div>
+    <p class="dm-hint"><I18nText {...ui.pick} /></p>
+  </section>
+
+  <ProjectFooter project={project} next={next} />
+</article>
+
+<style>
+  .dream {
+    position: relative;
+    overflow: hidden;
+    background:
+      radial-gradient(ellipse 90% 50% at 50% 0%, color-mix(in srgb, var(--mood-a) 22%, transparent), transparent 70%),
+      linear-gradient(180deg, var(--void), color-mix(in srgb, var(--mood-b) 38%, #07050c) 55%, #07050c);
+  }
+
+  .dream-motes {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .mote {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, color-mix(in srgb, var(--mood-b) 60%, var(--bone) 40%) 30%, transparent 70%);
+    opacity: 0;
+    animation: mote-float ease-in-out infinite;
+  }
+
+  .mote.is-warm {
+    background: radial-gradient(circle, color-mix(in srgb, var(--mood-a) 60%, var(--gold) 40%) 30%, transparent 70%);
+  }
+
+  @keyframes mote-float {
+    0% { opacity: 0; transform: translate(0, 0); }
+    20% { opacity: 0.55; }
+    50% { transform: translate(1.5rem, -2rem); }
+    80% { opacity: 0.35; }
+    100% { opacity: 0; transform: translate(-1rem, -4rem); }
+  }
+
+  /* ---- hero ---- */
+  .dr-hero {
+    position: relative;
+    z-index: 2;
+    min-height: 88svh;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(2rem, 6vw, 5rem);
+    padding: var(--space-6) var(--edge) var(--space-5);
+  }
+
+  .dr-cover {
+    flex: none;
+    width: clamp(11rem, 20vw, 20rem);
+    overflow: hidden;
+    border-radius: 2px;
+    box-shadow: 0 2rem 5rem -1.5rem rgb(0 0 0 / 70%), 0 0 4rem 0.4rem color-mix(in srgb, var(--mood-glow) 25%, transparent);
+    transform: rotate(-1.5deg);
+  }
+
+  .dr-cover :global(img) {
+    width: 100%;
+    display: block;
+  }
+
+  .dr-copy {
+    flex: 1 1 24rem;
+    max-width: 32rem;
+  }
+
+  .hero-eyebrow {
+    color: var(--gold);
+    margin-bottom: var(--space-2);
+  }
+
+  .dr-title {
+    font-size: var(--text-2xl);
+    line-height: 0.96;
+  }
+
+  .dr-subtitle {
+    font-size: var(--text-lg);
+    color: var(--bone-soft);
+    margin-top: var(--space-2);
+  }
+
+  .hero-roles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    list-style: none;
+    margin-top: var(--space-3);
+    padding: 0;
+  }
+
+  .hero-roles li {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    border: 1px solid var(--void-line);
+    padding: 0.4em 0.85em;
+    border-radius: 999px;
+  }
+
+  .dr-cue {
+    position: absolute;
+    left: var(--edge);
+    bottom: var(--space-3);
+  }
+
+  /* ---- the cinema ---- */
+  .dm-cinema {
+    --throw: clamp(3rem, 7vw, 8rem);
+    --proj: clamp(8rem, 13vw, 13rem);
+    position: relative;
+    z-index: 1;
+    padding: var(--space-5) var(--edge) var(--space-6);
+  }
+
+  .dm-theatre {
+    display: grid;
+    grid-template-columns: var(--proj) var(--throw) max(min(58vw, 56rem, (100svh - 20rem) * 1.6), min(58vw, 26rem));
+    grid-template-areas:
+      '. . marquee'
+      'proj . frame'
+      '. . subs';
+    justify-content: center;
+    align-items: center;
+    margin-inline: auto;
+  }
+
+  .dm-marquee {
+    grid-area: marquee;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.7rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--gold) 80%, var(--bone));
+  }
+
+  .dm-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: #ff5d6c;
+    box-shadow: 0 0 0.6rem #ff5d6c;
+    animation: dm-rec 1.6s steps(2) infinite;
+  }
+
+  [data-dm]:not(.is-rolling) .dm-dot {
+    animation: none;
+    opacity: 0.35;
+  }
+
+  @keyframes dm-rec {
+    50% { opacity: 0.25; }
+  }
+
+  .dm-count {
+    margin-left: auto;
+    color: var(--bone-soft);
+  }
+
+  .dm-play {
+    padding: 0.5em 1.1em;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--bone);
+    background: rgb(255 255 255 / 6%);
+    border: 1px solid rgb(255 255 255 / 18%);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+  }
+
+  .dm-play[aria-pressed='true'] .dm-play-off,
+  .dm-play[aria-pressed='false'] .dm-play-on {
+    display: none;
+  }
+
+  /* the projector, seen from the side; its lens sits at 75% of its height,
+     lifted so the beam leaves it level with the middle of the screen */
+  .dm-projector {
+    grid-area: proj;
+    width: 100%;
+    overflow: visible;
+    translate: 0 -25%;
+  }
+
+  .dm-reel-rim {
+    fill: #241c30;
+    stroke: color-mix(in srgb, var(--bone) 45%, transparent);
+    stroke-width: 2;
+  }
+
+  .dm-reel-hole {
+    fill: #0b0810;
+  }
+
+  .dm-reel-hub {
+    fill: color-mix(in srgb, var(--gold) 70%, var(--bone));
+  }
+
+  .dm-reel {
+    animation: dm-spin 3.2s linear infinite;
+    animation-play-state: paused;
+  }
+
+  .is-rolling .dm-reel {
+    animation-play-state: running;
+  }
+
+  @keyframes dm-spin {
+    to { rotate: 360deg; }
+  }
+
+  .dm-film-line,
+  .dm-legs {
+    fill: none;
+    stroke: color-mix(in srgb, var(--bone) 40%, transparent);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+  }
+
+  .dm-body,
+  .dm-lens {
+    fill: #2d2340;
+    stroke: color-mix(in srgb, var(--bone) 45%, transparent);
+    stroke-width: 2;
+  }
+
+  .dm-body-panel {
+    fill: #1a1424;
+  }
+
+  .dm-lens-glass {
+    fill: #fff3d6;
+    filter: drop-shadow(0 0 6px #fff3d6);
+  }
+
+  .dm-frame {
+    grid-area: frame;
+    position: relative;
+  }
+
+  .dm-beam {
+    position: absolute;
+    right: 100%;
+    top: 0;
+    bottom: 0;
+    width: var(--throw);
+    pointer-events: none;
+    background: linear-gradient(90deg, rgb(255 243 214 / 60%), rgb(255 243 214 / 16%));
+    clip-path: polygon(0 calc(50% - 0.5rem), 100% 0, 100% 100%, 0 calc(50% + 0.5rem));
+    animation: dm-beam 6s ease-in-out infinite;
+  }
+
+  .is-cut .dm-beam {
+    animation: dm-cut 0.4s steps(3) both;
+  }
+
+  @keyframes dm-beam {
+    0%, 100% { opacity: 0.8; }
+    47% { opacity: 1; }
+    50% { opacity: 0.7; }
+    53% { opacity: 0.95; }
+  }
+
+  @keyframes dm-cut {
+    0% { opacity: 0.2; }
+    60% { opacity: 1; }
+    100% { opacity: 0.85; }
+  }
+
+  .dm-screen {
+    position: relative;
+    margin: 0;
+    aspect-ratio: 16 / 10;
+    background: #050308;
+    border-radius: 0.3rem;
+    overflow: hidden;
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, #fff3d6 22%, transparent),
+      -1.5rem 0 3rem -1rem color-mix(in srgb, #fff3d6 22%, transparent),
+      0 0 9rem 2rem color-mix(in srgb, var(--mood-glow) 26%, transparent);
+    cursor: zoom-in;
+  }
+
+  .dm-shot {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.6s ease, filter 0.8s ease;
+    filter: brightness(1.7) blur(4px);
+  }
+
+  .dm-shot.is-on {
+    opacity: 1;
+    filter: none;
+    pointer-events: auto;
+  }
+
+  .dm-shot :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+
+  .dm-flicker {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse at 50% 50%, transparent 55%, rgb(0 0 0 / 45%)),
+      repeating-linear-gradient(0deg, rgb(255 255 255 / 2.5%) 0 1px, transparent 1px 3px);
+    animation: dm-flick 0.18s steps(2) infinite;
+  }
+
+  @keyframes dm-flick {
+    50% { opacity: 0.82; }
+  }
+
+  /* every subtitle shares one cell, so the tallest one sets the height and
+     nothing below moves when they change */
+  .dm-subs {
+    grid-area: subs;
+    display: grid;
+    margin-top: 0.9rem;
+    text-align: center;
+  }
+
+  .dm-sub {
+    grid-area: 1 / 1;
+    justify-self: center;
+    align-self: start;
+    max-width: 46ch;
+    margin: 0;
+    padding: 0.25em 0.7em;
+    font-size: var(--text-base);
+    line-height: 1.4;
+    color: #fffbea;
+    background: rgb(0 0 0 / 55%);
+    text-shadow: 0 1px 2px #000;
+  }
+
+  .dm-sub[hidden] {
+    display: block;
+    visibility: hidden;
+  }
+
+  .dm-sub:not([hidden]) {
+    animation: dm-sub-in 0.5s ease both;
+  }
+
+  .dm-sub:empty {
+    background: none;
+  }
+
+  @keyframes dm-sub-in {
+    from { opacity: 0; }
+  }
+
+  /* the reel: a strip of film with sprocket holes along both edges */
+  .dm-strip {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.8rem;
+    width: min(100%, 76rem);
+    margin: var(--space-5) auto 0;
+  }
+
+  .dm-film {
+    --hole: rgb(255 243 214 / 42%);
+    position: relative;
+    display: flex;
+    gap: 0.45rem;
+    margin: 0;
+    padding: 1.25rem 0.6rem;
+    list-style: none;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    background:
+      repeating-linear-gradient(90deg, var(--hole) 0 0.6rem, transparent 0.6rem 1.25rem) left 0 top 0.4rem / 100% 0.42rem no-repeat local,
+      repeating-linear-gradient(90deg, var(--hole) 0 0.6rem, transparent 0.6rem 1.25rem) left 0 bottom 0.4rem / 100% 0.42rem no-repeat local,
+      #0d0a12;
+    border-radius: 0.3rem;
+    box-shadow: 0 1rem 2rem -1rem rgb(0 0 0 / 80%);
+  }
+
+  .dm-film::-webkit-scrollbar {
+    display: none;
+  }
+
+  .dm-film li {
+    flex: none;
+    scroll-snap-align: center;
+  }
+
+  .dm-cell {
+    position: relative;
+    display: block;
+    width: clamp(6.5rem, 9vw, 8.5rem);
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+  }
+
+  .dm-cell-pic {
+    display: block;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    border-radius: 2px;
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    opacity: 0.55;
+    filter: saturate(0.6);
+    transition: opacity 0.3s, filter 0.3s, outline-color 0.3s;
+  }
+
+  .dm-cell-pic :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .dm-cell-num {
+    position: absolute;
+    left: 0.3rem;
+    bottom: 0.2rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: #fffbea;
+    text-shadow: 0 1px 3px #000;
+  }
+
+  .dm-cell:hover .dm-cell-pic,
+  .dm-cell:focus-visible .dm-cell-pic {
+    opacity: 0.9;
+    filter: none;
+  }
+
+  .dm-cell:focus-visible {
+    outline: none;
+  }
+
+  .dm-cell:focus-visible .dm-cell-pic {
+    outline-color: var(--bone);
+  }
+
+  .dm-cell[aria-selected='true'] .dm-cell-pic {
+    opacity: 1;
+    filter: none;
+    outline-color: var(--gold);
+    box-shadow: 0 0 1.4rem 0.2rem rgb(255 243 214 / 35%);
+  }
+
+  .dm-step {
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    color: var(--bone);
+    background: rgb(255 255 255 / 6%);
+    border: 1px solid rgb(255 255 255 / 18%);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+  }
+
+  .dm-step svg {
+    width: 1.3rem;
+    height: 1.3rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .dm-step:hover,
+  .dm-play:hover,
+  .dm-step:focus-visible,
+  .dm-play:focus-visible {
+    background: rgb(255 255 255 / 14%);
+    border-color: var(--gold);
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .dm-hint {
+    margin-top: 0.9rem;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.08em;
+    color: var(--bone-soft);
+  }
+
+  .dream :global(.project-footer) {
+    position: relative;
+    z-index: 2;
+  }
+
+  @media (max-width: 1100px), (pointer: coarse) {
+    .dm-flicker,
+    .mote:nth-child(n + 9) {
+      display: none;
+    }
+
+    .dm-beam {
+      animation: none;
+    }
+  }
+
+  @media (max-width: 760px) {
+    .dr-hero {
+      min-height: auto;
+      padding-top: 6.5rem;
+      text-align: center;
+    }
+
+    .dr-cover {
+      width: min(62vw, 16rem);
+    }
+
+    .dr-copy {
+      flex-basis: 100%;
+    }
+
+    .dr-copy :global(.project-desc) {
+      margin-inline: auto;
+    }
+
+    .dr-copy :global(.project-links),
+    .hero-roles {
+      justify-content: center;
+    }
+
+    .dr-cue {
+      display: none;
+    }
+
+    .dm-cinema {
+      padding-top: var(--space-5);
+      padding-bottom: var(--space-5);
+    }
+
+    /* the projector moves above the screen, its lens 5.25rem from the left
+       edge (214/224 of its width) and 1.2rem above the screen */
+    .dm-theatre {
+      grid-template-columns: 100%;
+      grid-template-areas: 'marquee' 'proj' 'frame' 'subs';
+    }
+
+    .dm-projector {
+      width: 5.5rem;
+      justify-self: start;
+      translate: none;
+      margin-bottom: 0.1rem;
+    }
+
+    .dm-beam {
+      right: 0;
+      left: 0;
+      top: auto;
+      bottom: 100%;
+      width: auto;
+      height: 1.2rem;
+      clip-path: polygon(5rem 0, 5.5rem 0, 100% 100%, 0 100%);
+      background: linear-gradient(180deg, rgb(255 243 214 / 60%), rgb(255 243 214 / 16%));
+    }
+
+    .dm-strip {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .dm-strip .dm-step {
+      display: none;
+    }
+
+    .dm-cell {
+      width: 6rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mote,
+    .dm-beam,
+    .dm-reel,
+    .dm-flicker,
+    .dm-dot {
+      animation: none;
+    }
+    .mote {
+      opacity: 0.12;
+    }
+  }
+
+  :global(html[data-motion='quiet']) .dm-flicker,
+  :global(html[data-motion='still']) .dm-reel,
+  :global(html[data-motion='still']) .dm-beam,
+  :global(html[data-motion='still']) .dm-flicker,
+  :global(html[data-motion='still']) .mote {
+    animation: none;
+  }
+</style>
+<script>
+  let timer: number | undefined;
+  let observer: IntersectionObserver | undefined;
+
+  function initDream() {
+    const root = document.querySelector<HTMLElement>('[data-dm]');
+    if (!root || root.dataset.dmInit === '1') return;
+    root.dataset.dmInit = '1';
+
+    const motion = document.documentElement.dataset.motion;
+    const reduced = motion === 'quiet' || motion === 'still' || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const shots = Array.from(root.querySelectorAll<HTMLElement>('[data-dm-shot]'));
+    const subs = Array.from(root.querySelectorAll<HTMLElement>('[data-dm-sub]'));
+    const cells = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-dm-cell]'));
+    const film = root.querySelector<HTMLElement>('[data-dm-film]')!;
+    const screen = root.querySelector<HTMLElement>('[data-dm-screen]')!;
+    const count = root.querySelector<HTMLElement>('[data-dm-count]')!;
+    const play = root.querySelector<HTMLButtonElement>('[data-dm-play]')!;
+    const total = shots.length;
+    let current = 0;
+    let playing = !reduced;
+    let visible = false;
+    let cut: number | undefined;
+
+    // scrolls the strip only, never the page
+    const centre = (cell: HTMLElement) => {
+      const left = cell.offsetLeft - (film.clientWidth - cell.offsetWidth) / 2;
+      film.scrollTo({ left, behavior: reduced ? 'auto' : 'smooth' });
+    };
+
+    const go = (i: number, focus = false) => {
+      current = (i + total) % total;
+      shots.forEach((s, k) => s.classList.toggle('is-on', k === current));
+      subs.forEach((s, k) => (s.hidden = k !== current));
+      cells.forEach((c, k) => {
+        c.setAttribute('aria-selected', String(k === current));
+        c.tabIndex = k === current ? 0 : -1;
+      });
+      count.textContent = String(current + 1).padStart(2, '0');
+      const cell = cells[current];
+      if (cell) {
+        centre(cell.parentElement ?? cell);
+        if (focus) cell.focus({ preventScroll: true });
+      }
+      if (!reduced) {
+        root.classList.remove('is-cut');
+        void root.offsetWidth;
+        root.classList.add('is-cut');
+        window.clearTimeout(cut);
+        cut = window.setTimeout(() => root.classList.remove('is-cut'), 450);
+      }
+    };
+
+    const tick = () => {
+      window.clearTimeout(timer);
+      root.classList.toggle('is-rolling', playing && visible);
+      if (!playing || !visible) return;
+      timer = window.setTimeout(() => {
+        go(current + 1);
+        tick();
+      }, 5600);
+    };
+
+    const setPlaying = (on: boolean) => {
+      playing = on;
+      play.setAttribute('aria-pressed', String(on));
+      tick();
+    };
+
+    if (reduced) play.setAttribute('aria-pressed', 'false');
+
+    cells.forEach((cell, i) => {
+      cell.addEventListener('click', () => {
+        setPlaying(false);
+        go(i);
+      });
+      cell.addEventListener('keydown', (e) => {
+        const step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+        if (!step) return;
+        e.preventDefault();
+        setPlaying(false);
+        go(current + step, true);
+      });
+    });
+    root.querySelectorAll<HTMLButtonElement>('[data-dm-step]').forEach((b) =>
+      b.addEventListener('click', () => {
+        setPlaying(false);
+        go(current + Number(b.dataset.dmStep));
+      }),
+    );
+    play.addEventListener('click', () => setPlaying(!playing));
+    screen.addEventListener('click', () => setPlaying(false));
+
+    observer = new IntersectionObserver(
+      ([entry]) => {
+        visible = entry.isIntersecting;
+        tick();
+      },
+      { threshold: 0.45 },
+    );
+    observer.observe(screen);
+  }
+
+  document.addEventListener('astro:page-load', initDream);
+  document.addEventListener('astro:before-swap', () => {
+    window.clearTimeout(timer);
+    observer?.disconnect();
+    observer = undefined;
+  });
+</script>

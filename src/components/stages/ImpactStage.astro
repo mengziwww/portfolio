@@ -1,0 +1,637 @@
+---
+// Mulan's hero page, the way the game itself shows a hero: navy ink and
+// gold-beveled frames from the Honor of Kings client, Mulan's own red as
+// the accent. A modest splash with a row of "skins" under it (my frames
+// for the film), my roles as skill buttons, the in-game profile as a
+// scroll card, and the clips as replays. Nothing on it is huge.
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { getProjectImage, responsiveWidths } from '@/lib/images';
+import ProjectFooter from './ProjectFooter.astro';
+import I18nText from '@/components/I18nText.astro';
+import { trAll } from '@/i18n/ui';
+import { vividOf } from '@/lib/color';
+import VideoPlayer from '@/components/VideoPlayer.astro';
+import { charReveal } from '@/lib/reveal-text';
+import ProjectIntro from '@/components/ProjectIntro.astro';
+import ScrollCue from '@/components/ScrollCue.astro';
+import { langOf } from '@/lib/lang';
+interface Props {
+  project: CollectionEntry<'projects'>;
+  next: CollectionEntry<'projects'>;
+}
+const { project, next } = Astro.props;
+const { title, subtitle, description, year, roles, client, cover, coverAlt, category, gallery, accentFrom, accentTo, links, videos } = project.data;
+const glow = vividOf(accentFrom, accentTo);
+const categoryLabel = trAll(`category.${category}` as const);
+const clientLabel = trAll('project.client');
+
+const skins = [{ file: cover, alt: coverAlt }, ...gallery.map((g) => ({ file: g.file, alt: g.alt }))];
+
+// real hero-profile fields for Mulan as she exists in Honor of Kings
+// (wiki + official site gameplay/lore panels)
+const heroInfo = [
+  { label: { en: 'Class', fr: 'Classe', zh: '定位' }, value: { en: 'Fighter / Assassin', fr: 'Combattant / Assassin', zh: '战士 / 刺客' } },
+  { label: { en: 'Specialty', fr: 'Spécialité', zh: '专精' }, value: { en: 'Gap-Close / Cleanup', fr: 'Engagement / Nettoyage', zh: '突进 / 收割' } },
+  { label: { en: 'Lane', fr: 'Ligne', zh: '分路' }, value: { en: 'Clash Lane', fr: "Ligne d'affrontement", zh: '对抗路' } },
+  { label: { en: 'Region', fr: 'Région', zh: '地区' }, value: { en: 'Central Plains', fr: 'Plaines centrales', zh: '中原' } },
+];
+const heroQuote = {
+  en: 'I’m a living legend around here!',
+  fr: 'Ici, je suis une légende vivante !',
+  zh: '在这里，我就是活生生的传奇。',
+};
+
+// one skill button per thing I did on the film
+const skillGlyph: Record<string, string> = { Storyboard: '镜', Concept: '意', Animation: '动' };
+const skillKey = ['Q', 'W', 'E', 'R'];
+const pageLang = langOf(Astro.url);
+---
+
+<article class="impact" style={`--mood-a:${accentFrom}; --mood-b:${accentTo}; --mood-glow:${glow};`} data-impact data-reveal-root>
+  <div class="hk-clouds" aria-hidden="true"></div>
+
+  <section class="hk-screen">
+    <div class="hk-splash-col">
+      <div class="hk-frame hk-splash" data-lb-group>
+        <span class="hk-corner is-tl" aria-hidden="true"></span>
+        <span class="hk-corner is-tr" aria-hidden="true"></span>
+        <span class="hk-corner is-bl" aria-hidden="true"></span>
+        <span class="hk-corner is-br" aria-hidden="true"></span>
+        {skins.map((skin, i) => {
+          const img = getProjectImage(project.id, skin.file);
+          return (
+            <figure class:list={['hk-skin', { 'is-active': i === 0 }]} data-hk-skin data-artwork>
+              <Image
+                src={img}
+                alt={skin.alt[pageLang]}
+                widths={responsiveWidths(img, [480, 720, 1000, 1400])}
+                sizes="(max-width: 800px) 90vw, 44rem"
+                loading={i === 0 ? 'eager' : 'lazy'}
+                fetchpriority={i === 0 ? 'high' : undefined}
+                transition:name={i === 0 ? `project-cover-${project.id}` : undefined}
+              />
+            </figure>
+          );
+        })}
+        <span class="hk-splash-tag">
+          <span class="hk-splash-count" data-hk-count>01</span> / {String(skins.length).padStart(2, '0')}
+        </span>
+      </div>
+
+      <div class="hk-skins">
+        <p class="hk-label"><I18nText en="frames" fr="images" zh="装扮" /></p>
+        <div class="hk-skin-row" role="group" aria-label="Frames">
+          {skins.map((skin, i) => {
+            const img = getProjectImage(project.id, skin.file);
+            return (
+              <button type="button" class:list={['hk-thumb', { 'is-active': i === 0 }]} data-hk-thumb data-index={i} aria-pressed={i === 0 ? 'true' : 'false'}>
+                <Image src={img} alt="" widths={[160, 240]} sizes="5.5rem" loading="lazy" />
+                <span class="visually-hidden">{String(i + 1).padStart(2, '0')}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+
+    <div class="hk-panel">
+      <p class="hero-eyebrow eyebrow">
+        <I18nText {...categoryLabel} /> · {year}{client ? (
+          <>
+            {' · '}<I18nText {...clientLabel} /> {client}
+          </>
+        ) : null}
+      </p>
+      <p class="hk-epithet" lang="zh" data-zh>传说之刃 · 花木兰</p>
+      <h1 class="hk-title" transition:name={`project-title-${project.id}`} set:html={charReveal(title, 100, 18)} />
+      <p class="hk-subtitle">
+        <I18nText en={subtitle.en} fr={subtitle.fr} zh={subtitle.zh} />
+      </p>
+      <ProjectIntro description={description} links={links} />
+
+      <div class="hk-skills">
+        <p class="hk-label"><I18nText en="what I did" fr="ce que j'ai fait" zh="我做的部分" /></p>
+        <ul>
+          {roles.en.map((role, i) => (
+            <li class="hk-skill" style={`--i:${i}`}>
+              <span class="hk-skill-btn" aria-hidden="true">
+                <span class="hk-skill-glyph" lang="zh" data-zh>{skillGlyph[role] ?? role.charAt(0)}</span>
+                <span class="hk-skill-key">{skillKey[i] ?? ''}</span>
+              </span>
+              <span class="hk-skill-name"><I18nText en={roles.en[i]} fr={roles.fr[i]} zh={roles.zh[i]} /></span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div class="hk-frame hk-profile">
+        <p class="hk-quote">
+          <span aria-hidden="true">“</span><I18nText {...heroQuote} /><span aria-hidden="true">”</span>
+        </p>
+        <dl class="hk-info">
+          {heroInfo.map((f) => (
+            <div>
+              <dt><I18nText {...f.label} /></dt>
+              <dd><I18nText {...f.value} /></dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </div>
+
+    <div class="hk-cue">
+      <ScrollCue />
+    </div>
+  </section>
+
+  {videos && videos.length > 0 && (
+    <section class="hk-replays">
+      <h2 class="hk-replays-title">
+        <span class="hk-diamond" aria-hidden="true"></span>
+        <I18nText en="replays" fr="replays" zh="回放" />
+      </h2>
+      <div class="hk-replay-grid">
+        {videos.map((clip, i) => (
+          <figure class="hk-frame hk-replay">
+            <span class="hk-corner is-tl" aria-hidden="true"></span>
+            <span class="hk-corner is-br" aria-hidden="true"></span>
+            <figcaption>
+              <span class="hk-replay-num">{String(i + 1).padStart(2, '0')}</span>
+              <I18nText en={clip.label.en} fr={clip.label.fr} zh={clip.label.zh} />
+            </figcaption>
+            <VideoPlayer
+              src={`/videos/${project.id}/${clip.file}`}
+              skin="hok"
+              poster={`/videos/${project.id}/${clip.file.replace(/\.mp4$/i, '-poster.jpg')}`}
+            />
+          </figure>
+        ))}
+      </div>
+    </section>
+  )}
+
+  <ProjectFooter project={project} next={next} />
+</article>
+
+<style>
+  .impact {
+    --ink: #0a1120;
+    --ink-2: #111b2e;
+    --hk-gold: #d8b46a;
+    --hk-gold-soft: rgb(216 180 106 / 38%);
+    --hk-red: #c8323a;
+    position: relative;
+    overflow: hidden;
+    background:
+      radial-gradient(ellipse 55% 45% at 28% 32%, rgb(200 50 58 / 16%), transparent 70%),
+      radial-gradient(ellipse 60% 50% at 85% 10%, rgb(216 180 106 / 9%), transparent 70%),
+      linear-gradient(180deg, var(--ink-2), var(--ink) 60%, #070c17);
+  }
+
+  /* 祥云, auspicious clouds, as a faint gold pattern behind everything */
+  .hk-clouds {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.07;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='110' viewBox='0 0 160 110'%3E%3Cg fill='none' stroke='%23d8b46a' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M20 70c0-10 8-18 18-18s18 8 18 18c0-7 6-13 13-13s13 6 13 13M38 70c0-5 4-9 9-9s9 4 9 9M10 70h90'/%3E%3Cpath d='M95 30c0-8 6-14 14-14s14 6 14 14c0-5 4-10 10-10s10 5 10 10M109 30c0-4 3-7 7-7s7 3 7 7M88 30h66'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 220px auto;
+  }
+
+  /* ---- gold beveled frame, the game's panel chrome ---- */
+  .hk-frame {
+    position: relative;
+    border: 1px solid var(--hk-gold-soft);
+    outline: 1px solid rgb(216 180 106 / 16%);
+    outline-offset: 4px;
+    background: linear-gradient(180deg, rgb(17 27 46 / 88%), rgb(10 17 32 / 92%));
+    box-shadow: 0 1.6rem 3.5rem -1.5rem rgb(0 0 0 / 80%), inset 0 0 0 1px rgb(0 0 0 / 40%);
+  }
+
+  .hk-corner {
+    position: absolute;
+    z-index: 3;
+    width: 0.7rem;
+    height: 0.7rem;
+    background: var(--hk-gold);
+    transform: rotate(45deg);
+    box-shadow: 0 0 0.6rem rgb(216 180 106 / 55%);
+  }
+
+  .hk-corner.is-tl { top: -0.4rem; left: -0.4rem; }
+  .hk-corner.is-tr { top: -0.4rem; right: -0.4rem; }
+  .hk-corner.is-bl { bottom: -0.4rem; left: -0.4rem; }
+  .hk-corner.is-br { bottom: -0.4rem; right: -0.4rem; }
+
+  .hk-label {
+    display: flex;
+    align-items: center;
+    gap: 0.6em;
+    margin-bottom: 0.8rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--hk-gold);
+  }
+
+  .hk-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--hk-gold-soft), transparent);
+  }
+
+  :lang(zh) .hk-label {
+    letter-spacing: 0.3em;
+  }
+
+  /* ---- the screen: splash + skins on the left, hero panel on the right ---- */
+  .hk-screen {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 44rem) minmax(0, 34rem);
+    justify-content: center;
+    align-items: center;
+    gap: clamp(2rem, 5vw, 4.5rem);
+    min-height: 100svh;
+    padding: 6.5rem var(--edge) var(--space-5);
+  }
+
+  .hk-cue {
+    position: absolute;
+    left: var(--edge);
+    bottom: var(--space-3);
+  }
+
+  .hk-splash {
+    aspect-ratio: 16 / 10;
+    padding: 0.45rem;
+  }
+
+  .hk-skin {
+    position: absolute;
+    inset: 0.45rem;
+    margin: 0;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .hk-skin.is-active {
+    opacity: 1;
+    pointer-events: auto;
+    animation: hk-wipe 0.7s var(--ease-out-expo) both;
+  }
+
+  @keyframes hk-wipe {
+    from { clip-path: inset(0 100% 0 0); filter: brightness(1.6); }
+    to { clip-path: inset(0 0 0 0); filter: brightness(1); }
+  }
+
+  .hk-skin :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    cursor: zoom-in;
+  }
+
+  .hk-splash-tag {
+    position: absolute;
+    z-index: 2;
+    right: 0.45rem;
+    bottom: 0.45rem;
+    padding: 0.3em 0.7em;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--bone);
+    background: linear-gradient(90deg, transparent, rgb(10 17 32 / 85%) 30%);
+  }
+
+  .hk-splash-count {
+    color: var(--hk-gold);
+  }
+
+  .hk-skins {
+    margin-top: 1.6rem;
+  }
+
+  .hk-skin-row {
+    display: flex;
+    gap: 0.7rem;
+    overflow-x: auto;
+    padding: 0.4rem 0.3rem 0.6rem;
+    scrollbar-width: none;
+  }
+
+  .hk-thumb {
+    position: relative;
+    flex: none;
+    width: clamp(5.5rem, 6vw, 7rem);
+    aspect-ratio: 1;
+    padding: 0;
+    border: 1px solid var(--hk-gold-soft);
+    background: var(--ink);
+    cursor: pointer;
+    clip-path: polygon(14% 0, 86% 0, 100% 14%, 100% 86%, 86% 100%, 14% 100%, 0 86%, 0 14%);
+    opacity: 0.6;
+    transition: opacity 0.3s, transform 0.3s var(--ease-out-expo);
+  }
+
+  .hk-thumb :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+  }
+
+  .hk-thumb:hover,
+  .hk-thumb:focus-visible {
+    opacity: 0.9;
+    transform: translateY(-2px);
+  }
+
+  .hk-thumb.is-active {
+    opacity: 1;
+    border-color: var(--hk-gold);
+    box-shadow: inset 0 0 0 2px var(--hk-gold);
+  }
+
+  .hk-thumb.is-active::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    box-shadow: inset 0 0 0 2px var(--hk-gold), inset 0 -1.2rem 1.2rem -0.6rem rgb(216 180 106 / 45%);
+  }
+
+  /* ---- hero panel ---- */
+  .hero-eyebrow {
+    color: var(--hk-gold);
+    margin-bottom: var(--space-2);
+  }
+
+  .hk-epithet {
+    font-family: var(--font-display);
+    font-size: var(--text-base);
+    letter-spacing: 0.35em;
+    color: var(--hk-red);
+    text-shadow: 0 0 1.2rem rgb(200 50 58 / 45%);
+  }
+
+  .hk-title {
+    margin-top: 0.3rem;
+    font-size: calc(var(--text-2xl) * 0.78);
+    line-height: 1;
+    color: #f4ead4;
+    text-shadow: 0 0.2rem 1.6rem rgb(0 0 0 / 60%);
+  }
+
+  .hk-subtitle {
+    margin-top: var(--space-2);
+    font-size: var(--text-lg);
+    color: var(--hk-gold);
+  }
+
+  .hk-panel :global(.project-desc) {
+    color: color-mix(in srgb, var(--bone) 85%, transparent);
+  }
+
+  .hk-skills {
+    margin-top: var(--space-4);
+  }
+
+  .hk-skills ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.2rem 1.6rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .hk-skill {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    animation: hk-skill-in 0.6s var(--ease-out-expo) both;
+    animation-delay: calc(0.4s + var(--i) * 0.12s);
+  }
+
+  @keyframes hk-skill-in {
+    from { opacity: 0; transform: scale(0.6); }
+  }
+
+  .hk-skill-btn {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: clamp(3.6rem, 4vw, 4.4rem);
+    height: clamp(3.6rem, 4vw, 4.4rem);
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, #2a3a5a, var(--ink) 75%);
+    box-shadow: 0 0 0 2px var(--hk-gold), 0 0 0 5px rgb(10 17 32 / 90%), 0 0 0 6px var(--hk-gold-soft), 0 0 1.4rem rgb(216 180 106 / 25%);
+  }
+
+  .hk-skill-glyph {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    color: #f4ead4;
+  }
+
+  .hk-skill-key {
+    position: absolute;
+    right: -0.5rem;
+    bottom: -0.5rem;
+    display: grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    font-weight: 700;
+    color: var(--ink);
+    background: var(--hk-gold);
+    clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  }
+
+  .hk-skill-name {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.05em;
+    color: var(--bone);
+  }
+
+  .hk-profile {
+    margin-top: var(--space-4);
+    padding: 1rem 1.2rem;
+  }
+
+  .hk-quote {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: var(--text-base);
+    color: #f4ead4;
+  }
+
+  .hk-quote span[aria-hidden] {
+    color: var(--hk-red);
+  }
+
+  .hk-info {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.6rem 1.2rem;
+    margin: 0.8rem 0 0;
+    padding-top: 0.8rem;
+    border-top: 1px solid rgb(216 180 106 / 18%);
+  }
+
+  .hk-info div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+
+  .hk-info dt {
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--hk-gold);
+  }
+
+  .hk-info dd {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--bone);
+  }
+
+  /* ---- replays ---- */
+  .hk-replays {
+    position: relative;
+    z-index: 1;
+    padding: var(--space-5) var(--edge) var(--space-6);
+  }
+
+  .hk-replays-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6em;
+    margin-bottom: var(--space-5);
+    font-size: var(--text-xl);
+    color: #f4ead4;
+  }
+
+  .hk-diamond {
+    width: 0.6rem;
+    height: 0.6rem;
+    background: var(--hk-red);
+    transform: rotate(45deg);
+    box-shadow: 0 0 0.8rem rgb(200 50 58 / 70%);
+  }
+
+  .hk-replay-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr));
+    gap: clamp(1.5rem, 3vw, 2.5rem);
+    max-width: 84rem;
+    margin: 0 auto;
+    align-items: start;
+  }
+
+  .hk-replay {
+    margin: 0;
+    padding: 0.6rem;
+  }
+
+  .hk-replay figcaption {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6em;
+    margin-bottom: 0.6rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: var(--bone);
+  }
+
+  .hk-replay-num {
+    color: var(--hk-gold);
+  }
+
+  .hk-replay :global(.film-frame) {
+    max-width: none;
+  }
+
+  @media (max-width: 900px) {
+    .hk-screen {
+      grid-template-columns: minmax(0, 36rem);
+      min-height: auto;
+      padding-top: 6rem;
+    }
+
+    .hk-cue {
+      display: none;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .hk-thumb {
+      width: 4.4rem;
+    }
+
+    .hk-skill-btn {
+      width: 3.1rem;
+      height: 3.1rem;
+    }
+
+    .hk-info {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hk-skin.is-active,
+    .hk-skill {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  function initImpact() {
+    const root = document.querySelector<HTMLElement>('[data-impact]');
+    if (!root || root.dataset.impactInit === '1') return;
+    root.dataset.impactInit = '1';
+
+    const skins = Array.from(root.querySelectorAll<HTMLElement>('[data-hk-skin]'));
+    const thumbs = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-hk-thumb]'));
+    const count = root.querySelector<HTMLElement>('[data-hk-count]');
+
+    const select = (i: number) => {
+      skins.forEach((skin, si) => skin.classList.toggle('is-active', si === i));
+      thumbs.forEach((thumb, ti) => {
+        thumb.classList.toggle('is-active', ti === i);
+        thumb.setAttribute('aria-pressed', ti === i ? 'true' : 'false');
+      });
+      if (count) count.textContent = String(i + 1).padStart(2, '0');
+    };
+
+    thumbs.forEach((thumb, i) => {
+      thumb.addEventListener('click', () => select(i));
+      thumb.addEventListener('keydown', (event) => {
+        if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
+        event.preventDefault();
+        const nextIndex = (i + (event.key === 'ArrowRight' ? 1 : -1) + thumbs.length) % thumbs.length;
+        thumbs[nextIndex].focus();
+        select(nextIndex);
+      });
+    });
+  }
+
+  document.addEventListener('astro:page-load', initImpact);
+</script>

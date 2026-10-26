@@ -1,0 +1,359 @@
+title: Personal works
+year: 2025
+category: personal
+template: collection
+order: 8
+size: wide
+accentFrom: "#8A5A3A"
+accentTo: "#161310"
+roles:
+  en: [Drawing, Animation, Storyboard]
+  fr: [Dessin, Animation, Storyboard]
+  zh: [绘画, 动画, 分镜]
+subtitle:
+  en: what I draw between films
+  fr: ce que je dessine entre deux films
+  zh: 做片子之外画的东西
+description:
+  en: "Everything I make outside of films: fan art for a band I love, a card game, commissions, New Year pictures, my sketchbook, a fan animation and three storyboards."
+  fr: "Tout ce que je fais en dehors des films : du fan art pour un groupe que j'aime, un jeu de cartes, des commandes, des illustrations pour le Nouvel An chinois, mon carnet, une fan animation et trois storyboards."
+  zh: "片子以外的东西都在这里：给喜欢的乐队画的同人、一套卡牌游戏、委托、新年贺图、速写本、一段同人动画，还有三份分镜。"
+piles:
+  - chapter: Since Tomorrow
+    display: lineup
+    note:
+      en: Fan art for the band Since Tomorrow, one portrait per member.
+      fr: Du fan art pour le groupe Since Tomorrow, un portrait par membre.
+      zh: 给 Since Tomorrow 乐队画的同人，每位成员一张。
+  - chapter: Card game
+    display: hand
+    note:
+      en: "Designs for a card game: the party, its monsters, and the title."
+      fr: "Des designs pour un jeu de cartes : les héros, les monstres et le titre."
+      zh: 一套卡牌游戏的设计：主角团、怪物，还有标题。
+  - chapter: Commissions
+    display: polaroids
+    note:
+      en: Characters I drew for other people.
+      fr: Des personnages que j'ai dessinés pour d'autres.
+      zh: 帮别人画的角色。
+  - chapter: Spring Festival
+    display: festival
+    note:
+      en: Pictures for the Chinese New Year.
+      fr: Des illustrations pour le Nouvel An chinois.
+      zh: 过年画的贺图。
+  - chapter: 24 solar terms
+    display: calendar
+    note:
+      en: One of the 24 solar terms of the Chinese calendar.
+      fr: L'un des 24 termes solaires du calendrier chinois.
+      zh: 二十四节气里的一个。
+  - chapter: Sketchbook
+    display: strip
+    note:
+      en: Practice, style tests, and a few drawings just for me.
+      fr: De l'entraînement, des essais de style, et quelques dessins juste pour moi.
+      zh: 练习、风格测试，还有一些只是画给自己的。
+shelves:
+  - id: daily
+    label:
+      en: Daily Inspirations
+      fr: Inspirations du quotidien
+      zh: 日常灵感
+    parts: [Sketchbook]
+  - id: storyboards
+    label:
+      en: Storyboards
+      fr: Storyboards
+      zh: 分镜
+    parts: ['@storyboards']
+  - id: motion
+    label:
+      en: In Motion
+      fr: En mouvement
+      zh: 动画
+    parts: ['@videos', Since Tomorrow]
+  - id: paintings
+    label:
+      en: Digital Paintings
+      fr: Peintures numériques
+      zh: 数字绘画
+    parts: [Card game, Commissions, Spring Festival, 24 solar terms]
+storyboards:
+  - title:
+      en: The Desert and the Cat
+      fr: Le Désert et le Chat
+      zh: 沙漠与猫
+    note:
+      en: "A little cat is stranded in the desert with no food and no water. About to faint, he still holds on to his pocket watch. In a daze he dreams of water and fish. Far away, his owner finally wakes up and rushes home to save her hungry cat. Inside the pocket watch is a photo of the two of them."
+      fr: "Un petit chat est perdu dans le désert, sans eau ni nourriture. Sur le point de s'évanouir, il serre encore sa montre à gousset. À demi conscient, il rêve d'eau et de poissons. Loin de là, sa maîtresse se réveille enfin et rentre en courant sauver son chat affamé. Dans la montre, il y a une photo d'eux deux."
+      zh: 小猫在沙漠没有了食物和水源，快要晕厥的时候，还是珍惜着自己的怀表。恍惚间他梦见了水和鱼，而另一侧，他的主人终于醒来，匆忙回到家拯救没有食物的小猫。一侧的怀表正是她和小猫的合影。
+    look: sand
+    pages: [storyboard-1-01.jpg, storyboard-1-02.jpg, storyboard-1-03.jpg, storyboard-1-04.jpg, storyboard-1-05.jpg, storyboard-1-06.jpg, storyboard-1-07.jpg, storyboard-1-08.jpg, storyboard-1-09.jpg]
+  - title:
+      en: Tooth
+      fr: Tooth
+      zh: Tooth
+    note:
+      en: "A story about growing up. A boy who has just moved from the countryside can't get used to life in the city. His classmates laugh at him, his mother has no time for him, and only the kid who shares his desk is kind to him. One night, a little cat turns into a tiger and comes to take the boy away..."
+      fr: Une histoire qui parle de grandir. Un garçon tout juste arrivé de la campagne n'arrive pas à se faire à la vie en ville. Ses camarades se moquent de lui, sa mère n'a pas de temps pour lui, et seul son voisin de table est gentil avec lui. Un soir, un petit chat se change en tigre et vient chercher le garçon...
+      zh: 这是一个关于成长的故事，刚从乡下来到城市的男孩总是不习惯城市的生活。同学们嘲笑他，母亲没时间管他，只有同桌对他释放善意。这一天晚上，小猫化作了老虎接男孩离开……
+    look: wall
+    pages: [storyboard-2-01.jpg, storyboard-2-02.jpg, storyboard-2-03.jpg, storyboard-2-04.jpg, storyboard-2-05.jpg, storyboard-2-06.jpg, storyboard-2-07.jpg, storyboard-2-08.jpg, storyboard-2-09.jpg, storyboard-2-10.jpg, storyboard-2-11.jpg, storyboard-2-12.jpg, storyboard-2-13.jpg, storyboard-2-14.jpg, storyboard-2-15.jpg, storyboard-2-16.jpg, storyboard-2-17.jpg, storyboard-2-18.jpg, storyboard-2-19.jpg, storyboard-2-20.jpg, storyboard-2-21.jpg, storyboard-2-22.jpg]
+  - title:
+      en: Mother
+      fr: Mère
+      zh: 母亲
+    note:
+      en: One day, while a girl is fast asleep, a little deer steps out of a painting and leads her to her mother.
+      fr: Un jour, pendant qu'une petite fille dort à poings fermés, un faon sort d'un tableau et la conduit jusqu'à sa mère.
+      zh: 这一天，在女孩熟睡时，一只小鹿从画中走出，将女孩引向了母亲。
+    look: night
+    pages: [storyboard-3-01.jpg, storyboard-3-02.jpg, storyboard-3-03.jpg, storyboard-3-04.jpg, storyboard-3-05.jpg, storyboard-3-06.jpg, storyboard-3-07.jpg, storyboard-3-08.jpg]
+cover: cover.png
+coverAlt:
+  en: "For a while I kept dreaming of the sea. My anxiety was like a tree swaying in a storm. It looks fragile, but it bends and doesn't fall easily. It doesn't fight back. It just grows."
+  fr: "Pendant un moment, je rêvais sans cesse de la mer. Mon anxiété était comme un arbre secoué par la tempête : il a l'air fragile, mais il plie sans se laisser abattre. Il ne lutte pas. Il pousse, c'est tout."
+  zh: "有段时间总是梦见大海，我的焦虑像风暴中摇曳的树，虽然看起来脆弱，但也有韧性，不会轻易被刮倒。不对抗，只是生长。"
+videos:
+  - file: anakin-mustafar.mp4
+    label:
+      en: Anakin on Mustafar
+      fr: Anakin sur Mustafar
+      zh: 穆斯塔法星上的安纳金
+gallery:
+  - file: since-tomorrow-01.gif
+    chapter:
+      en: Since Tomorrow
+      fr: Since Tomorrow
+      zh: Since Tomorrow
+    alt:
+      en: "Since Tomorrow fan art, for Qingfeng Mu."
+      fr: "Fan art du groupe Since Tomorrow : Qingfeng Mu."
+      zh: "Since Tomorrow 乐队同人，画的是穆清风。"
+    caption:
+      en: "Since Tomorrow fan art, for Qingfeng Mu."
+      fr: "Fan art du groupe Since Tomorrow : Qingfeng Mu."
+      zh: "Since Tomorrow 乐队同人，画的是穆清风。"
+  - file: since-tomorrow-02.gif
+    chapter:
+      en: Since Tomorrow
+      fr: Since Tomorrow
+      zh: Since Tomorrow
+    alt:
+      en: "Since Tomorrow fan art, for Ning Zhao."
+      fr: "Fan art du groupe Since Tomorrow : Ning Zhao."
+      zh: "Since Tomorrow 乐队同人，画的是宁哥。"
+    caption:
+      en: "Since Tomorrow fan art, for Ning Zhao."
+      fr: "Fan art du groupe Since Tomorrow : Ning Zhao."
+      zh: "Since Tomorrow 乐队同人，画的是宁哥。"
+  - file: since-tomorrow-03.gif
+    chapter:
+      en: Since Tomorrow
+      fr: Since Tomorrow
+      zh: Since Tomorrow
+    alt:
+      en: "Since Tomorrow fan art, for Bing Zhang."
+      fr: "Fan art du groupe Since Tomorrow : Bing Zhang."
+      zh: "Since Tomorrow 乐队同人，画的是兵哥。"
+    caption:
+      en: "Since Tomorrow fan art, for Bing Zhang."
+      fr: "Fan art du groupe Since Tomorrow : Bing Zhang."
+      zh: "Since Tomorrow 乐队同人，画的是兵哥。"
+  - file: card-game-01.png
+    chapter:
+      en: Card game
+      fr: Jeu de cartes
+      zh: 卡牌游戏
+    alt:
+      en: The party's artificial berserker, a humanoid weapon of the legion.
+      fr: Le berserker artificiel de l'équipe des héros, une arme humanoïde de la légion.
+      zh: 主角团人造人狂战士，军团人形兵器。
+    caption:
+      en: The party's artificial berserker, a humanoid weapon of the legion.
+      fr: Le berserker artificiel de l'équipe des héros, une arme humanoïde de la légion.
+      zh: 主角团人造人狂战士，军团人形兵器。
+  - file: card-game-02.png
+    chapter:
+      en: Card game
+      fr: Jeu de cartes
+      zh: 卡牌游戏
+    alt:
+      en: A goblin, a basic monster in the game. I wanted it to feel frightening.
+      fr: Un gobelin, l'un des monstres de base du jeu. Je voulais qu'il fasse un peu peur.
+      zh: 哥布林，游戏内基础怪物，我想画得恐怖一点。
+    caption:
+      en: A goblin, a basic monster in the game. I wanted it to feel frightening.
+      fr: Un gobelin, l'un des monstres de base du jeu. Je voulais qu'il fasse un peu peur.
+      zh: 哥布林，游戏内基础怪物，我想画得恐怖一点。
+  - file: card-game-03.jpg
+    chapter:
+      en: Card game
+      fr: Jeu de cartes
+      zh: 卡牌游戏
+    alt:
+      en: A mage. She is gentle, and close to nature.
+      fr: Une mage. Elle est douce, proche de la nature.
+      zh: 法师角色女孩，性格温和，亲近自然。
+    caption:
+      en: A mage. She is gentle, and close to nature.
+      fr: Une mage. Elle est douce, proche de la nature.
+      zh: 法师角色女孩，性格温和，亲近自然。
+  - file: card-game-04.jpg
+    chapter:
+      en: Card game
+      fr: Jeu de cartes
+      zh: 卡牌游戏
+    alt:
+      en: A design for the game's title.
+      fr: Une proposition pour le titre du jeu.
+      zh: 游戏标题设计。
+    caption:
+      en: A design for the game's title.
+      fr: Une proposition pour le titre du jeu.
+      zh: 游戏标题设计。
+  - file: card-game-05.jpg
+    chapter:
+      en: Card game
+      fr: Jeu de cartes
+      zh: 卡牌游戏
+    alt:
+      en: A monster from one region, something a polluted mind produced.
+      fr: Le monstre d'une région du jeu, né d'un esprit corrompu.
+      zh: 一个区域怪物，精神被污染的产物。
+    caption:
+      en: A monster from one region, something a polluted mind produced.
+      fr: Le monstre d'une région du jeu, né d'un esprit corrompu.
+      zh: 一个区域怪物，精神被污染的产物。
+  - file: ocs-01.jpg
+    chapter:
+      en: Commissions
+      fr: Commandes
+      zh: 他人委托
+    alt:
+      en: "A girl who cut her hair in anger."
+      fr: "Une fille qui s'est coupé les cheveux sous le coup de la colère."
+      zh: "一个愤怒地剪掉头发的女孩。"
+    caption:
+      en: "A girl who cut her hair in anger."
+      fr: "Une fille qui s'est coupé les cheveux sous le coup de la colère."
+      zh: "一个愤怒地剪掉头发的女孩。"
+  - file: ocs-02.png
+    chapter:
+      en: Commissions
+      fr: Commandes
+      zh: 他人委托
+    alt:
+      en: "A half-bird girl, in a Japanese style."
+      fr: "Une fille mi-oiseau, dans un style japonais."
+      zh: "一个半鸟的和风女孩。"
+    caption:
+      en: "A half-bird girl, in a Japanese style."
+      fr: "Une fille mi-oiseau, dans un style japonais."
+      zh: "一个半鸟的和风女孩。"
+  - file: ocs-03.png
+    chapter:
+      en: Commissions
+      fr: Commandes
+      zh: 他人委托
+    alt:
+      en: "Expressions and a standing pose."
+      fr: "Des expressions et une pose debout."
+      zh: "表情和站姿。"
+    caption:
+      en: "Expressions and a standing pose."
+      fr: "Des expressions et une pose debout."
+      zh: "表情和站姿。"
+  - file: spring-festival-01.jpg
+    chapter:
+      en: Spring Festival
+      fr: Fête du printemps
+      zh: 春节
+    alt:
+      en: The story of Nian, the New Year beast.
+      fr: La légende du Nian, la bête du Nouvel An.
+      zh: 关于年兽的故事。
+    caption:
+      en: The story of Nian, the New Year beast.
+      fr: La légende du Nian, la bête du Nouvel An.
+      zh: 关于年兽的故事。
+  - file: spring-festival-02.jpg
+    chapter:
+      en: Spring Festival
+      fr: Fête du printemps
+      zh: 春节
+    alt:
+      en: A New Year picture for the year of the tiger.
+      fr: Une carte de vœux pour l'année du Tigre.
+      zh: 虎年新年贺图。
+    caption:
+      en: A New Year picture for the year of the tiger.
+      fr: Une carte de vœux pour l'année du Tigre.
+      zh: 虎年新年贺图。
+  - file: solar-terms-01.jpg
+    chapter:
+      en: 24 solar terms
+      fr: 24 termes solaires
+      zh: 二十四节气
+    alt:
+      en: "The autumn equinox, a good time to eat persimmons."
+      fr: L'équinoxe d'automne, la saison des kakis.
+      zh: "关于秋分，适合吃柿子。"
+    caption:
+      en: "The autumn equinox, a good time to eat persimmons."
+      fr: L'équinoxe d'automne, la saison des kakis.
+      zh: "关于秋分，适合吃柿子。"
+  - file: cover.png
+    chapter:
+      en: Sketchbook
+      fr: Carnet
+      zh: 速写
+    alt:
+      en: "For a while I kept dreaming of the sea. My anxiety was like a tree swaying in a storm. It looks fragile, but it bends and doesn't fall easily. It doesn't fight back. It just grows."
+      fr: "Pendant un moment, je rêvais sans cesse de la mer. Mon anxiété était comme un arbre secoué par la tempête : il a l'air fragile, mais il plie sans se laisser abattre. Il ne lutte pas. Il pousse, c'est tout."
+      zh: "有段时间总是梦见大海，我的焦虑像风暴中摇曳的树，虽然看起来脆弱，但也有韧性，不会轻易被刮倒。不对抗，只是生长。"
+    caption:
+      en: "For a while I kept dreaming of the sea. My anxiety was like a tree swaying in a storm. It looks fragile, but it bends and doesn't fall easily. It doesn't fight back. It just grows."
+      fr: "Pendant un moment, je rêvais sans cesse de la mer. Mon anxiété était comme un arbre secoué par la tempête : il a l'air fragile, mais il plie sans se laisser abattre. Il ne lutte pas. Il pousse, c'est tout."
+      zh: "有段时间总是梦见大海，我的焦虑像风暴中摇曳的树，虽然看起来脆弱，但也有韧性，不会轻易被刮倒。不对抗，只是生长。"
+  - file: practice-02.jpg
+    chapter:
+      en: Sketchbook
+      fr: Carnet
+      zh: 速写
+    alt:
+      en: "A style test."
+      fr: "Un essai de style."
+      zh: "一个风格的测试。"
+    caption:
+      en: "A style test."
+      fr: "Un essai de style."
+      zh: "一个风格的测试。"
+  - file: practice-03.png
+    chapter:
+      en: Sketchbook
+      fr: Carnet
+      zh: 速写
+    alt:
+      en: "A redesign of Emma, made for my business cards."
+      fr: Emma revisitée, pour mes cartes de visite.
+      zh: "Emma的设计改版，用来制作名片。"
+    caption:
+      en: "A redesign of Emma, made for my business cards."
+      fr: Emma revisitée, pour mes cartes de visite.
+      zh: "Emma的设计改版，用来制作名片。"
+  - file: practice-04.jpg
+    chapter:
+      en: Sketchbook
+      fr: Carnet
+      zh: 速写
+    alt:
+      en: "Imagining a villainess, and the symbols she carries."
+      fr: Une méchante imaginée, et les symboles qui l'accompagnent.
+      zh: "想象一个恶女，和她带来的符号。"
+    caption:
+      en: "Imagining a villainess, and the symbols she carries."
+      fr: Une méchante imaginée, et les symboles qui l'accompagnent.
+      zh: "想象一个恶女，和她带来的符号。"

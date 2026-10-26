@@ -1,0 +1,59 @@
+title: Life After
+year: 2025
+category: commission
+template: journey
+order: 6
+size: large
+accentFrom: "#3D4A45"
+accentTo: "#7B4FFF"
+client: New Session
+roles:
+  en: [Director, Concept, Background]
+  fr: [Réalisation, Concept, Décors]
+  zh: [导演, 概念设计, 背景美术]
+subtitle:
+  en: a game ad, for New Session
+  fr: une pub de jeu vidéo, pour New Session
+  zh: 给 New Session 做的游戏广告
+description:
+  en: >-
+    An ad for a video game. I directed it, from the concept through to
+    the backgrounds. It starts in a wasteland of scrap and wire, then
+    opens onto something brighter.
+  fr: >-
+    Une pub pour un jeu vidéo, que j'ai réalisée, du concept jusqu'aux
+    décors. Tout commence dans un terrain vague envahi de ferraille et
+    de fils de fer, puis l'image s'ouvre sur un monde plus lumineux.
+  zh: 一支游戏广告，我导演的，从概念做到背景。影片从堆满废铁和铁丝的荒地开始，然后慢慢打开，走向一个更明亮的世界。
+links:
+  - href: https://b23.tv/V1WT7tL
+    label:
+      en: watch the film
+      fr: voir le film
+      zh: 看成片
+cover: rebirth-01.png
+coverAlt:
+  en: Two glowing blue hands cradle an iridescent, rainbow-lit orb against a starry cosmic sky
+  fr: Deux mains d'un bleu lumineux tiennent une sphère irisée, sur fond de ciel étoilé
+  zh: 两只发光的蓝色手掌捧着一颗虹彩流光的宝珠，背景是繁星点点的宇宙夜空
+gallery:
+  - file: wasteland-01.png
+    alt:
+      en: Two figures drag a wrapped, wire-bound machine through a junk-strewn shantytown
+      fr: Deux silhouettes traînent une machine emballée et ficelée de fils de fer à travers un bidonville jonché de débris
+      zh: 两个身影拖着一台缠满铁丝的机器，穿过堆满废弃杂物的贫民区
+  - file: wasteland-02.png
+    alt:
+      en: A hooded figure recoils on a rail track beside a strange spinning cart rigged with tools
+      fr: Une silhouette encapuchonnée recule sur une voie ferrée, à côté d'un étrange chariot qui tourne, bardé d'outils
+      zh: 一个戴兜帽的身影在铁轨旁惊退，旁边是一辆装满工具、不断旋转的怪异推车
+  - file: wasteland-03.png
+    alt:
+      en: Concept study of the wasteland's washed-out, wire-choked palette
+      fr: "Une étude de couleurs pour le terrain vague : des tons délavés, étouffés sous les fils de fer"
+      zh: 废土世界褪色调、铁丝缠绕氛围的概念色彩研究
+  - file: rebirth-02.png
+    alt:
+      en: A second study of the glowing orb, held aloft as birds cross a violet sky
+      fr: Une autre étude de la sphère lumineuse, brandie pendant que des oiseaux traversent un ciel violet
+      zh: 另一张发光宝珠的概念稿，飞鸟掠过紫色天空，宝珠被高高托起
