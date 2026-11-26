@@ -1,0 +1,250 @@
+---
+// A falling-thread line plus a vertical word, not a dot dropping in a
+// pill — and it actually scrolls the page when clicked, so it's a control
+// rather than pure decoration.
+interface Props {
+  label?: { en: string; fr: string; zh: string };
+}
+const { label = { en: 'scroll', fr: 'défiler', zh: '向下滚动' } } = Astro.props;
+---
+
+<button type="button" class="scroll-cue" data-scroll-cue data-cursor-hover>
+  <span class="cue-line" aria-hidden="true"></span>
+  <span class="cue-label">
+    <span data-lang="en">{label.en}</span>
+    <span data-lang="fr">{label.fr}</span>
+    <span data-lang="zh">{label.zh}</span>
+  </span>
+  <svg class="cue-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+</button>
+
+<style>
+  .scroll-cue {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    background: none;
+    border: none;
+    padding: 0.4rem;
+    cursor: pointer;
+  }
+
+  .cue-line {
+    position: relative;
+    width: 2px;
+    height: 4.2rem;
+    border-radius: 2px;
+    background: rgb(255 255 255 / 22%);
+    overflow: hidden;
+  }
+
+  .cue-line::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--gold);
+    box-shadow: 0 0 8px var(--gold);
+    clip-path: inset(0 0 100% 0);
+    animation: cue-thread 2.2s ease-in-out infinite;
+  }
+
+  .cue-label {
+    font-family: var(--font-mono);
+    font-size: max(var(--text-xs), 0.8rem);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--bone-soft);
+    text-shadow: 0 1px 4px rgb(0 0 0 / 85%);
+    writing-mode: vertical-rl;
+    transition: color var(--dur-fast);
+  }
+
+  .cue-arrow {
+    width: 1.1rem;
+    height: 1.1rem;
+    fill: none;
+    stroke: var(--gold);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    filter: drop-shadow(0 1px 3px rgb(0 0 0 / 80%));
+    animation: cue-bob 2.2s ease-in-out infinite;
+  }
+
+  @keyframes cue-bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(0.3rem); }
+  }
+
+  :lang(zh) .cue-label {
+    text-transform: none;
+  }
+
+  .scroll-cue:hover .cue-label,
+  .scroll-cue:focus-visible .cue-label {
+    color: var(--gold);
+  }
+
+  /* drawn from the top down, held, then eroded away starting from the
+     same top edge — the tail is always the last part to vanish, so it
+     reads as a thread dropping through and out rather than a blink */
+  @keyframes cue-thread {
+    0% { clip-path: inset(0 0 100% 0); }
+    40%, 60% { clip-path: inset(0 0 0% 0); }
+    100% { clip-path: inset(100% 0 0% 0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cue-line::after {
+      animation: none;
+      clip-path: inset(0 0 0% 0);
+      opacity: 0.6;
+    }
+    .cue-arrow {
+      animation: none;
+    }
+  }
+
+  :global(html[data-motion='still']) .cue-arrow {
+    animation: none;
+  }
+
+  /* on phones the hero text runs to the bottom of the screen, so the cue
+     floats above it instead of sitting in a corner the text covers */
+  @media (max-width: 700px), (max-width: 1100px) and (orientation: portrait) {
+    .scroll-cue {
+      position: fixed;
+      left: 50%;
+      bottom: max(1rem, env(safe-area-inset-bottom));
+      z-index: 40;
+      flex-direction: row;
+      align-items: center;
+      gap: 0.55rem;
+      padding: 0.55rem 1rem;
+      border: 1px solid color-mix(in srgb, var(--gold) 45%, transparent);
+      border-radius: 999px;
+      background: rgb(9 8 10 / 82%);
+      box-shadow: 0 0.6rem 1.6rem -0.6rem rgb(0 0 0 / 70%);
+      backdrop-filter: blur(8px);
+      transform: translateX(-50%);
+      transition: opacity 0.4s, transform 0.4s var(--ease-out-expo);
+    }
+
+    .scroll-cue.is-gone {
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, 1rem);
+    }
+
+    .cue-line {
+      height: 1.1rem;
+    }
+
+    .cue-label {
+      writing-mode: horizontal-tb;
+      color: var(--bone);
+    }
+
+    .cue-arrow {
+      width: 1rem;
+      height: 1rem;
+    }
+  }
+
+  /* the same pill on larger screens, when the cue's own place at the foot
+     of the hero is below the fold (a hero taller than the window) or under
+     something else: it then floats at the bottom of the window instead */
+  .scroll-cue.is-floating {
+    position: fixed;
+    left: 50%;
+    bottom: max(1.2rem, env(safe-area-inset-bottom));
+    z-index: 40;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 1.1rem;
+    border: 1px solid color-mix(in srgb, var(--gold) 45%, transparent);
+    border-radius: 999px;
+    background: rgb(9 8 10 / 82%);
+    box-shadow: 0 0.6rem 1.6rem -0.6rem rgb(0 0 0 / 70%);
+    backdrop-filter: blur(8px);
+    transform: translateX(-50%);
+    transition: opacity 0.4s, transform 0.4s var(--ease-out-expo);
+  }
+
+  .scroll-cue.is-floating.is-gone {
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, 1rem);
+  }
+
+  .scroll-cue.is-floating .cue-line {
+    height: 1.2rem;
+  }
+
+  .scroll-cue.is-floating .cue-label {
+    writing-mode: horizontal-tb;
+    color: var(--bone);
+  }
+
+  .scroll-cue.is-floating .cue-arrow {
+    width: 1rem;
+    height: 1rem;
+  }
+</style>
+
+<script>
+  function initScrollCues() {
+    document.querySelectorAll<HTMLButtonElement>('[data-scroll-cue]').forEach((cue) => {
+      if (cue.dataset.scrollCueInit === '1') return;
+      cue.dataset.scrollCueInit = '1';
+      cue.addEventListener('click', () => {
+        const distance = window.innerHeight * 0.92;
+        const lenis = (window as any).__lenis;
+        if (lenis?.scrollTo) {
+          lenis.scrollTo(window.scrollY + distance, { duration: 1.2 });
+        } else {
+          window.scrollBy({ top: distance, behavior: 'smooth' });
+        }
+      });
+    });
+  }
+
+  let onScroll: (() => void) | undefined;
+  let onResize: (() => void) | undefined;
+
+  document.addEventListener('astro:page-load', () => {
+    initScrollCues();
+    const cues = document.querySelectorAll<HTMLElement>('[data-scroll-cue]');
+    if (onScroll) window.removeEventListener('scroll', onScroll);
+    onScroll = () => cues.forEach((cue) => cue.classList.toggle('is-gone', window.scrollY > 40));
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    // where the hero puts the cue is not always on screen: a tall hero on a
+    // short laptop pushes it below the fold, and some heroes have overlays
+    // in that corner. Checked once the hero has settled, and on resize.
+    const place = () => {
+      if (window.scrollY > 40) return;
+      cues.forEach((cue) => {
+        cue.classList.remove('is-floating');
+        // phones and portrait tablets already get the floating pill
+        if (getComputedStyle(cue).position === 'fixed') return;
+        const box = cue.getBoundingClientRect();
+        if (box.width === 0 || box.height === 0) return;
+        const off = box.top < 0 || box.bottom > window.innerHeight - 8 || box.right > window.innerWidth;
+        const hit = off ? null : document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+        if (off || (hit && !cue.contains(hit))) cue.classList.add('is-floating');
+      });
+    };
+    window.setTimeout(place, 900);
+    if (onResize) window.removeEventListener('resize', onResize);
+    let timer = 0;
+    onResize = () => {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(place, 200);
+    };
+    window.addEventListener('resize', onResize);
+  });
+</script>

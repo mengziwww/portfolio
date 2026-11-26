@@ -1,0 +1,473 @@
+title: Direction les champs
+year: 2026
+category: school
+template: process
+order: 0
+size: large
+accentFrom: "#8A4E12"
+accentTo: "#6E2438"
+posterCredit:
+  en: 2026 graduate project
+  fr: projet de diplôme 2026
+  zh: 2026 毕业创作
+posterGenre:
+  en: Gobelins 2026, CRFA
+  fr: Gobelins 2026, CRFA
+  zh: 高布兰 2026，CRFA
+roles:
+  en: [Character Design, Lead Animation, Layout, Compositing, Storyboard, Concept]
+  fr: [Character Design, Animation principale, Layout, Compositing, Storyboard, Concept]
+  zh: [角色设计, 主要动画, Layout, 合成, 分镜, 概念设计]
+subtitle:
+  en: our Gobelins graduate film
+  fr: notre film de fin d'études aux Gobelins
+  zh: 我们在高布兰的毕业短片
+story:
+  en: Sophie heads out to cheer her brother Benoit up. He's been in a bad place.
+  fr: Sophie prend la route pour rendre le sourire à son frère Benoit, qui traverse une mauvaise passe.
+  zh: 苏菲上路，想让哥哥博努瓦重新高兴起来。他最近很不好。
+description:
+  en: >-
+    I was the character designer: Sophie, Benoit, Thomas and the
+    others, plus the free-flowing lasso designs. In production I did
+    layout posing, then became one of the lead animators. I like small
+    gestures and subtle expressions, they bring the characters to life
+    and push the comedy as far as it goes. In post-production I did the
+    compositing, and at the very start I also tried the storyboard.
+  fr: >-
+    J'étais la character designer du film : Sophie, Benoit, Thomas et
+    les autres, ainsi que les designs « lasso », tout en souplesse. En
+    production, j'ai fait le posing du layout, puis je suis devenue
+    l'une des animatrices principales. J'aime jouer avec les petits
+    gestes et les expressions subtiles : ça donne vie aux personnages et
+    ça pousse leur côté comique le plus loin possible. En
+    post-production, j'ai fait le compositing, et tout au début, j'ai
+    aussi fait des essais de storyboard.
+  zh: 我是这部片子的角色设计：苏菲、博努瓦、托马和其他角色，还有自由流动的「套索」设计。制作阶段我先做 layout 姿态，后来成为主要动画师之一。我喜欢用细小的动作和微妙的表情去表演，让角色活起来，把他们的喜剧感推到最大。后期我做了合成，片子刚开始制作的时候，我也试着画了分镜。
+release:
+  date: '2026-09-30'
+  youtube: i3q_h7ywypE
+cover: style-frame2.png
+coverAlt:
+  en: Benoit and Sophie.
+  fr: Benoit et Sophie.
+  zh: 博努瓦和苏菲。
+carousels:
+  - concept
+  - "character design: Sophie"
+  - "character design: Benoit"
+  - "character design: other characters"
+gallery:
+  - file: extra-58.png
+    chapter:
+      en: concept
+      fr: concept
+      zh: 概念设定
+    alt:
+      en: Concept of the part where Sophie crashes, at sunset.
+      fr: Concept du passage où Sophie tombe, au coucher du soleil.
+      zh: 苏菲摔倒的那段，日落。
+  - file: extra-59.png
+    chapter:
+      en: concept
+      fr: concept
+      zh: 概念设定
+    alt:
+      en: Concept of Sophie crashing, in the daytime.
+      fr: Concept de la chute de Sophie, en journée.
+      zh: 苏菲摔倒，白天。
+  - file: extra-60.png
+    chapter:
+      en: concept
+      fr: concept
+      zh: 概念设定
+    alt:
+      en: Sophie rushes into the sunflower field.
+      fr: Sophie fonce dans le champ de tournesols.
+      zh: 苏菲冲进向日葵田。
+  - file: extra-62.png
+    chapter:
+      en: concept
+      fr: concept
+      zh: 概念设定
+    alt:
+      en: Concept of Sophie going up through the village.
+      fr: Concept de Sophie qui monte dans le village.
+      zh: 苏菲往村子上面走。
+  - file: concept-light.png
+    chapter:
+      en: concept
+      fr: concept
+      zh: 概念设定
+    alt:
+      en: An early lighting test, a girl watching a small spark of light against a stylized, warm-toned landscape
+      fr: Un premier test de lumière, une fille observant une petite étincelle de lumière sur un paysage stylisé aux tons chauds
+      zh: 早期光效测试，一个女孩望着一点微光，背景是暖色调的风格化风景
+  - file: concept-sunflower.png
+    chapter:
+      en: concept
+      fr: concept
+      zh: 概念设定
+    alt:
+      en: An early render test, a single sunflower in close-up against a blue sky full of clouds
+      fr: Un premier test de rendu, un tournesol en gros plan sur un ciel bleu chargé de nuages
+      zh: 早期渲染测试，蓝天白云下的一朵向日葵特写
+  - file: concept-mirror.png
+    chapter:
+      en: concept
+      fr: concept
+      zh: 概念设定
+    alt:
+      en: In the mirror, Sophie sees that Benoit's face hasn't changed at all.
+      fr: Dans le rétroviseur, Sophie voit que l'expression de Benoit n'a pas changé du tout.
+      zh: 苏菲从后视镜里看到，博努瓦的表情没有任何变化。
+  - file: extra-63.png
+    chapter:
+      en: concept
+      fr: concept
+      zh: 概念设定
+    alt:
+      en: An early concept of Sophie in her bed at night.
+      fr: Un premier concept de Sophie dans son lit, la nuit.
+      zh: 早期概念，苏菲夜里在床上。
+  - file: concept-keys-1.png
+    chapter:
+      en: concept
+      fr: concept
+      zh: 概念设定
+    alt:
+      en: "Early color keys: the fields by day, at night and at sunset."
+      fr: "Premières recherches de couleurs : les champs le jour, la nuit et au coucher du soleil."
+      zh: "早期色彩稿：白天、夜晚和日落时的田野。"
+  - file: concept-keys-2.png
+    chapter:
+      en: concept
+      fr: concept
+      zh: 概念设定
+    alt:
+      en: "Color keys: the village road, a summer night, the leaves up close."
+      fr: "Recherches de couleurs : la route du village, une nuit d'été, les feuilles en gros plan."
+      zh: "色彩稿：村子的路、夏天的夜晚、近处的叶子。"
+  - file: concept-keys-3.png
+    chapter:
+      en: concept
+      fr: concept
+      zh: 概念设定
+    alt:
+      en: Color keys for the ride through the sunflower fields.
+      fr: Recherches de couleurs pour la balade dans les champs de tournesols.
+      zh: 穿过向日葵田那一段的色彩稿。
+  - file: concept-keys-4.png
+    chapter:
+      en: concept
+      fr: concept
+      zh: 概念设定
+    alt:
+      en: "Color keys: the sky, the road, and the sunflowers seen from below."
+      fr: "Recherches de couleurs : le ciel, la route, et les tournesols vus d'en bas."
+      zh: "色彩稿：天空、公路，还有从下往上看的向日葵。"
+  - file: turnsophiefinal.png
+    chapter:
+      en: "character design: Sophie"
+      fr: "character design : Sophie"
+      zh: "角色设计：苏菲"
+    kind: final
+    alt:
+      en: Sophie's final character turnaround, seven angles in full color over the matching construction line-art
+      fr: Le turnaround final de Sophie, sept angles en couleur, avec le tracé de construction correspondant en dessous
+      zh: 苏菲的最终转面定稿，七个角度的彩色定稿，配以对应的结构线稿
+  - file: final-sophie-guide-color.png
+    chapter:
+      en: "character design: Sophie"
+      fr: "character design : Sophie"
+      zh: "角色设计：苏菲"
+    kind: final
+    alt:
+      en: "Sophie's model sheet: close-up, middle and far shots, and her lasso-style version."
+      fr: "La fiche de Sophie : gros plan, plan moyen, plan large, et sa version façon lasso."
+      zh: "苏菲的设定：特写、中景、远景，还有套索风格的版本。"
+  - file: final-sophie-guide-color2.png
+    chapter:
+      en: "character design: Sophie"
+      fr: "character design : Sophie"
+      zh: "角色设计：苏菲"
+    kind: final
+    alt:
+      en: The same sheet, line art and colors.
+      fr: La même fiche, en trait et en couleur.
+      zh: 同一张设定的线稿和上色。
+  - file: final-sophie-guide-clean.png
+    chapter:
+      en: "character design: Sophie"
+      fr: "character design : Sophie"
+      zh: "角色设计：苏菲"
+    kind: final
+    alt:
+      en: Sophie's hands, feet and proportions.
+      fr: Les mains, les pieds et les proportions de Sophie.
+      zh: 苏菲的手、脚和比例。
+  - file: final-sophie-hands.png
+    chapter:
+      en: "character design: Sophie"
+      fr: "character design : Sophie"
+      zh: "角色设计：苏菲"
+    kind: final
+    alt:
+      en: Sophie's hands, with her red scrunchie.
+      fr: Les mains de Sophie, avec son chouchou rouge.
+      zh: 苏菲的手，戴着红色发圈。
+  - file: final-sophie-poses.png
+    chapter:
+      en: "character design: Sophie"
+      fr: "character design : Sophie"
+      zh: "角色设计：苏菲"
+    kind: final
+    alt:
+      en: Sophie in action, and a quiet moment with Benoit.
+      fr: Sophie en action, et un moment calme avec Benoit.
+      zh: 动起来的苏菲，还有和博努瓦安静待着的时候。
+  - file: draft-sophie-101.png
+    chapter:
+      en: "character design: Sophie"
+      fr: "character design : Sophie"
+      zh: "角色设计：苏菲"
+    kind: draft
+    alt:
+      en: "Sophie 101: outfit and color variants."
+      fr: "Sophie 101 : variantes de tenues et de couleurs."
+      zh: "Sophie 101：服装和配色的变化。"
+  - file: draft-sophie-1.png
+    chapter:
+      en: "character design: Sophie"
+      fr: "character design : Sophie"
+      zh: "角色设计：苏菲"
+    kind: draft
+    alt:
+      en: First sketches of Sophie.
+      fr: Premiers croquis de Sophie.
+      zh: 苏菲的第一批草图。
+  - file: draft-sophie-2.png
+    chapter:
+      en: "character design: Sophie"
+      fr: "character design : Sophie"
+      zh: "角色设计：苏菲"
+    kind: draft
+    alt:
+      en: More sketches of Sophie, with Lasso.
+      fr: D'autres croquis de Sophie, avec Lasso.
+      zh: 更多苏菲的草图，还有 Lasso。
+  - file: draft-sophie-5.png
+    chapter:
+      en: "character design: Sophie"
+      fr: "character design : Sophie"
+      zh: "角色设计：苏菲"
+    kind: draft
+    alt:
+      en: Pose studies of Sophie.
+      fr: Études de poses de Sophie.
+      zh: 苏菲的姿势练习。
+  - file: draft-sophie-turnaround.png
+    chapter:
+      en: "character design: Sophie"
+      fr: "character design : Sophie"
+      zh: "角色设计：苏菲"
+    kind: draft
+    alt:
+      en: An early turnaround of Sophie, with a first color test.
+      fr: Un premier turnaround de Sophie, avec un essai de couleur.
+      zh: 苏菲早期的转面图，加一张上色测试。
+  - file: draft-sophie-first-colors.png
+    chapter:
+      en: "character design: Sophie"
+      fr: "character design : Sophie"
+      zh: "角色设计：苏菲"
+    kind: draft
+    alt:
+      en: Sophie's very first color designs, and head sketches.
+      fr: Les toutes premières Sophie en couleur, et des croquis de visage.
+      zh: 最早的苏菲彩色设计，还有头部草图。
+  - file: draft-sophie-6.png
+    chapter:
+      en: "character design: Sophie"
+      fr: "character design : Sophie"
+      zh: "角色设计：苏菲"
+    kind: draft
+    alt:
+      en: More sketches of Sophie, with a first color test.
+      fr: Encore des croquis de Sophie, avec un essai de couleur.
+      zh: 更多苏菲的草图，还有一张上色测试。
+  - file: final-benoit-turnaround.png
+    chapter:
+      en: "character design: Benoit"
+      fr: "character design : Benoit"
+      zh: "角色设计：博努瓦"
+    kind: final
+    alt:
+      en: Benoit's turnaround.
+      fr: Le turnaround de Benoit.
+      zh: 博努瓦的转面图。
+  - file: final-benoit-close-far.png
+    chapter:
+      en: "character design: Benoit"
+      fr: "character design : Benoit"
+      zh: "角色设计：博努瓦"
+    kind: final
+    alt:
+      en: Benoit up close and from afar, with Sophie and the scooter.
+      fr: Benoit de près et de loin, avec Sophie et le scooter.
+      zh: 博努瓦的近景和远景，还有苏菲和小摩托。
+  - file: draft-benoit.png
+    chapter:
+      en: "character design: Benoit"
+      fr: "character design : Benoit"
+      zh: "角色设计：博努瓦"
+    kind: draft
+    alt:
+      en: First sketches of Benoit.
+      fr: Premiers croquis de Benoit.
+      zh: 博努瓦的第一批草图。
+  - file: draft-benoit-sitting.png
+    chapter:
+      en: "character design: Benoit"
+      fr: "character design : Benoit"
+      zh: "角色设计：博努瓦"
+    kind: draft
+    alt:
+      en: Benoit, sitting with his knees up.
+      fr: Benoit, assis, les genoux repliés.
+      zh: 博努瓦抱着膝盖坐着。
+  - file: draft-benoit-poses.png
+    chapter:
+      en: "character design: Benoit"
+      fr: "character design : Benoit"
+      zh: "角色设计：博努瓦"
+    kind: draft
+    alt:
+      en: Pose sketches of Benoit.
+      fr: Croquis de poses de Benoit.
+      zh: 博努瓦的姿势草图。
+  - file: draft-lasso-helmet.png
+    chapter:
+      en: "character design: Benoit"
+      fr: "character design : Benoit"
+      zh: "角色设计：博努瓦"
+    kind: draft
+    alt:
+      en: Lasso, helmets and riding sketches.
+      fr: Lasso, des casques et des croquis de balade.
+      zh: Lasso、头盔和骑车的草图。
+  - file: final-mother.png
+    chapter:
+      en: "character design: other characters"
+      fr: "character design : les autres personnages"
+      zh: "角色设计：其他角色"
+    kind: final
+    alt:
+      en: "Sophie and Benoit's mother: turnaround and poses."
+      fr: "La mère de Sophie et Benoit : turnaround et poses."
+      zh: "苏菲和博努瓦的妈妈：转面图和姿势。"
+  - file: final-number10.png
+    chapter:
+      en: "character design: other characters"
+      fr: "character design : les autres personnages"
+      zh: "角色设计：其他角色"
+    kind: final
+    alt:
+      en: "Thomas, one of the BikingZ: turnaround and poses."
+      fr: "Thomas, l'un des BikingZ : turnaround et poses."
+      zh: "托马，BikingZ 之一：转面图和姿势。"
+  - file: final-number10-heads.png
+    chapter:
+      en: "character design: other characters"
+      fr: "character design : les autres personnages"
+      zh: "角色设计：其他角色"
+    kind: final
+    alt:
+      en: "Thomas's head: turnaround and expressions."
+      fr: "La tête de Thomas : turnaround et expressions."
+      zh: "托马的头部：转面和表情。"
+  - file: extra-27.png
+    chapter:
+      en: "character design: other characters"
+      fr: "character design : les autres personnages"
+      zh: "角色设计：其他角色"
+    kind: final
+    alt:
+      en: The family and the BikingZ, lined up.
+      fr: La famille et les BikingZ, alignés.
+      zh: 家人和 BikingZ 排成一排。
+  - file: draft-benoit-friends.png
+    chapter:
+      en: "character design: other characters"
+      fr: "character design : les autres personnages"
+      zh: "角色设计：其他角色"
+    kind: draft
+    alt:
+      en: Benoit's friends, a first rough.
+      fr: Les amis de Benoit, un premier jet.
+      zh: 博努瓦的朋友们，第一版草稿。
+  - file: extra-28.jpg
+    chapter:
+      en: "character design: Lasso"
+      fr: "character design : Lasso"
+      zh: "角色设计：Lasso"
+    alt:
+      en: Expression studies for Sophie and her scooter, Lasso. Happy, startled, laughing
+      fr: Études d'expressions pour Sophie et son scooter, Lasso. Joyeuse, effrayée, elle rit
+      zh: 苏菲和她的小摩托 Lasso 的表情研究。开心、惊讶、大笑
+  - file: style-window.png
+    chapter:
+      en: style frames
+      fr: style frames
+      zh: 风格帧
+    alt:
+      en: Sophie at Benoit's window.
+      fr: Sophie à la fenêtre de Benoit.
+      zh: 苏菲在博努瓦的窗边。
+  - file: style-picnic.png
+    chapter:
+      en: style frames
+      fr: style frames
+      zh: 风格帧
+    alt:
+      en: Sophie and Benoit on a blanket in the garden.
+      fr: Sophie et Benoit sur une couverture, dans le jardin.
+      zh: 苏菲和博努瓦坐在花园的野餐布上。
+  - file: style-bench.png
+    chapter:
+      en: style frames
+      fr: style frames
+      zh: 风格帧
+    alt:
+      en: The BikingZ gathered outside Sophie's house.
+      fr: Les BikingZ rassemblés devant la maison de Sophie.
+      zh: BikingZ 聚在苏菲家门外。
+  - file: style-lasso.png
+    chapter:
+      en: style frames
+      fr: style frames
+      zh: 风格帧
+    alt:
+      en: "The lasso style: Sophie and Lasso flying over the village."
+      fr: "Le style lasso : Sophie et Lasso s'envolent au-dessus du village."
+      zh: "套索风格：苏菲和 Lasso 飞过村子。"
+  - file: style-helmet.png
+    chapter:
+      en: style frames
+      fr: style frames
+      zh: 风格帧
+    alt:
+      en: A style frame of the first version of Sophie's design, under dark clouds.
+      fr: Une style frame de la première version de Sophie, sous les nuages sombres.
+      zh: 第一版苏菲人设在乌云下的风格帧。
+videos:
+  - file: animation-reel.mp4
+    label:
+      en: animation
+      fr: animation
+      zh: 动画
+  - file: storyboard-reel.mp4
+    label:
+      en: storyboard (early stage)
+      fr: storyboard (première étape)
+      zh: 分镜（早期阶段）

@@ -1,0 +1,251 @@
+---
+import '@fontsource-variable/fraunces';
+import '@fontsource-variable/inter';
+import '@fontsource/space-mono';
+import '@/styles/global.css';
+import { ClientRouter } from 'astro:transitions';
+import SEO from '@/components/SEO.astro';
+import Header from '@/components/Header.astro';
+import Footer from '@/components/Footer.astro';
+import Cursor from '@/components/Cursor.astro';
+import Grain from '@/components/Grain.astro';
+import LoadingBar from '@/components/LoadingBar.astro';
+import Lightbox from '@/components/Lightbox.astro';
+import ArtworkGuard from '@/components/ArtworkGuard.astro';
+import A11yTip from '@/components/A11yTip.astro';
+import ContactNudge from '@/components/ContactNudge.astro';
+import type { Lang } from '@/lib/lang';
+
+interface Props {
+  path: string;
+  title: string;
+  description: string;
+  ogImage?: string;
+  ogImageAlt?: string;
+  ogType?: 'website' | 'article';
+  bodyClass?: string;
+  noindex?: boolean;
+  /** extra schema.org nodes for this page, joined to the site graph */
+  schema?: Record<string, unknown>[];
+  /** the language this URL is built in; noindex pages switch language in place instead */
+  lang?: Lang;
+}
+const { path, title, description, ogImage, ogImageAlt, ogType, bodyClass, noindex = false, schema = [], lang = 'en' } = Astro.props;
+const base = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
+
+const home = new URL(import.meta.env.BASE_URL, Astro.site ?? 'https://mengziwww.github.io').toString();
+const graph = [
+  {
+    '@type': 'Person',
+    '@id': `${home}#person`,
+    name: 'Menghan LI',
+    jobTitle: '2D visual development artist and animator',
+    knowsAbout: ['2D animation', 'Character design', 'Storyboard', 'Concept art', 'Visual development'],
+    alumniOf: { '@type': 'CollegeOrUniversity', name: 'Gobelins, l’école de l’image' },
+    url: home,
+    image: new URL('og-default.jpg', home).toString(),
+    sameAs: [
+      'https://www.instagram.com/mengziwww/',
+      'https://space.bilibili.com/333172997',
+      'https://www.linkedin.com/in/menghan-li-0522b5339/',
+    ],
+  },
+  {
+    '@type': 'WebSite',
+    '@id': `${home}#website`,
+    name: 'Menghan LI',
+    url: home,
+    inLanguage: ['en', 'fr', 'zh'],
+    author: { '@id': `${home}#person` },
+  },
+  ...schema,
+];
+---
+
+<!doctype html>
+<html lang={lang} data-base={base} data-lang-page={noindex ? 'free' : 'routed'}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#09080a" />
+    <meta name="robots" content={noindex ? 'noindex, noai, noimageai' : 'noai, noimageai'} />
+    <meta name="tdm-reservation" content="1" />
+    <link rel="icon" href={`${import.meta.env.BASE_URL}favicon.svg`} type="image/svg+xml" />
+    <SEO path={path} title={title} description={description} image={ogImage} imageAlt={ogImageAlt} type={ogType} lang={lang} alternates={!noindex} />
+    <link rel="apple-touch-icon" href={`${import.meta.env.BASE_URL}apple-touch-icon.png`} />
+    {!noindex && (
+      <script type="application/ld+json" is:inline set:html={JSON.stringify({ '@context': 'https://schema.org', '@graph': graph })} />
+    )}
+    <ClientRouter />
+    <script is:inline>
+      // Runs before paint, on every navigation (Astro re-executes inline
+      // head scripts after each swap) — no flash of the wrong language.
+      (function () {
+        try {
+          // state lives only on `lang` — see global.css for why data-lang
+          // must never also be set on <html> itself
+          var root = document.documentElement;
+          var stored = localStorage.getItem('menghan-lang');
+          var base = root.getAttribute('data-base') || '';
+          var rest = location.pathname.slice(base.length);
+          var prefixed = (rest.match(/^\/(fr|zh)(\/|$)/) || [])[1];
+          if (root.getAttribute('data-lang-page') === 'routed') {
+            // the URL decides; a visitor who chose French or Chinese before
+            // is sent to that version when they land on an English page
+            var built = root.getAttribute('lang');
+            var wanted = stored === 'zh-Hant' ? 'zh' : stored;
+            if (built === 'en' && (wanted === 'fr' || wanted === 'zh')) {
+              location.replace(base + '/' + wanted + (rest === '/' && !base ? '' : rest) + location.search + location.hash);
+              return;
+            }
+            if (built === 'zh' && stored === 'zh-Hant') root.setAttribute('lang', 'zh-Hant');
+          } else {
+            var lang = prefixed === 'zh' && stored === 'zh-Hant' ? 'zh-Hant' : prefixed || stored;
+            if (lang === 'fr' || lang === 'zh' || lang === 'zh-Hant') root.setAttribute('lang', lang);
+          }
+          var motion = localStorage.getItem('menghan-motion');
+          if (!motion && window.matchMedia('(prefers-reduced-motion: reduce)').matches) motion = 'still';
+          if (motion === 'quiet' || motion === 'still') {
+            document.documentElement.setAttribute('data-motion', motion);
+          }
+          var text = localStorage.getItem('menghan-text');
+          if (text === 'lg' || text === 'xl') document.documentElement.setAttribute('data-text', text);
+          if (localStorage.getItem('menghan-density') === 'full') document.documentElement.setAttribute('data-density', 'full');
+          if (localStorage.getItem('menghan-contrast') === 'high') document.documentElement.setAttribute('data-contrast', 'high');
+          if (localStorage.getItem('menghan-space') === 'relaxed') document.documentElement.setAttribute('data-space', 'relaxed');
+          if (localStorage.getItem('menghan-transparent') === 'solid') document.documentElement.setAttribute('data-transparent', 'solid');
+          if (localStorage.getItem('menghan-focus') === 'strong') document.documentElement.setAttribute('data-focus', 'strong');
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body class={bodyClass}>
+    <LoadingBar />
+    <Grain />
+    <Cursor />
+    <ArtworkGuard />
+    <Header />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+    <Lightbox />
+    <A11yTip />
+    <ContactNudge />
+  </body>
+</html>
+
+<script>
+  import Lenis from 'lenis';
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  let lenis: Lenis | undefined;
+  let tickerAttached = false;
+
+  function initLenis() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (document.documentElement.dataset.motion === 'still') return;
+    if (window.matchMedia('(hover: none), (pointer: coarse)').matches) return;
+    lenis?.destroy();
+    lenis = new Lenis({ duration: 1.05, easing: (t) => 1 - Math.pow(1 - t, 3) });
+
+    // Required integration, not optional: ScrollTrigger listens for native
+    // scroll events by default, and Lenis's easing means the two drift out
+    // of sync without this — in practice every scroll-linked reveal on the
+    // site (color morphs, parallax) simply never fires. This is the fix.
+    lenis.on('scroll', ScrollTrigger.update);
+
+    // this used to run unconditionally on every single initLenis() call —
+    // i.e. on every navigation — and gsap.ticker.add() has no matching
+    // "replace" behavior, only "add another one": after browsing a few
+    // pages, several duplicate callbacks were all calling .raf() on the
+    // same lenis instance every frame, which is exactly the kind of
+    // accumulating-listener bug that shows up as "sometimes" — the
+    // interpolation only misbehaves once enough stray callbacks have
+    // piled up in a session, not on the first page. Attached once, ever.
+    if (!tickerAttached) {
+      tickerAttached = true;
+      gsap.ticker.add((time) => {
+        lenis?.raf(time * 1000);
+      });
+      gsap.ticker.lagSmoothing(0);
+    }
+
+    // resyncs Lenis's own interpolated scroll value to wherever the
+    // native scroll position actually is right now (0 after a normal
+    // forward navigation, Astro's own restored offset after back/
+    // forward) — without this a freshly-constructed Lenis could still
+    // carry a stale target from whatever the previous page's gesture was
+    // heading toward.
+    lenis.scrollTo(window.scrollY, { immediate: true, force: true });
+
+    // exposed so simple in-page controls (see ScrollCue.astro) can ask for
+    // a smooth scroll through the same engine driving everything else,
+    // rather than fighting it with a raw scrollTo
+    (window as any).__lenis = lenis;
+  }
+
+  // charReveal()/wordReveal() (see reveal-text.ts) render every hero title
+  // pre-clipped behind a mask — nothing shows until an ancestor gets
+  // `.is-revealed`. Centralized here so every stage template gets it for
+  // free by adding `data-reveal-root` to its own hero, one attribute
+  // instead of repeating this init in eight separate files.
+  function initReveals() {
+    document.querySelectorAll<HTMLElement>('[data-reveal-root]').forEach((root) => {
+      if (root.dataset.revealInit === '1') return;
+      root.dataset.revealInit = '1';
+      requestAnimationFrame(() => root.classList.add('is-revealed'));
+    });
+  }
+
+  // Every project's --mood-glow lives as an inline custom property on its
+  // own <article>, not on <html> — which is where the scrollbar itself is
+  // styled from (see global.css's --page-scrollbar). Copies it up so the
+  // scrollbar tints to whatever project is actually open; falls back to
+  // gold on the home page, which has no single project mood of its own.
+  function syncScrollbarColor() {
+    const stage = document.querySelector<HTMLElement>('[data-dream], [data-reel], [data-journey], [data-impact], [data-sketchbook], [data-breakdown], [data-atmosphere], [data-process], [data-collection]');
+    const glow = stage ? getComputedStyle(stage).getPropertyValue('--mood-glow').trim() : '';
+    document.documentElement.style.setProperty('--page-scrollbar', glow || 'var(--gold)');
+  }
+
+  // a link to another page always lands at its top: the old page's smooth
+  // scroll must not keep easing into the new one. Back/forward keeps the
+  // position the router restores.
+  let lastNavigation = 'push';
+  // the router replaces every attribute of <html> with the new page's, and
+  // the settings set before paint only run on a full load
+  const KEPT_SETTINGS = ['data-motion', 'data-text', 'data-density', 'data-contrast', 'data-space', 'data-transparent', 'data-focus'];
+  document.addEventListener('astro:before-swap', (event) => {
+    lastNavigation = event.navigationType;
+    lenis?.destroy();
+    lenis = undefined;
+    const next = event.newDocument.documentElement;
+    for (const name of KEPT_SETTINGS) {
+      const value = document.documentElement.getAttribute(name);
+      if (value) next.setAttribute(name, value);
+    }
+  });
+  document.addEventListener('astro:after-swap', () => {
+    if (lastNavigation !== 'traverse' && !location.hash) window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  });
+
+  document.addEventListener('astro:page-load', () => {
+    initLenis();
+    initReveals();
+    syncScrollbarColor();
+    // after every other page-load listener, so Loader.astro still sees the
+    // first page of the visit as unentered
+    window.setTimeout(() => {
+      try {
+        sessionStorage.setItem('menghan-entered', '1');
+      } catch {
+        /* private mode */
+      }
+    }, 0);
+    requestAnimationFrame(() => requestAnimationFrame(() => ScrollTrigger.refresh()));
+  });
+</script>

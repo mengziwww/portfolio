@@ -1,0 +1,216 @@
+---
+// A small corner card, offered once someone has spent a while on the
+// site, with a link to write to me. Closing it keeps it away for a month.
+const EMAIL = 'mengziwww@gmail.com';
+---
+
+<aside class="nudge" data-nudge aria-labelledby="nudge-title" hidden>
+  <button type="button" class="nudge-close" data-nudge-close>
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M7 7l10 10M17 7L7 17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+    </svg>
+    <span class="visually-hidden">
+      <span data-lang="en">Not now</span>
+      <span data-lang="fr">Pas maintenant</span>
+      <span data-lang="zh">以后再说</span>
+    </span>
+  </button>
+  <p class="nudge-kicker">
+    <span data-lang="en">hello</span>
+    <span data-lang="fr">coucou</span>
+    <span data-lang="zh">你好</span>
+  </p>
+  <p class="nudge-title" id="nudge-title">
+    <span data-lang="en">Interested in my work?</span>
+    <span data-lang="fr">Mon travail t'intéresse ?</span>
+    <span data-lang="zh">对我的作品感兴趣吗？</span>
+  </p>
+  <p class="nudge-text">
+    <span data-lang="en">If you would like to work together, I would love to hear from you.</span>
+    <span data-lang="fr">Si tu veux qu'on travaille ensemble, écris-moi, ça me fera plaisir.</span>
+    <span data-lang="zh">想一起合作的话，欢迎给我写信。</span>
+  </p>
+  <a class="nudge-write" href={`mailto:${EMAIL}`} data-nudge-write>
+    <span data-lang="en">Write to me</span>
+    <span data-lang="fr">M'écrire</span>
+    <span data-lang="zh">写信给我</span>
+    <span aria-hidden="true">→</span>
+  </a>
+</aside>
+
+<style>
+  .nudge {
+    position: fixed;
+    right: clamp(0.8rem, 2.5vw, 2rem);
+    bottom: clamp(0.8rem, 2.5vw, 1.6rem);
+    z-index: 410;
+    width: min(20rem, calc(100vw - 1.6rem));
+    padding: 1.1rem 1.2rem 1.2rem;
+    color: var(--bone);
+    background:
+      radial-gradient(ellipse 80% 60% at 100% 0%, color-mix(in srgb, var(--gold) 16%, transparent), transparent 70%),
+      var(--void-raised);
+    border: 1px solid var(--void-line);
+    border-radius: 14px;
+    box-shadow: 0 1.4rem 3.4rem -1rem rgb(0 0 0 / 75%);
+    opacity: 0;
+    translate: 0 1rem;
+    transition: opacity 0.4s ease, translate 0.6s var(--ease-out-expo);
+  }
+
+  .nudge[hidden] {
+    display: none;
+  }
+
+  .nudge.is-on {
+    opacity: 1;
+    translate: 0 0;
+  }
+
+  /* above the fixed bars some pages keep along the bottom edge */
+  :global(html:has([data-journey])) .nudge {
+    bottom: 3.4rem;
+  }
+
+  :global(html:has(.pr-trip.is-on)) .nudge {
+    bottom: 5.2rem;
+  }
+
+  .nudge-close {
+    position: absolute;
+    top: 0.55rem;
+    right: 0.55rem;
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    color: var(--bone-soft);
+    transition: background var(--dur-fast), color var(--dur-fast);
+  }
+
+  .nudge-close svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .nudge-close:hover,
+  .nudge-close:focus-visible {
+    color: var(--bone);
+    background: var(--void-line);
+  }
+
+  .nudge-kicker {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .nudge-title {
+    margin: 0.3rem 2rem 0 0;
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    line-height: 1.15;
+  }
+
+  .nudge-text {
+    margin: 0.5rem 0 0;
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    color: var(--bone-soft);
+  }
+
+  .nudge-write {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    margin-top: 0.9rem;
+    padding: 0.6em 1.2em;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--void);
+    background: var(--gold);
+    border-radius: 999px;
+    transition: translate 0.25s var(--ease-out-expo);
+  }
+
+  .nudge-write:hover,
+  .nudge-write:focus-visible {
+    translate: 0 -2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nudge,
+    .nudge-write {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  const TIME_KEY = 'menghan-nudge-time';
+  const PAGES_KEY = 'menghan-nudge-pages';
+  const SHOWN_KEY = 'menghan-nudge-shown';
+  const OFF_KEY = 'menghan-nudge-off';
+  const NEED_SECONDS = 75;
+  const NEED_PAGES = 2;
+  const DAY = 86400000;
+
+  let ticker = 0;
+
+  function read(store: Storage, key: string): number {
+    try {
+      return Number(store.getItem(key)) || 0;
+    } catch {
+      return 0;
+    }
+  }
+
+  function write(store: Storage, key: string, value: number) {
+    try {
+      store.setItem(key, String(value));
+    } catch {
+      /* private mode */
+    }
+  }
+
+  function blocked(): boolean {
+    return read(localStorage, OFF_KEY) > Date.now() || read(sessionStorage, SHOWN_KEY) === 1;
+  }
+
+  function initNudge() {
+    window.clearInterval(ticker);
+    const card = document.querySelector<HTMLElement>('[data-nudge]');
+    if (!card || blocked()) return;
+    write(sessionStorage, PAGES_KEY, read(sessionStorage, PAGES_KEY) + 1);
+
+    const close = (days: number) => {
+      write(localStorage, OFF_KEY, Date.now() + days * DAY);
+      card.classList.remove('is-on');
+      window.setTimeout(() => (card.hidden = true), 450);
+    };
+    card.querySelector('[data-nudge-close]')?.addEventListener('click', () => close(30));
+    card.querySelector('[data-nudge-write]')?.addEventListener('click', () => close(180));
+
+    ticker = window.setInterval(() => {
+      if (document.hidden) return;
+      const seconds = read(sessionStorage, TIME_KEY) + 5;
+      write(sessionStorage, TIME_KEY, seconds);
+      if (seconds < NEED_SECONDS || read(sessionStorage, PAGES_KEY) < NEED_PAGES) return;
+      if (document.querySelector('dialog[open], [data-lightbox]:not([hidden]), [data-a11y-tip].is-on') || blocked()) return;
+      window.clearInterval(ticker);
+      write(sessionStorage, SHOWN_KEY, 1);
+      card.hidden = false;
+      requestAnimationFrame(() => card.classList.add('is-on'));
+    }, 5000);
+  }
+
+  document.addEventListener('astro:page-load', initNudge);
+  document.addEventListener('astro:before-swap', () => window.clearInterval(ticker));
+</script>

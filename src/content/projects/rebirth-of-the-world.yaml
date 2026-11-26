@@ -1,0 +1,230 @@
+title: Rebirth of the World
+year: 2025
+category: personal
+template: atmosphere
+order: 1
+size: large
+accentFrom: "#1B2A4A"
+accentTo: "#FFD866"
+posterCredit:
+  en: I'm still working on it
+  fr: j'y travaille encore
+  zh: 我还在做
+roles:
+  en: [Solo, Personal project]
+  fr: [Solo, Projet personnel]
+  zh: [独立创作, 个人项目]
+subtitle:
+  en: a world in progress since 2022
+  fr: un monde en construction depuis 2022
+  zh: 从2022年做到现在的世界
+description:
+  en: >-
+    A world I have been imagining since 2022. It started with one of my
+    illustrations, where the ground was red. A new world where everything
+    we take for granted is turned upside down, and a girl who, walking
+    toward her death, also walks back home. I don't like war. I always
+    think, pessimistically, that the end of humankind will be brought by
+    humankind.
+  fr: >-
+    Un monde que j'imagine depuis 2022. Tout est parti d'une de mes
+    illustrations, où la terre était rouge. Un monde nouveau où tout ce
+    qui nous paraît évident est renversé, et une fille qui, en marchant
+    vers la mort, rentre aussi chez elle. Je n'aime pas la guerre. Je
+    suis pessimiste : je pense toujours que ce sont les humains qui
+    causeront la fin de l'humanité.
+  zh: >-
+    这是一个我从2022年开始构思的世界，起源是我的一张大地为红色的插画。一个一切常理都被颠倒的新世界，一个女孩在走向死亡时也走回了家。我不喜欢战争，我总是悲观地认为，人类的末日由人类带来。
+story:
+  en: >-
+    This project has always lived in my mind. It is about the world being
+    reloaded, one version replacing the last, and it could be a seven minute film,
+    a long comic, or a series. A little girl becomes the last person in
+    the world, and she is about to die. She thinks she is not afraid of
+    death, but then a being who calls itself a messenger appears in
+    front of her. The messenger tells her a new world is about to be born.
+  fr: >-
+    Ce projet ne m'a jamais quittée. Il parle d'un monde qui se
+    recharge, chaque version remplaçant la précédente. Il pourrait
+    devenir un film de sept minutes, une longue bande dessinée ou une
+    série. Une petite fille devient la dernière personne au monde, et
+    elle va mourir. Elle croit ne pas avoir peur de la mort, mais un
+    être qui se dit messager apparaît devant elle et lui annonce qu'un
+    nouveau monde va naître.
+  zh: >-
+    这个项目一直在我心里。这个故事关于世界的重新载入、版本更迭，可以是一个七分钟的短片，也可以是长长连载的漫画或剧集。一个小女孩成为了世界上的最后一个人，她即将死去。她以为她不害怕死亡，可在她面前出现了一名自称为使者的人形生物。使者告诉她，新的世界就要诞生了。
+cover: garden-child.png
+coverAlt:
+  en: A small orange-haired figure stands in tall grass at night, fireflies and star-flowers glowing around her
+  fr: Une petite silhouette aux cheveux orange, debout dans les hautes herbes, la nuit, entourée de lucioles et de fleurs en étoile qui brillent
+  zh: 一个橙发的小小身影站在夜色中的高草丛里，萤火虫与星形花朵在周围发光
+gallery:
+  - file: garden-child.png
+    alt:
+      en: A small orange-haired figure stands in tall grass at night, fireflies and star-flowers glowing around her
+      fr: Une petite silhouette aux cheveux orange, debout dans les hautes herbes, la nuit, entourée de lucioles et de fleurs en étoile qui brillent
+      zh: 一个橙发的小小身影站在夜色中的高草丛里，萤火虫与星形花朵在周围发光
+  - file: turnaround.gif
+    alt:
+      en: A line-art turnaround of the film's protagonist, hair drifting as she turns
+      fr: Un turnaround au trait de l'héroïne, les cheveux qui flottent quand elle se retourne
+      zh: 影片主角的线稿转面动图，转身时发丝轻轻飘动
+  - file: fragment-01.png
+    alt:
+      en: A fragment of the world as it resets
+      fr: Un fragment du monde, au moment où il se réinitialise
+      zh: 世界重启时的一个片段
+  - file: fragment-02.png
+    alt:
+      en: Spirits on their way to the end of the old world
+      fr: Des esprits en route vers la fin de l'ancien monde
+      zh: 走向旧世界尽头的灵
+  - file: fragment-03.png
+    alt:
+      en: A submerged ruin, half-remembered
+      fr: Une ruine engloutie, dont on ne se souvient qu'à moitié
+      zh: 一处被淹没的废墟，记忆若隐若现
+  - file: fragment-04.png
+    alt:
+      en: A form the new world is taking
+      fr: Une forme que prend le monde d'après
+      zh: 新世界正在长成的样子
+  - file: extra-22.jpg
+    alt:
+      en: A character study for the world.
+      fr: Une étude de personnage pour cet univers.
+      zh: 这个世界的角色设定。
+  - file: extra-23.png
+    alt:
+      en: A character study for the world.
+      fr: Une étude de personnage pour cet univers.
+      zh: 这个世界的角色设定。
+  - file: extra-21.png
+    alt:
+      en: A character study for the world.
+      fr: Une étude de personnage pour cet univers.
+      zh: 这个世界的角色设定。
+  - file: extra-50.jpg
+    alt: &w07
+      en: So the messenger takes her to see the end of the world.
+      fr: Alors le messager l'emmène voir la fin du monde.
+      zh: 于是她带着她去看世界尽头。
+    caption: *w07
+  - file: extra-51.jpg
+    alt: &w08
+      en: The souls of the old world walk with them.
+      fr: Les âmes de l'ancien monde marchent avec eux.
+      zh: 旧世界的灵魂与他们同行。
+    caption: *w08
+  - file: extra-52.jpg
+    alt: &w09
+      en: Her memory flashes back to her old home, a reserve for humans. On the other side of one wall, the land the war used up, nothing left but desert and ruins.
+      fr: Elle se souvient de son ancienne maison, une réserve pour les humains. Juste de l'autre côté du mur, la terre épuisée par la guerre, où il ne reste que du désert et des ruines.
+      zh: 女孩的记忆闪回她曾经作为人类保护区的家，一墙之隔便是被战争消耗殆尽的土地，只剩下了荒漠和废墟。
+    caption: *w09
+  - file: extra-53.png
+    alt: &w10
+      en: Every physical structure of the new world is made again.
+      fr: Toutes les structures physiques du nouveau monde sont reconstruites.
+      zh: 新世界一切的物理结构都被重新塑造。
+    caption: *w10
+  - file: extra-57.png
+    alt: &w13
+      en: Curious, she explores the new world. Trees grow down into the ground, and the stars and the moon show up under her feet.
+      fr: Curieuse, elle explore le nouveau monde. Les arbres poussent vers le bas, dans la terre, et les étoiles et la lune apparaissent sous ses pieds.
+      zh: 女孩好奇地探索这个新世界，树向地下长，而星星和月亮居然出现在了脚下。
+    caption: *w13
+  - file: extra-56.png
+    alt: &w12
+      en: They reach a place where the souls suddenly fly past them, all toward one spot. She wants to keep them, and runs after them.
+      fr: Ils arrivent à un endroit où les âmes les dépassent soudain et s'envolent toutes vers un même point. Elle veut les retenir, et leur court après.
+      zh: 他们来到了一处地方，灵魂突然越过了他们往一处飞去，女孩想要留住他们，向前追赶。
+    caption: *w12
+  - file: door.jpg
+    alt: &w14
+      en: The girl comes to the door.
+      fr: La fillette arrive devant la porte.
+      zh: 女孩来到了门前。
+    caption: *w14
+  - file: extra-54.png
+    alt: &w11
+      en: In the door she sees the old world as it once was. The souls turn into birds and fly back to where they belong.
+      fr: À travers la porte, elle voit l'ancien monde tel qu'il était. Les âmes se changent en oiseaux et repartent là où elles doivent être.
+      zh: 女孩看见了门中那个曾经的旧世界，灵魂们变成了飞鸟回归属于他们的怀抱。
+    caption: *w11
+  - file: fading.jpg
+    alt: &w15
+      en: Watched by the stars, she slowly fades away, and the dust flies back to the earth and the sky.
+      fr: Sous le regard des étoiles, elle s'efface peu à peu, et la poussière retourne à la terre et au ciel.
+      zh: 女孩在星空的注视下渐渐消散，尘埃飞回了大地和天空。
+    caption: *w15
+  - file: board-01.jpg
+    alt:
+      en: Page 1 of the manga.
+      fr: Page 1 du manga.
+      zh: 漫画第1页。
+  - file: board-02.jpg
+    alt:
+      en: Page 2 of the manga.
+      fr: Page 2 du manga.
+      zh: 漫画第2页。
+  - file: board-03.jpg
+    alt:
+      en: Page 3 of the manga.
+      fr: Page 3 du manga.
+      zh: 漫画第3页。
+  - file: board-04.jpg
+    alt:
+      en: Page 4 of the manga.
+      fr: Page 4 du manga.
+      zh: 漫画第4页。
+  - file: board-05.jpg
+    alt:
+      en: Page 5 of the manga.
+      fr: Page 5 du manga.
+      zh: 漫画第5页。
+  - file: board-06.jpg
+    alt:
+      en: Page 6 of the manga.
+      fr: Page 6 du manga.
+      zh: 漫画第6页。
+  - file: board-07.jpg
+    alt:
+      en: Page 7 of the manga.
+      fr: Page 7 du manga.
+      zh: 漫画第7页。
+  - file: board-08.jpg
+    alt:
+      en: Page 8 of the manga.
+      fr: Page 8 du manga.
+      zh: 漫画第8页。
+  - file: board-09.jpg
+    alt:
+      en: Page 9 of the manga.
+      fr: Page 9 du manga.
+      zh: 漫画第9页。
+  - file: board-10.jpg
+    alt:
+      en: Page 10 of the manga.
+      fr: Page 10 du manga.
+      zh: 漫画第10页。
+  - file: board-11.jpg
+    alt:
+      en: Page 11 of the manga.
+      fr: Page 11 du manga.
+      zh: 漫画第11页。
+  - file: board-12.jpg
+    alt:
+      en: Page 12 of the manga.
+      fr: Page 12 du manga.
+      zh: 漫画第12页。
+  - file: board-13.jpg
+    alt:
+      en: Page 13 of the manga.
+      fr: Page 13 du manga.
+      zh: 漫画第13页。
+  - file: board-14.jpg
+    alt:
+      en: Page 14 of the manga.
+      fr: Page 14 du manga.
+      zh: 漫画第14页。

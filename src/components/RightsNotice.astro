@@ -1,0 +1,89 @@
+---
+import I18nText from './I18nText.astro';
+---
+
+<article class="rights">
+  <h1 class="visually-hidden">
+    <I18nText en="This work is mine" fr="Ce travail est à moi" zh="这些作品是我的" />
+  </h1>
+  <p>
+    <I18nText
+      en="Hi! I’m Menghan, and the drawings, films and designs on this site are mine. You can look at them here! If you like my drawings, you can save them for yourself."
+      fr="Salut ! Moi, c'est Menghan. Les dessins, les films et les designs de ce site sont à moi. Tu peux les regarder ici ! Et si mes dessins te plaisent, tu peux les enregistrer pour toi."
+      zh="嗨！我是 Menghan，这些画、片子和设计都是我的。你可以在这里看！喜欢的话，可以保存。"
+    />
+  </p>
+  <p>
+    <I18nText
+      en="But don’t copy them, repost them, or put them in your own work, unless I have agreed in writing."
+      fr="Mais ne les copie pas, ne les republie pas et ne les mets pas dans ton propre travail sans mon accord écrit."
+      zh="但是不要复制，不要转载，也不要放进你自己的作品里，除非我书面同意。"
+    />
+  </p>
+  <p>
+    <I18nText
+      en="And you cannot use them to train a model, and don’t use them to generate new images. It’s twenty years of hard work 🥹"
+      fr="Et tu ne peux pas t'en servir pour entraîner un modèle, ni pour générer de nouvelles images. C'est vingt ans de travail 🥹"
+      zh="也不能用来训练模型，不要拿它们去生成新的图。这是我二十年的心血 🥹"
+    />
+  </p>
+  <p>
+    <I18nText
+      en="If you want to ask, write to me here"
+      fr="Pour me demander, écris-moi ici"
+      zh="想问的话，写信到这里"
+    />
+  </p>
+  <p><a href="mailto:mengziwww@gmail.com">mengziwww@gmail.com</a></p>
+</article>
+
+<style>
+  .rights {
+    min-height: 82svh;
+    max-width: 44rem;
+    margin: 0 auto;
+    padding: clamp(7rem, 16vh, 10rem) var(--edge) clamp(6rem, 16vh, 10rem);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .rights h1 {
+    font-size: var(--text-2xl);
+    line-height: 1;
+    margin-bottom: var(--space-4);
+  }
+
+  .rights p {
+    margin: var(--space-3) auto 0;
+    font-size: var(--text-lg);
+    line-height: 1.55;
+    color: var(--bone-soft);
+    max-width: 40ch;
+  }
+
+  .rights p:first-child {
+    margin-top: 0;
+    color: var(--bone);
+  }
+
+  .rights a {
+    display: inline-block;
+    margin-top: var(--space-2);
+    padding: 0.55em 1.3em;
+    border: 1px solid var(--gold);
+    border-radius: 999px;
+    color: var(--gold);
+    font-size: var(--text-base);
+    text-decoration: none;
+    transition: background 0.25s, color 0.25s;
+  }
+
+  .rights a:hover,
+  .rights a:focus-visible {
+    background: var(--gold);
+    color: var(--void);
+  }
+</style>

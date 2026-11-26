@@ -1,0 +1,75 @@
+---
+// A thin gold line across the top of the viewport during page
+// transitions — grows toward (not to) completion while the next page is
+// being prepared, then finishes and fades once it actually lands. Astro's
+// transition lifecycle gives clean start/end hooks for this even though
+// the site is static and most transitions are near-instant; on a slower
+// connection it's the difference between a page that feels stalled and
+// one that's visibly working.
+---
+
+<div class="loading-bar" data-loading-bar aria-hidden="true"></div>
+
+<style>
+  .loading-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 700;
+    width: 0%;
+    height: 2px;
+    background: var(--gold);
+    box-shadow: 0 0 0.6rem 0.05rem color-mix(in srgb, var(--gold) 70%, transparent);
+    opacity: 0;
+    transition: width 4s cubic-bezier(0.1, 0.5, 0.1, 1), opacity 0.25s;
+    pointer-events: none;
+  }
+
+  .loading-bar.is-running {
+    width: 78%;
+    opacity: 1;
+  }
+
+  .loading-bar.is-done {
+    width: 100%;
+    opacity: 1;
+    transition: width 0.3s var(--ease-out-expo), opacity 0.4s 0.25s;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .loading-bar {
+      transition: opacity 0.2s;
+    }
+    .loading-bar.is-running,
+    .loading-bar.is-done {
+      width: 100%;
+    }
+  }
+</style>
+
+<script>
+  function initLoadingBar() {
+    const bar = document.querySelector<HTMLElement>('[data-loading-bar]');
+    if (!bar || bar.dataset.loadingBarInit === '1') return;
+    bar.dataset.loadingBarInit = '1';
+
+    document.addEventListener('astro:before-preparation', () => {
+      bar.classList.remove('is-done');
+      // reflow so the width:0 starting point is committed before the
+      // is-running class kicks off the (slow, deliberately incomplete)
+      // grow transition — otherwise the browser coalesces both class
+      // changes into one paint and there's nothing to animate from.
+      void bar.offsetWidth;
+      bar.classList.add('is-running');
+    });
+
+    document.addEventListener('astro:page-load', () => {
+      bar.classList.remove('is-running');
+      bar.classList.add('is-done');
+      window.setTimeout(() => bar.classList.remove('is-done'), 700);
+    });
+  }
+
+  initLoadingBar();
+  document.addEventListener('astro:page-load', initLoadingBar);
+</script>
