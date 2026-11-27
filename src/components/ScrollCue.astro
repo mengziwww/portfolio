@@ -1,7 +1,9 @@
 ---
-// A falling-thread line plus a vertical word, not a dot dropping in a
-// pill — and it actually scrolls the page when clicked, so it's a control
-// rather than pure decoration.
+// The "scroll" cue of every hero: a pill floating at the bottom centre of
+// the window while the visitor is at the top of the page, with a falling
+// gold thread and a bobbing arrow. It is a real control: a click scrolls
+// the page. It lives in the window, not in the hero, so a hero taller than
+// the screen or a corner taken by the artwork never hides or cuts it.
 interface Props {
   label?: { en: string; fr: string; zh: string };
 }
@@ -20,20 +22,86 @@ const { label = { en: 'scroll', fr: 'défiler', zh: '向下滚动' } } = Astro.p
 
 <style>
   .scroll-cue {
+    --cx: -50%;
+    --side: max(1.2rem, var(--edge, 1.5rem));
+    position: fixed;
+    left: 50%;
+    bottom: calc(1.5rem + env(safe-area-inset-bottom));
+    z-index: 45;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 0.6rem;
-    background: none;
-    border: none;
-    padding: 0.4rem;
+    gap: 0.7rem;
+    padding: 0.75rem 1.35rem 0.75rem 1.2rem;
+    border: 1px solid color-mix(in srgb, var(--gold) 60%, transparent);
+    border-radius: 999px;
+    background: rgb(9 8 10 / 84%);
+    box-shadow:
+      0 0 0 1px rgb(0 0 0 / 35%),
+      0 0.8rem 2rem -0.6rem rgb(0 0 0 / 80%),
+      0 0 1.4rem -0.2rem color-mix(in srgb, var(--gold) 35%, transparent);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
     cursor: pointer;
+    /* hidden until the page has settled, then it rises into place */
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(var(--cx), 1.2rem);
+    transition:
+      opacity 0.5s,
+      transform 0.6s var(--ease-out-expo),
+      border-color var(--dur-fast);
+  }
+
+  .scroll-cue.is-shown {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translate(var(--cx), 0);
+    animation: cue-glow 2.6s ease-in-out 0.6s infinite;
+  }
+
+  .scroll-cue:hover,
+  .scroll-cue:focus-visible {
+    border-color: var(--gold);
+  }
+
+  /* moved aside when the centre of the bottom edge has text on it */
+  .scroll-cue.at-left {
+    --cx: 0%;
+    left: var(--side);
+  }
+
+  .scroll-cue.at-right {
+    --cx: 0%;
+    left: auto;
+    right: var(--side);
+  }
+
+  /* only the thread and the arrow, when even the sides are busy */
+  .scroll-cue.is-compact {
+    gap: 0.45rem;
+    padding: 0.7rem 0.85rem;
+  }
+
+  .scroll-cue.is-compact .cue-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* measured in place, out of sight */
+  .scroll-cue.is-measure {
+    visibility: hidden;
+    transition: none;
+    transform: translate(var(--cx), 0);
   }
 
   .cue-line {
     position: relative;
     width: 2px;
-    height: 4.2rem;
+    height: 1.35rem;
     border-radius: 2px;
     background: rgb(255 255 255 / 22%);
     overflow: hidden;
@@ -51,33 +119,16 @@ const { label = { en: 'scroll', fr: 'défiler', zh: '向下滚动' } } = Astro.p
 
   .cue-label {
     font-family: var(--font-mono);
-    font-size: max(var(--text-xs), 0.8rem);
+    font-size: max(var(--text-sm), 0.85rem);
     letter-spacing: 0.16em;
+    line-height: 1;
     text-transform: uppercase;
-    color: var(--bone-soft);
-    text-shadow: 0 1px 4px rgb(0 0 0 / 85%);
-    writing-mode: vertical-rl;
+    color: var(--bone);
     transition: color var(--dur-fast);
   }
 
-  .cue-arrow {
-    width: 1.1rem;
-    height: 1.1rem;
-    fill: none;
-    stroke: var(--gold);
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    filter: drop-shadow(0 1px 3px rgb(0 0 0 / 80%));
-    animation: cue-bob 2.2s ease-in-out infinite;
-  }
-
-  @keyframes cue-bob {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(0.3rem); }
-  }
-
   :lang(zh) .cue-label {
+    letter-spacing: 0.08em;
     text-transform: none;
   }
 
@@ -86,16 +137,74 @@ const { label = { en: 'scroll', fr: 'défiler', zh: '向下滚动' } } = Astro.p
     color: var(--gold);
   }
 
+  .cue-arrow {
+    width: 1.15rem;
+    height: 1.15rem;
+    fill: none;
+    stroke: var(--gold);
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    animation: cue-bob 1.6s ease-in-out infinite;
+  }
+
+  @keyframes cue-bob {
+    0%, 100% { transform: translateY(-0.12rem); }
+    50% { transform: translateY(0.28rem); }
+  }
+
+  @keyframes cue-glow {
+    0%, 100% {
+      box-shadow:
+        0 0 0 1px rgb(0 0 0 / 35%),
+        0 0.8rem 2rem -0.6rem rgb(0 0 0 / 80%),
+        0 0 1.4rem -0.2rem color-mix(in srgb, var(--gold) 30%, transparent);
+    }
+    50% {
+      box-shadow:
+        0 0 0 1px rgb(0 0 0 / 35%),
+        0 0.8rem 2rem -0.6rem rgb(0 0 0 / 80%),
+        0 0 1.8rem 0.1rem color-mix(in srgb, var(--gold) 55%, transparent);
+    }
+  }
+
   /* drawn from the top down, held, then eroded away starting from the
-     same top edge — the tail is always the last part to vanish, so it
-     reads as a thread dropping through and out rather than a blink */
+     same top edge, so it reads as a thread dropping through and out */
   @keyframes cue-thread {
     0% { clip-path: inset(0 0 100% 0); }
     40%, 60% { clip-path: inset(0 0 0% 0); }
     100% { clip-path: inset(100% 0 0% 0); }
   }
 
+  @media (max-width: 700px) {
+    .scroll-cue {
+      bottom: calc(1rem + env(safe-area-inset-bottom));
+      gap: 0.55rem;
+      padding: 0.65rem 1.1rem 0.65rem 1rem;
+    }
+
+    .cue-line {
+      height: 1.1rem;
+    }
+  }
+
+  /* iPhone browsers keep their address bar floating over the bottom of the
+     page: the pill sits above it instead of behind it */
+  @supports (-webkit-touch-callout: none) {
+    @media (max-width: 700px) {
+      .scroll-cue {
+        bottom: calc(5.4rem + env(safe-area-inset-bottom));
+      }
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
+    .scroll-cue,
+    .scroll-cue.is-shown {
+      animation: none;
+      transition: opacity 0.3s;
+      transform: translate(var(--cx), 0);
+    }
     .cue-line::after {
       animation: none;
       clip-path: inset(0 0 0% 0);
@@ -106,145 +215,158 @@ const { label = { en: 'scroll', fr: 'défiler', zh: '向下滚动' } } = Astro.p
     }
   }
 
-  :global(html[data-motion='still']) .cue-arrow {
+  :global(html[data-motion='still']) .scroll-cue,
+  :global(html[data-motion='still']) .cue-arrow,
+  :global(html[data-motion='still']) .cue-line::after {
     animation: none;
-  }
-
-  /* on phones the hero text runs to the bottom of the screen, so the cue
-     floats above it instead of sitting in a corner the text covers */
-  @media (max-width: 700px), (max-width: 1100px) and (orientation: portrait) {
-    .scroll-cue {
-      position: fixed;
-      left: 50%;
-      bottom: max(1rem, env(safe-area-inset-bottom));
-      z-index: 40;
-      flex-direction: row;
-      align-items: center;
-      gap: 0.55rem;
-      padding: 0.55rem 1rem;
-      border: 1px solid color-mix(in srgb, var(--gold) 45%, transparent);
-      border-radius: 999px;
-      background: rgb(9 8 10 / 82%);
-      box-shadow: 0 0.6rem 1.6rem -0.6rem rgb(0 0 0 / 70%);
-      backdrop-filter: blur(8px);
-      transform: translateX(-50%);
-      transition: opacity 0.4s, transform 0.4s var(--ease-out-expo);
-    }
-
-    .scroll-cue.is-gone {
-      opacity: 0;
-      pointer-events: none;
-      transform: translate(-50%, 1rem);
-    }
-
-    .cue-line {
-      height: 1.1rem;
-    }
-
-    .cue-label {
-      writing-mode: horizontal-tb;
-      color: var(--bone);
-    }
-
-    .cue-arrow {
-      width: 1rem;
-      height: 1rem;
-    }
-  }
-
-  /* the same pill on larger screens, when the cue's own place at the foot
-     of the hero is below the fold (a hero taller than the window) or under
-     something else: it then floats at the bottom of the window instead */
-  .scroll-cue.is-floating {
-    position: fixed;
-    left: 50%;
-    bottom: max(1.2rem, env(safe-area-inset-bottom));
-    z-index: 40;
-    flex-direction: row;
-    align-items: center;
-    gap: 0.6rem;
-    padding: 0.6rem 1.1rem;
-    border: 1px solid color-mix(in srgb, var(--gold) 45%, transparent);
-    border-radius: 999px;
-    background: rgb(9 8 10 / 82%);
-    box-shadow: 0 0.6rem 1.6rem -0.6rem rgb(0 0 0 / 70%);
-    backdrop-filter: blur(8px);
-    transform: translateX(-50%);
-    transition: opacity 0.4s, transform 0.4s var(--ease-out-expo);
-  }
-
-  .scroll-cue.is-floating.is-gone {
-    opacity: 0;
-    pointer-events: none;
-    transform: translate(-50%, 1rem);
-  }
-
-  .scroll-cue.is-floating .cue-line {
-    height: 1.2rem;
-  }
-
-  .scroll-cue.is-floating .cue-label {
-    writing-mode: horizontal-tb;
-    color: var(--bone);
-  }
-
-  .scroll-cue.is-floating .cue-arrow {
-    width: 1rem;
-    height: 1rem;
   }
 </style>
 
 <script>
-  function initScrollCues() {
-    document.querySelectorAll<HTMLButtonElement>('[data-scroll-cue]').forEach((cue) => {
-      if (cue.dataset.scrollCueInit === '1') return;
-      cue.dataset.scrollCueInit = '1';
-      cue.addEventListener('click', () => {
-        const distance = window.innerHeight * 0.92;
-        const lenis = (window as any).__lenis;
-        if (lenis?.scrollTo) {
-          lenis.scrollTo(window.scrollY + distance, { duration: 1.2 });
-        } else {
-          window.scrollBy({ top: distance, behavior: 'smooth' });
-        }
-      });
-    });
+  // things the pill must never sit on: a tap there has to reach them
+  const CONTROLS = 'a, button, input, select, textarea, video, [role="tab"], [role="button"], [tabindex]:not([tabindex="-1"])';
+  const MEDIA = 'img, video, canvas, picture';
+  const PLACES = [
+    ['', false],
+    ['at-right', false],
+    ['at-left', false],
+    ['', true],
+    ['at-right', true],
+    ['at-left', true],
+  ] as const;
+
+  // is there a letter of text right at this point?
+  function textAt(x: number, y: number) {
+    let node: Node | null | undefined;
+    let offset = 0;
+    const doc = document as any;
+    if (doc.caretPositionFromPoint) {
+      const pos = doc.caretPositionFromPoint(x, y);
+      node = pos?.offsetNode;
+      offset = pos?.offset ?? 0;
+    } else if (doc.caretRangeFromPoint) {
+      const range = doc.caretRangeFromPoint(x, y);
+      node = range?.startContainer;
+      offset = range?.startOffset ?? 0;
+    }
+    if (!node || node.nodeType !== Node.TEXT_NODE || !node.textContent?.trim()) return false;
+    const length = (node as Text).length;
+    const range = document.createRange();
+    const start = Math.max(0, Math.min(offset, length - 1));
+    range.setStart(node, start);
+    range.setEnd(node, Math.min(length, start + 1));
+    const box = range.getBoundingClientRect();
+    return x >= box.left - 3 && x <= box.right + 3 && y >= box.top - 3 && y <= box.bottom + 3;
+  }
+
+  // what the pill would cover at its current place: Infinity on a control,
+  // otherwise how many sample points fall on text or on an artwork
+  function cost(cue: HTMLElement) {
+    const box = cue.getBoundingClientRect();
+    if (box.bottom > window.innerHeight || box.left < 0 || box.right > window.innerWidth) return Infinity;
+    let hits = 0;
+    for (const fy of [0.2, 0.5, 0.8]) {
+      for (const fx of [0.05, 0.3, 0.5, 0.7, 0.95]) {
+        const x = box.left + box.width * fx;
+        const y = box.top + box.height * fy;
+        const el = document.elementFromPoint(x, y);
+        if (!el || el.closest('[data-site-header]')) continue;
+        if (el.closest(CONTROLS)) return Infinity;
+        const media = el.closest(MEDIA);
+        // a picture filling the screen is a backdrop, not something to avoid
+        if (media && media.getBoundingClientRect().width < window.innerWidth * 0.85) hits += 1;
+        else if (textAt(x, y)) hits += 1;
+      }
+    }
+    return hits;
   }
 
   let onScroll: (() => void) | undefined;
   let onResize: (() => void) | undefined;
+  const timers: number[] = [];
 
   document.addEventListener('astro:page-load', () => {
-    initScrollCues();
-    const cues = document.querySelectorAll<HTMLElement>('[data-scroll-cue]');
+    const cue = document.querySelector<HTMLButtonElement>('[data-scroll-cue]');
     if (onScroll) window.removeEventListener('scroll', onScroll);
-    onScroll = () => cues.forEach((cue) => cue.classList.toggle('is-gone', window.scrollY > 40));
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-
-    // where the hero puts the cue is not always on screen: a tall hero on a
-    // short laptop pushes it below the fold, and some heroes have overlays
-    // in that corner. Checked once the hero has settled, and on resize.
-    const place = () => {
-      if (window.scrollY > 40) return;
-      cues.forEach((cue) => {
-        cue.classList.remove('is-floating');
-        // phones and portrait tablets already get the floating pill
-        if (getComputedStyle(cue).position === 'fixed') return;
-        const box = cue.getBoundingClientRect();
-        if (box.width === 0 || box.height === 0) return;
-        const off = box.top < 0 || box.bottom > window.innerHeight - 8 || box.right > window.innerWidth;
-        const hit = off ? null : document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
-        if (off || (hit && !cue.contains(hit))) cue.classList.add('is-floating');
-      });
-    };
-    window.setTimeout(place, 900);
     if (onResize) window.removeEventListener('resize', onResize);
+    timers.splice(0).forEach((t) => window.clearTimeout(t));
+    if (!cue) return;
+    // out of the hero, so no transform or overflow of the hero can move or cut it
+    if (cue.parentElement !== document.body) document.body.append(cue);
+
+    cue.addEventListener('click', () => {
+      const distance = window.innerHeight * 0.9;
+      const lenis = (window as any).__lenis;
+      if (lenis?.scrollTo) lenis.scrollTo(window.scrollY + distance, { duration: 1.2 });
+      else window.scrollBy({ top: distance, behavior: 'smooth' });
+    });
+
+    let settled = false;
+    let blocked = false;
+
+    // the first place, in this order, that leaves text, artworks and
+    // controls uncovered; failing that the least crowded compact one, and
+    // never on top of a control
+    const choose = () => {
+      cue.classList.add('is-measure');
+      let best: { place: (typeof PLACES)[number]; score: number } | null = null;
+      for (const place of PLACES) {
+        cue.classList.remove('at-left', 'at-right', 'is-compact');
+        if (place[0]) cue.classList.add(place[0]);
+        if (place[1]) cue.classList.add('is-compact');
+        const score = cost(cue);
+        if (!best || score < best.score) best = { place, score };
+        if (score === 0) break;
+      }
+      cue.classList.remove('at-left', 'at-right', 'is-compact');
+      blocked = !best || best.score === Infinity;
+      if (best && !blocked) {
+        if (best.place[0]) cue.classList.add(best.place[0]);
+        if (best.place[1] || best.score > 0) cue.classList.add('is-compact');
+      }
+      // force the measured place before the transition comes back
+      void cue.offsetWidth;
+      cue.classList.remove('is-measure');
+    };
+
+    const update = () => {
+      const show = settled && window.scrollY <= 40 && !blocked;
+      cue.classList.toggle('is-shown', show);
+      cue.tabIndex = show ? 0 : -1;
+    };
+    cue.tabIndex = -1;
+
+    onScroll = update;
+    window.addEventListener('scroll', onScroll, { passive: true });
     let timer = 0;
     onResize = () => {
       window.clearTimeout(timer);
-      timer = window.setTimeout(place, 200);
+      timer = window.setTimeout(() => {
+        if (window.scrollY <= 40) choose();
+        update();
+      }, 200);
     };
     window.addEventListener('resize', onResize);
+
+    // once the hero has played its entrance, then again once late images
+    // have taken their room
+    const settle = () => {
+      if (window.scrollY > 40) return;
+      const was = cue.classList.contains('is-shown');
+      if (was) cue.classList.remove('is-shown');
+      choose();
+      settled = true;
+      update();
+    };
+    timers.push(window.setTimeout(settle, 900));
+    timers.push(
+      window.setTimeout(() => {
+        if (window.scrollY > 40) return;
+        const before = cue.className;
+        cue.classList.add('is-measure');
+        choose();
+        if (cue.className !== before) update();
+      }, 2600),
+    );
   });
 </script>

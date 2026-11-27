@@ -46,6 +46,25 @@ const pageLang = langOf(Astro.url);
   </p>
   <p class="visually-hidden" aria-live="polite" data-mb-status></p>
 
+  <div class="mb-controls" data-mb-controls>
+    <button type="button" class="mb-btn is-next" data-mb-next>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+      <span><I18nText en="next page" fr="page suivante" zh="下一页" /></span>
+    </button>
+    <p class="mb-where" aria-hidden="true" data-mb-where></p>
+    <button type="button" class="mb-btn is-prev" data-mb-prev>
+      <span><I18nText en="previous" fr="précédente" zh="上一页" /></span>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+    </button>
+  </div>
+  <p class="mb-hint">
+    <I18nText
+      en="A manga reads from right to left: swipe the page to the right, tap its left edge, or use the buttons."
+      fr="Un manga se lit de droite à gauche : fais glisser la page vers la droite, touche son bord gauche, ou utilise les boutons."
+      zh="漫画从右往左读：把页面向右滑、点左侧边缘，或者用下面的按钮翻页。"
+    />
+  </p>
+
   <div class="mb-sources">
     {pages.map((p) => (
       <figure data-mb-src data-artwork data-sm={p.sm} data-lg={p.lg}>
@@ -114,6 +133,88 @@ const pageLang = langOf(Astro.url);
     opacity: 1;
   }
 
+  /* the buttons are there for touch screens, where there is no hover to
+     show that a page can be taken by its edge */
+  .mb-controls,
+  .mb-hint {
+    display: none;
+  }
+
+  @media (hover: none), (max-width: 900px) {
+    .mb.is-ready .mb-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.6rem;
+      width: min(100%, 30rem);
+      margin: 0.4rem auto 0;
+      position: relative;
+      z-index: 2;
+    }
+
+    .mb.is-ready .mb-hint {
+      display: block;
+      max-width: 30rem;
+      margin: 0.7rem auto 0;
+      text-align: center;
+      font-size: var(--text-xs);
+      line-height: 1.5;
+      color: var(--bone-soft);
+    }
+  }
+
+  .mb-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 2.9rem;
+    padding: 0.55rem 1rem;
+    border: 1px solid color-mix(in srgb, var(--gold) 50%, transparent);
+    border-radius: 999px;
+    background: rgb(9 8 10 / 70%);
+    color: var(--bone);
+    font-family: var(--font-mono);
+    font-size: max(var(--text-xs), 0.78rem);
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: border-color var(--dur-fast), color var(--dur-fast), opacity var(--dur-fast);
+  }
+
+  .mb-btn.is-next {
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+
+  .mb-btn:active {
+    background: rgb(40 32 20 / 80%);
+  }
+
+  .mb-btn:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  .mb-btn svg {
+    width: 1.05rem;
+    height: 1.05rem;
+    flex: none;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .mb-where {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: max(var(--text-xs), 0.78rem);
+    color: var(--bone-soft);
+    white-space: nowrap;
+    text-align: center;
+  }
+
   .mb-sources {
     position: absolute;
     width: 1px;
@@ -180,6 +281,21 @@ const pageLang = langOf(Astro.url);
     zh: { cover: '封面', back: '封底', end: '本卷完', pages: (p: number[]) => `第${p.join('、')}页` },
   };
 
+  function wordsNow() {
+    const lang = (document.documentElement.getAttribute('lang') || 'en').slice(0, 2) as keyof typeof WORDS;
+    return WORDS[lang] ?? WORDS.en;
+  }
+
+  // the short line between the buttons: "Cover", "3-4 / 24"
+  function where(status: BookStatus, total: number) {
+    const words = wordsNow();
+    if (status.kind === 'cover') return words.cover;
+    if (status.kind === 'back') return words.back;
+    if (status.kind === 'end') return words.end;
+    const text = `${status.pages.join('–')} / ${total}`;
+    return text;
+  }
+
   function describe(status: BookStatus) {
     const lang = (document.documentElement.getAttribute('lang') || 'en').slice(0, 2) as keyof typeof WORDS;
     const words = WORDS[lang] ?? WORDS.en;
@@ -196,6 +312,9 @@ const pageLang = langOf(Astro.url);
     const stage = root.querySelector<HTMLElement>('[data-mb-stage]');
     const canvas = root.querySelector<HTMLCanvasElement>('.mb-canvas');
     const status = root.querySelector<HTMLElement>('[data-mb-status]');
+    const whereLine = root.querySelector<HTMLElement>('[data-mb-where]');
+    const nextBtn = root.querySelector<HTMLButtonElement>('[data-mb-next]');
+    const prevBtn = root.querySelector<HTMLButtonElement>('[data-mb-prev]');
     if (!stage || !canvas) return;
     const sources = [...root.querySelectorAll<HTMLElement>('[data-mb-src]')].map((fig) => ({
       sm: fig.dataset.sm || '',
@@ -215,6 +334,9 @@ const pageLang = langOf(Astro.url);
         calm,
         onReady: () => root.classList.add('is-ready'),
         onStatus: (s) => {
+          if (whereLine) whereLine.textContent = where(s, sources.length);
+          if (prevBtn) prevBtn.disabled = s.kind === 'cover';
+          if (nextBtn) nextBtn.disabled = s.kind === 'back';
           if (first) {
             first = false;
             return;
@@ -226,6 +348,8 @@ const pageLang = langOf(Astro.url);
         root.classList.add('is-fallback');
         return;
       }
+      nextBtn?.addEventListener('click', () => book.forward());
+      prevBtn?.addEventListener('click', () => book.back());
       cleanups.push(() => book.destroy());
     } catch {
       root.classList.add('is-fallback');

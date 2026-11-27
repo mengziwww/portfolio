@@ -65,22 +65,31 @@ gallery:
       zh: 八格色彩脚本，灯笼光影、庙宇香烟、护法石狮与一面烈焰之墙
   - file: concept-character.png
     chapter:
-      en: Characters
-      fr: Personnages
-      zh: 角色
+      en: Character design
+      fr: Character design
+      zh: 角色设计
     alt:
       en: "The hero's character sheet: a turnaround in his school tracksuit, his hands, his necklace and earring, and the proportions of his head"
       fr: "La fiche du héros : un turnaround en survêtement d'école, ses mains, son collier, sa boucle d'oreille et les proportions de sa tête"
       zh: 主角的角色设定：穿校服的转面图、手、项链和耳环，还有头部比例
   - file: concept-keypose.png
     chapter:
-      en: Key poses
-      fr: Poses clés
-      zh: 关键动作
+      en: Character design
+      fr: Character design
+      zh: 角色设计
     alt:
       en: The protagonist training and fooling around, to show who he is
       fr: Le héros qui s'entraîne et fait le pitre, pour montrer son caractère
       zh: 主角练功和搞怪的样子，突出主角的个性
+  - file: still-figure.jpg
+    chapter:
+      en: Character design
+      fr: Character design
+      zh: 角色设计
+    alt:
+      en: Expressions.
+      fr: Expressions.
+      zh: 表情。
   - file: concept-styleframe.png
     chapter:
       en: Style frame
@@ -92,20 +101,13 @@ gallery:
       zh: 更现实的色调处理
   - file: still-temple.jpg
     chapter:
-      en: more from this project
-      fr: encore de ce projet
-      zh: 这个项目的其他画面
+      en: Style frame
+      fr: Style frame
+      zh: 风格帧
+    # no caption on the page, the alt text is only for screen readers
+    hideCaption: true
     alt:
-      en: A background test.
-      fr: Un essai de décor.
-      zh: 一张背景测试。
-  - file: still-figure.jpg
-    chapter:
-      en: more from this project
-      fr: encore de ce projet
-      zh: 这个项目的其他画面
-    alt:
-      en: Expressions.
-      fr: Expressions.
-      zh: 表情。
+      en: A boy in a blue tank top caught between flames, in front of a temple
+      fr: Un garçon en débardeur bleu pris entre les flammes, devant un temple
+      zh: 穿蓝色背心的男孩在庙前被火焰包围
 video: /videos/bajiajiang/storyboard.mp4

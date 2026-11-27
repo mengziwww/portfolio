@@ -185,7 +185,7 @@ const pageLang = langOf(Astro.url);
                   />
                 </span>
                 <span class="bd-tassel" aria-hidden="true"></span>
-                {s.items.length > 1 && (
+                {s.items.length > 1 && !item.hideCaption && (
                   <figcaption>
                     <I18nText en={item.alt.en} fr={item.alt.fr} zh={item.alt.zh} />
                   </figcaption>

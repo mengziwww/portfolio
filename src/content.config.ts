@@ -25,6 +25,8 @@ const galleryItem = z.object({
   // used by the "process" stage: sorts a carousel's thumbnails into
   // first drafts and final designs
   kind: z.enum(['draft', 'final']).optional(),
+  // the image shows without its caption (the alt text stays for screen readers)
+  hideCaption: z.boolean().optional(),
 });
 
 const projects = defineCollection({
