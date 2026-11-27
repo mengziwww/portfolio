@@ -118,6 +118,48 @@ const graph = [
         } catch (e) {}
       })();
     </script>
+    <script is:inline>
+      // Astro's router only fires the first astro:page-load on the window
+      // "load" event, which waits for every eager image and the first
+      // frames of the videos. On a slow connection (this site seen from
+      // China) that can take a minute, and until then nothing on the page
+      // answers: tabs, manga, carousels, video buttons. Every script has
+      // run by DOMContentLoaded, so the first page-load is fired there, and
+      // the router's late duplicate of it is swallowed.
+      (function () {
+        if (window.__earlyPageLoad) return;
+        window.__earlyPageLoad = true;
+        var swallow = false;
+        window.addEventListener(
+          'astro:page-load',
+          function (event) {
+            if (event.__early) {
+              swallow = true;
+              return;
+            }
+            if (swallow) {
+              swallow = false;
+              event.stopImmediatePropagation();
+            }
+          },
+          true,
+        );
+        // a real navigation came first: its own page-load must go through
+        document.addEventListener('astro:after-swap', function () {
+          swallow = false;
+        });
+        document.addEventListener(
+          'DOMContentLoaded',
+          function () {
+            if (document.readyState === 'complete') return;
+            var event = new Event('astro:page-load');
+            event.__early = true;
+            document.dispatchEvent(event);
+          },
+          { once: true },
+        );
+      })();
+    </script>
   </head>
   <body class={bodyClass}>
     <LoadingBar />

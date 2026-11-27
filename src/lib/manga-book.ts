@@ -586,7 +586,9 @@ export function createBook(opts: BookOptions) {
       return;
     }
     const { left, right } = spread();
-    const pages = [left, right].filter((f): f is Face => has(f)).map((f) => f.board + 1);
+    const faces = narrow && focus === 'L' ? [left] : narrow && focus === 'R' ? [right] : [left, right];
+    let pages = faces.filter((f): f is Face => has(f)).map((f) => f.board + 1);
+    if (!pages.length) pages = [left, right].filter((f): f is Face => has(f)).map((f) => f.board + 1);
     onStatus({ kind: pages.length ? 'spread' : 'end', pages });
   }
 
@@ -683,6 +685,7 @@ export function createBook(opts: BookOptions) {
     }
     if (narrow && focus === 'L' && has(spread().right)) {
       focus = 'R';
+      emitStatus();
       kick();
       return;
     }
@@ -696,6 +699,7 @@ export function createBook(opts: BookOptions) {
     }
     if (narrow && focus === 'R' && has(spread().left)) {
       focus = 'L';
+      emitStatus();
       kick();
       return;
     }
@@ -985,6 +989,7 @@ export function createBook(opts: BookOptions) {
         if (dx > 0 && focus === 'L') focus = 'R';
         else if (dx < 0 && focus === 'R') focus = 'L';
         if (focus !== was) {
+          emitStatus();
           camX -= panX;
           panX = 0;
         }

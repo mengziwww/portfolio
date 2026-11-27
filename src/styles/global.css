@@ -154,6 +154,8 @@ button {
   background: none;
   border: 0;
   cursor: pointer;
+  /* no double-tap zoom on phones: two quick taps are two presses */
+  touch-action: manipulation;
 }
 
 a {

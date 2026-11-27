@@ -46,6 +46,37 @@ const pageLang = langOf(Astro.url);
   </p>
   <p class="visually-hidden" aria-live="polite" data-mb-status></p>
 
+  <!-- shown over the book the first time it comes into view -->
+  <div class="mb-guide" data-mb-guide hidden>
+    <div class="mb-guide-card" role="dialog" aria-labelledby={`${helpId}-guide`}>
+      <div class="mb-guide-demo" aria-hidden="true">
+        <span class="mb-guide-page is-r"></span>
+        <span class="mb-guide-page is-l"><span class="mb-guide-flap"></span></span>
+        <span class="mb-guide-finger"></span>
+      </div>
+      <p class="mb-guide-title" id={`${helpId}-guide`}>
+        <I18nText en="How to read it" fr="Comment le lire" zh="怎么翻页" />
+      </p>
+      <p class="mb-guide-text is-touch">
+        <I18nText
+          en="A manga reads from right to left. To turn the page, swipe it to the right, tap its left edge, or use the buttons under the book."
+          fr="Un manga se lit de droite à gauche. Pour tourner la page, fais-la glisser vers la droite, touche son bord gauche, ou utilise les boutons sous le livre."
+          zh="漫画从右往左读。翻页时，把页面向右滑，或者点页面的左边缘，也可以用书下面的按钮。"
+        />
+      </p>
+      <p class="mb-guide-text is-mouse">
+        <I18nText
+          en="A manga reads from right to left. Take the left page by its edge and drag it to the right, click that edge, or press the ← key."
+          fr="Un manga se lit de droite à gauche. Prends la page de gauche par le bord et tire-la vers la droite, clique sur ce bord, ou appuie sur la touche ←."
+          zh="漫画从右往左读。按住左页的边缘向右拖，或者点击这个边缘，也可以按键盘上的 ← 键。"
+        />
+      </p>
+      <button type="button" class="mb-guide-ok" data-mb-guide-ok>
+        <I18nText en="Got it" fr="Compris" zh="知道了" />
+      </button>
+    </div>
+  </div>
+
   <div class="mb-controls" data-mb-controls>
     <button type="button" class="mb-btn is-next" data-mb-next>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
@@ -131,6 +162,160 @@ const pageLang = langOf(Astro.url);
 
   .mb.is-ready .mb-canvas {
     opacity: 1;
+  }
+
+  .mb-guide {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    z-index: 5;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+    background: rgb(8 7 12 / 62%);
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+    border-radius: 6px;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    cursor: pointer;
+  }
+
+  .mb-guide.is-on {
+    opacity: 1;
+  }
+
+  .mb-guide-card {
+    display: grid;
+    justify-items: center;
+    gap: 0.7rem;
+    max-width: 21rem;
+    padding: 1.3rem 1.3rem 1.2rem;
+    text-align: center;
+    border: 1px solid color-mix(in srgb, var(--gold) 50%, transparent);
+    border-radius: 14px;
+    background: rgb(14 12 18 / 92%);
+    box-shadow: 0 1.2rem 3rem -1rem rgb(0 0 0 / 80%);
+    cursor: default;
+  }
+
+  .mb-guide-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    color: var(--bone);
+  }
+
+  .mb-guide-text {
+    margin: 0;
+    font-size: var(--text-sm);
+    line-height: 1.55;
+    color: var(--bone-soft);
+  }
+
+  .mb-guide-text.is-touch {
+    display: none;
+  }
+
+  @media (hover: none), (max-width: 900px) {
+    .mb-guide-text.is-touch {
+      display: block;
+    }
+
+    .mb-guide-text.is-mouse {
+      display: none;
+    }
+  }
+
+  .mb-guide-ok {
+    margin-top: 0.2rem;
+    min-height: 2.75rem;
+    padding: 0.55rem 1.4rem;
+    border: 1px solid var(--gold);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--gold) 16%, transparent);
+    color: var(--gold);
+    font-family: var(--font-mono);
+    font-size: max(var(--text-xs), 0.8rem);
+    letter-spacing: 0.08em;
+    cursor: pointer;
+  }
+
+  /* a tiny open book: the left page lifts and turns to the right, a
+     fingertip pulling it along */
+  .mb-guide-demo {
+    position: relative;
+    width: 7.4rem;
+    height: 4.6rem;
+    perspective: 18rem;
+  }
+
+  .mb-guide-page {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 50%;
+    border: 1px solid rgb(255 255 255 / 30%);
+    background: #efe8da;
+  }
+
+  .mb-guide-page.is-r {
+    right: 0;
+    border-radius: 0 4px 4px 0;
+  }
+
+  .mb-guide-page.is-l {
+    left: 0;
+    border-radius: 4px 0 0 4px;
+    background: #e2d9c7;
+  }
+
+  .mb-guide-flap {
+    position: absolute;
+    inset: -1px;
+    border-radius: 4px 0 0 4px;
+    background: #f6f0e4;
+    border: 1px solid rgb(0 0 0 / 15%);
+    transform-origin: right center;
+    animation: guide-flap 2.6s ease-in-out infinite;
+  }
+
+  .mb-guide-finger {
+    position: absolute;
+    top: 58%;
+    left: 6%;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 0 0.35rem color-mix(in srgb, var(--gold) 30%, transparent);
+    animation: guide-finger 2.6s ease-in-out infinite;
+  }
+
+  @keyframes guide-flap {
+    0%, 15% { transform: rotateY(0deg); }
+    60%, 80% { transform: rotateY(180deg); }
+    100% { transform: rotateY(180deg); opacity: 0; }
+  }
+
+  @keyframes guide-finger {
+    0% { left: 6%; opacity: 0; }
+    12% { left: 6%; opacity: 1; }
+    60% { left: 86%; opacity: 1; }
+    80%, 100% { left: 86%; opacity: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mb-guide-flap,
+    .mb-guide-finger {
+      animation: none;
+    }
+  }
+
+  :global(html[data-motion='still']) .mb-guide-flap,
+  :global(html[data-motion='still']) .mb-guide-finger {
+    animation: none;
   }
 
   /* the buttons are there for touch screens, where there is no hover to
@@ -307,6 +492,62 @@ const pageLang = langOf(Astro.url);
   }
 
   const cleanups: Array<() => void> = [];
+  const GUIDE_KEY = 'menghan-manga-guide';
+
+  function guideSeen() {
+    try {
+      return localStorage.getItem(GUIDE_KEY) === '1';
+    } catch {
+      return false;
+    }
+  }
+
+  function setupGuide(root: HTMLElement, stage: HTMLElement) {
+    const guide = root.querySelector<HTMLElement>('[data-mb-guide]');
+    if (!guide || guideSeen()) return () => {};
+    let open = false;
+    const close = () => {
+      if (!open) return;
+      open = false;
+      try {
+        localStorage.setItem(GUIDE_KEY, '1');
+      } catch {
+        /* private mode */
+      }
+      guide.classList.remove('is-on');
+      window.setTimeout(() => (guide.hidden = true), 350);
+      document.removeEventListener('keydown', onKey);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') close();
+    };
+    const show = () => {
+      if (guideSeen()) return;
+      guide.style.top = `${stage.offsetTop}px`;
+      guide.style.height = `${stage.offsetHeight}px`;
+      guide.hidden = false;
+      open = true;
+      requestAnimationFrame(() => guide.classList.add('is-on'));
+      document.addEventListener('keydown', onKey);
+    };
+    guide.addEventListener('click', (e) => {
+      if (!(e.target as Element).closest('.mb-guide-card') || (e.target as Element).closest('[data-mb-guide-ok]')) close();
+    });
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((en) => en.isIntersecting)) return;
+        io.disconnect();
+        show();
+      },
+      { threshold: 0.5 },
+    );
+    io.observe(stage);
+    cleanups.push(() => {
+      io.disconnect();
+      document.removeEventListener('keydown', onKey);
+    });
+    return close;
+  }
 
   async function mount(root: HTMLElement) {
     const stage = root.querySelector<HTMLElement>('[data-mb-stage]');
@@ -324,6 +565,7 @@ const pageLang = langOf(Astro.url);
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches || motion === 'still';
     const calm = reduced || motion === 'quiet';
     let first = true;
+    let closeGuide = () => {};
     try {
       const { createBook } = await import('@/lib/manga-book');
       const book = createBook({
@@ -332,7 +574,10 @@ const pageLang = langOf(Astro.url);
         sources,
         reduced,
         calm,
-        onReady: () => root.classList.add('is-ready'),
+        onReady: () => {
+          root.classList.add('is-ready');
+          closeGuide = setupGuide(root, stage);
+        },
         onStatus: (s) => {
           if (whereLine) whereLine.textContent = where(s, sources.length);
           if (prevBtn) prevBtn.disabled = s.kind === 'cover';
@@ -341,6 +586,7 @@ const pageLang = langOf(Astro.url);
             first = false;
             return;
           }
+          closeGuide();
           if (status) status.textContent = describe(s);
         },
       });

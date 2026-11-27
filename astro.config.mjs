@@ -13,7 +13,7 @@ export default defineConfig({
     }),
   ],
   redirects: {
-    '/works/the-end-of-the-world': '/works/rebirth-of-the-world',
+    '/works/the-end-of-the-world': '/portfolio/works/rebirth-of-the-world',
   },
   prefetch: {
     prefetchAll: true,
